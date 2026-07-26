@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Tracing | Cross-service propagation</title>
+  <title>Cross-service trace propagation</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -155,7 +155,7 @@ mermaid.initialize({
     <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
     <li class="level2 nav-leaf"><a href="tracing.html">Tracing</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Tracing | Cross-service propagation</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Cross-service trace propagation</a></li>
     <li class="level2 nav-leaf"><a href="logs.html">Logs</a></li>
     <li class="level2 nav-leaf"><a href="semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">OtelJava</li>
@@ -179,18 +179,16 @@ mermaid.initialize({
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Tracing | Cross-service propagation</a></p>
+  <p class="header"><a href="#">Cross-service trace propagation</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#_1-join-an-external-span">1. Join an external span</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-propagate-current-span-downstream">2. Propagate current span downstream</a></li>
-    <li class="level1 nav-leaf"><a href="#configuration">Configuration</a></li>
-    <li class="level1 nav-node"><a href="#propagation-scenarios">Propagation scenarios</a></li>
-    <li class="level2 nav-leaf"><a href="#http">HTTP</a></li>
-    <li class="level2 nav-leaf"><a href="#mqtt">MQTT</a></li>
-    <li class="level1 nav-leaf"><a href="#propagate-current-span-downstream">Propagate current span downstream</a></li>
-    <li class="level1 nav-leaf"><a href="#join-an-external-span">Join an external span</a></li>
-    <li class="level1 nav-leaf"><a href="#implementing-a-custom-propagator">Implementing a custom propagator</a></li>
+    <li class="level1 nav-leaf"><a href="#propagation-model">Propagation model</a></li>
+    <li class="level1 nav-leaf"><a href="#common-carriers">Common carriers</a></li>
+    <li class="level1 nav-leaf"><a href="#built-in-propagators">Built-in propagators</a></li>
+    <li class="level1 nav-leaf"><a href="#configure-propagators">Configure propagators</a></li>
+    <li class="level1 nav-leaf"><a href="#carrier-support">Carrier support</a></li>
+    <li class="level1 nav-leaf"><a href="#custom-propagators">Custom propagators</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -199,35 +197,103 @@ mermaid.initialize({
 
       <main class="content">
 
-        <h1 id="tracing-cross-service-propagation" class="title">Tracing | Cross-service propagation</h1>
-        <p>Cross-service span propagation is a key concept in distributed tracing that enables the tracking 
-        of requests as they move through various services.</p>
-        <p>There are two general scenarios:</p>
+        <h1 id="cross-service-trace-propagation" class="title">Cross-service trace propagation</h1>
+        <p>Trace propagation carries the current trace context through request or message metadata so another service can continue
+        the same trace.</p>
+        <p>Use <a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a>
+        for the step-by-step <code>joinOrRoot</code> and <code>propagate</code> workflow. This page is a reference for propagation configuration,
+        carrier support, and custom propagators.</p>
         
-        <h4 id="_1-join-an-external-span" class="section"><a class="anchor-link left" href="#_1-join-an-external-span"><i class="icofont-laika link">&#xef71;</i></a>1. Join an external span</h4>
-        <p>This occurs when a service receives a request (response) or message that includes tracing context from an external source. 
-        The service then joins this existing trace, continuing the span from where it was left off.</p>
-        
-        <h4 id="_2-propagate-current-span-downstream" class="section"><a class="anchor-link left" href="#_2-propagate-current-span-downstream"><i class="icofont-laika link">&#xef71;</i></a>2. Propagate current span downstream</h4>
-        <p>This scenario involves a service injecting the trace context into outgoing requests or messages. 
-        This allows subsequent services to continue the trace, linking their spans to the parent span.</p>
-        
-        <h2 id="configuration" class="section"><a class="anchor-link left" href="#configuration"><i class="icofont-laika link">&#xef71;</i></a>Configuration</h2>
-        <p>There are multiple propagators available out of the box:</p>
+        <h2 id="propagation-model" class="section"><a class="anchor-link left" href="#propagation-model"><i class="icofont-laika link">&#xef71;</i></a>Propagation model</h2>
+        <p>There are two sides to cross-service propagation:</p>
         <ul>
-          <li><code>tracecontext</code> - <a href="https://www.w3.org/TR/trace-context/">W3C Trace Context</a></li>
-          <li><code>baggage</code> - <a href="https://www.w3.org/TR/baggage/">W3C Baggage</a></li>
-          <li><code>b3</code> - <a href="https://github.com/openzipkin/b3-propagation#single-header">B3 Single</a></li>
-          <li><code>b3multi</code> - <a href="https://github.com/openzipkin/b3-propagation#multiple-headers">B3 Multi</a></li>
-          <li><code>jaeger</code> - <a href="https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format">Jaeger</a></li>
+          <li><strong>Extract</strong> incoming context from a carrier, then run local work under that parent context.</li>
+          <li><strong>Inject</strong> current context into an outgoing carrier, then attach that carrier to the request or message sent downstream.</li>
         </ul>
-        <p>The <code>tracecontext</code> is the default propagator. The propagator can be configured via environment variables or system properties:</p>
+        <p>In otel4s, extraction is exposed through <code>Tracer[F].joinOrRoot</code>. Injection is exposed through <code>Tracer[F].propagate</code>.
+        Both operations use the propagators configured on the OpenTelemetry SDK.</p>
+        <pre class="mermaid">sequenceDiagram
+    participant Client
+    participant ServiceA
+    participant ServiceB
+
+    Client-&gt;&gt;ServiceA: Request
+    ServiceA-&gt;&gt;ServiceA: Extract trace context
+    ServiceA-&gt;&gt;ServiceA: Start local span
+    ServiceA-&gt;&gt;ServiceA: Inject trace context
+    ServiceA-&gt;&gt;ServiceB: Request with trace context
+    ServiceB-&gt;&gt;ServiceB: Extract trace context
+    ServiceB-&gt;&gt;ServiceB: Start child span
+    ServiceB--&gt;&gt;ServiceA: Response
+    ServiceA--&gt;&gt;Client: Response</pre>
+        <p>The carrier depends on the protocol. HTTP usually uses headers. Messaging systems usually use message headers or
+        properties. otel4s only requires carrier-specific <code>TextMapGetter</code> and <code>TextMapUpdater</code> instances.</p>
+        
+        <h2 id="common-carriers" class="section"><a class="anchor-link left" href="#common-carriers"><i class="icofont-laika link">&#xef71;</i></a>Common carriers</h2>
+        <p>Most propagation work starts by identifying where the protocol carries text metadata.</p>
         <ul>
-          <li><code>OTEL_PROPAGATORS=b3multi</code></li>
-          <li><code>-Dotel.propagators=b3multi</code></li>
+          <li>HTTP: use request headers. Extract from incoming request headers and inject into outgoing request headers.</li>
+          <li>gRPC: use metadata. Propagation fields are text values, so use regular ASCII metadata keys rather than binary
+          metadata keys.</li>
+          <li>Kafka: use record headers. Header values are bytes, so choose one text encoding, such as UTF-8, for propagation
+          fields.</li>
+          <li>MQTT 5: use user properties. They are text key-value pairs and fit the text-map propagation model.</li>
+          <li>MQTT 3.x: there is no standard text metadata field equivalent to HTTP headers or MQTT 5 user properties. Use a
+          wrapper message, broker-specific metadata, or another agreed carrier when trace propagation is required.</li>
         </ul>
-        <p>Multiple propagators can be enabled too, for example: <code>OTEL_PROPAGATORS=b3multi,tracecontext</code>.</p>
-        <p><code>Otel4s#propagators</code> shows the configured propagators: </p>
+        <p>Once you have a carrier shape, the otel4s API is the same: provide <code>TextMapGetter</code> for extraction and
+        <code>TextMapUpdater</code> for injection.</p>
+        
+        <h2 id="built-in-propagators" class="section"><a class="anchor-link left" href="#built-in-propagators"><i class="icofont-laika link">&#xef71;</i></a>Built-in propagators</h2>
+        <p>The OpenTelemetry Java backend can use these propagators out of the box:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Format</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>tracecontext</code></td>
+              <td><a href="https://www.w3.org/TR/trace-context/">W3C Trace Context</a></td>
+            </tr>
+            <tr>
+              <td><code>baggage</code></td>
+              <td><a href="https://www.w3.org/TR/baggage/">W3C Baggage</a></td>
+            </tr>
+            <tr>
+              <td><code>b3</code></td>
+              <td><a href="https://github.com/openzipkin/b3-propagation#single-header">B3 single header</a></td>
+            </tr>
+            <tr>
+              <td><code>b3multi</code></td>
+              <td><a href="https://github.com/openzipkin/b3-propagation#multiple-headers">B3 multiple headers</a></td>
+            </tr>
+            <tr>
+              <td><code>jaeger</code></td>
+              <td><a href="https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format">Jaeger</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>tracecontext</code> and <code>baggage</code> are the default propagators.</p>
+        
+        <h2 id="configure-propagators" class="section"><a class="anchor-link left" href="#configure-propagators"><i class="icofont-laika link">&#xef71;</i></a>Configure propagators</h2>
+        <p>Configure propagators when the service must interoperate with systems that use a non-default propagation format.
+        Multiple propagators can be enabled with a comma-separated list.</p>
+        <div class="tab-container" data-tab-group="config-source">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="env-vars"><a href="#">Environment variables</a></li>
+            <li class="tab" data-choice-name="jvm-properties"><a href="#">JVM properties</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="env-vars">
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">export</span><span> OTEL_PROPAGATORS=b3multi,tracecontext</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="jvm-properties">
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span>-Dotel.propagators=b3multi,tracecontext</span></code></pre>
+          </div>
+        </div>
+        <p><code>Otel4s#propagators</code> shows the configured propagators:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
 
@@ -238,125 +304,20 @@ mermaid.initialize({
 //   textMapPropagator=[W3CTraceContextPropagator, W3CBaggagePropagator]
 // }</span></code></pre>
         
-        <h2 id="propagation-scenarios" class="section"><a class="anchor-link left" href="#propagation-scenarios"><i class="icofont-laika link">&#xef71;</i></a>Propagation scenarios</h2>
-        <p>Let&#39;s take a look at a common cross-service propagation models.</p>
+        <h2 id="carrier-support" class="section"><a class="anchor-link left" href="#carrier-support"><i class="icofont-laika link">&#xef71;</i></a>Carrier support</h2>
+        <p><code>Map[String, String]</code> and <code>Seq[(String, String)]</code> work without additional code.</p>
+        <p>For other carrier types, define:</p>
+        <ul>
+          <li><code>TextMapGetter[C]</code> when the carrier is used for extraction</li>
+          <li><code>TextMapUpdater[C]</code> when the carrier is used for injection</li>
+        </ul>
+        <p>For a focused example using <code>org.http4s.Headers</code>, see
+        <a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a>.</p>
         
-        <h4 id="http" class="section"><a class="anchor-link left" href="#http"><i class="icofont-laika link">&#xef71;</i></a>HTTP</h4>
-        <pre class="mermaid">sequenceDiagram
-    participant Client
-    participant ServiceA
-    participant ServiceB
-
-    Client-&gt;&gt;ServiceA: HTTP Request (Start Trace)
-    ServiceA-&gt;&gt;ServiceA: Start Span A
-    ServiceA-&gt;&gt;ServiceA: Inject Trace Context into HTTP Headers
-    ServiceA-&gt;&gt;ServiceB: HTTP Request with Trace Context
-    ServiceB-&gt;&gt;ServiceB: Extract Trace Context from HTTP Headers
-    ServiceB-&gt;&gt;ServiceB: Start Span B (Child of Span A)
-    ServiceB-&gt;&gt;ServiceB: Perform Operation
-    ServiceB-&gt;&gt;ServiceA: HTTP Response
-    ServiceB-&gt;&gt;ServiceB: End Span B
-    ServiceA-&gt;&gt;ServiceA: End Span A
-    ServiceA-&gt;&gt;Client: HTTP Response with Result</pre>
-        
-        <h4 id="mqtt" class="section"><a class="anchor-link left" href="#mqtt"><i class="icofont-laika link">&#xef71;</i></a>MQTT</h4>
-        <pre class="mermaid">sequenceDiagram
-    participant ServiceA
-    participant MQTTBroker
-    participant ServiceB
-
-    ServiceA-&gt;&gt;ServiceA: Start Span A
-    ServiceA-&gt;&gt;ServiceA: Inject Trace Context into MQTT Message
-    ServiceA-&gt;&gt;MQTTBroker: Publish MQTT Message with Trace Context
-    MQTTBroker-&gt;&gt;ServiceB: Deliver MQTT Message
-    ServiceB-&gt;&gt;ServiceB: Extract Trace Context from MQTT Message
-    ServiceB-&gt;&gt;ServiceB: Start Span B (Child of Span A)
-    ServiceB-&gt;&gt;ServiceB: Perform Operation
-    ServiceB-&gt;&gt;ServiceB: End Span B
-    ServiceB-&gt;&gt;ServiceB: Inject Trace Context into MQTT Message
-    ServiceB-&gt;&gt;MQTTBroker: Publish response
-    MQTTBroker-&gt;&gt;ServiceA: Deliver MQTT Message
-    ServiceA-&gt;&gt;ServiceA: Extract Trace Context from MQTT Message
-    ServiceA-&gt;&gt;ServiceA: End Span A</pre>
-        
-        <h2 id="propagate-current-span-downstream" class="section"><a class="anchor-link left" href="#propagate-current-span-downstream"><i class="icofont-laika link">&#xef71;</i></a>Propagate current span downstream</h2>
-        <p>The <code>Tracer[F].propagate</code> injects current span details into the given carrier:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">trait</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]] {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">propagate</span><span>[</span><span class="type-name">C</span><span>: </span><span class="type-name">TextMapUpdater</span><span>](</span><span class="identifier">carrier</span><span>: </span><span class="type-name">C</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">C</span><span>] 
-}</span></code></pre>
-        <p>Any carrier would work as long as <code>TextMapUpdater</code> is available for this type.
-        For example, <code>Map[String, String]</code> and <code>Seq[(String, String)]</code> work out of the box.</p>
-        <p>We can also implement a <code>TextMapUpdater</code> for arbitrary types, for example <code>org.http4s.Headers</code>:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">client</span><span>.</span><span class="type-name">Client</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">literals</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">ci</span><span>.</span><span class="type-name">CIString</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">headersTextMapUpdater</span><span>: </span><span class="type-name">TextMapUpdater</span><span>[</span><span class="type-name">Headers</span><span>] = 
-  </span><span class="keyword">new</span><span> </span><span class="type-name">TextMapUpdater</span><span>[</span><span class="type-name">Headers</span><span>] {
-    </span><span class="keyword">def</span><span> </span><span class="declaration-name">updated</span><span>(</span><span class="identifier">headers</span><span>: </span><span class="type-name">Headers</span><span>, </span><span class="identifier">key</span><span>: </span><span class="type-name">String</span><span>, </span><span class="identifier">value</span><span>: </span><span class="type-name">String</span><span>): </span><span class="type-name">Headers</span><span> =
-      </span><span class="identifier">headers</span><span>.</span><span class="identifier">put</span><span>(</span><span class="type-name">Header</span><span>.</span><span class="type-name">Raw</span><span>(</span><span class="type-name">CIString</span><span>(</span><span class="identifier">key</span><span>), </span><span class="identifier">value</span><span>))
-  }
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">sendRequest</span><span>(</span><span class="identifier">client</span><span>: </span><span class="type-name">Client</span><span>[</span><span class="type-name">IO</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="type-name">T</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">String</span><span>] = 
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;send-request&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">req</span><span> = </span><span class="type-name">Request</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="type-name">Method</span><span>.</span><span class="type-name">GET</span><span>, </span><span class="string-literal">uri&quot;http://localhost:8080&quot;</span><span>)
-    
-    </span><span class="keyword">for</span><span>  {
-      </span><span class="identifier">traceHeaders</span><span> &lt;- </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">propagate</span><span>(</span><span class="type-name">Headers</span><span>.</span><span class="identifier">empty</span><span>)
-      </span><span class="comment">// Headers(traceparent: 00-82383569b2b84276342a70581dc625ad-083b7f94913d787a-01)
-</span><span>
-      </span><span class="comment">// add trace headers to the request and execute it
-</span><span>      </span><span class="identifier">result</span><span> &lt;- </span><span class="identifier">client</span><span>.</span><span class="identifier">expect</span><span>[</span><span class="type-name">String</span><span>](</span><span class="identifier">req</span><span>.</span><span class="identifier">withHeaders</span><span>(</span><span class="identifier">req</span><span>.</span><span class="identifier">headers</span><span> ++ </span><span class="identifier">traceHeaders</span><span>))
-    } </span><span class="keyword">yield</span><span> </span><span class="identifier">result</span><span>
-  }</span></code></pre>
-        
-        <h2 id="join-an-external-span" class="section"><a class="anchor-link left" href="#join-an-external-span"><i class="icofont-laika link">&#xef71;</i></a>Join an external span</h2>
-        <p>The <code>Tracer[F].joinOrRoot</code> extracts span details from the carrier:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">trait</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]] {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">joinOrRoot</span><span>[</span><span class="type-name">A</span><span>, </span><span class="type-name">C</span><span>: </span><span class="type-name">TextMapGetter</span><span>](</span><span class="identifier">carrier</span><span>: </span><span class="type-name">C</span><span>)(</span><span class="identifier">fa</span><span>: </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">A</span><span>]
-}</span></code></pre>
-        <p>Similarly to the <code>TextMapUpdater</code>, we can implement a <code>TextMapGetter</code> for arbitrary types:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">client</span><span>.</span><span class="type-name">Client</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">http4s</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">literals</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">ci</span><span>.</span><span class="type-name">CIString</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">headersTextMapGetter</span><span>: </span><span class="type-name">TextMapGetter</span><span>[</span><span class="type-name">Headers</span><span>] =
-  </span><span class="keyword">new</span><span> </span><span class="type-name">TextMapGetter</span><span>[</span><span class="type-name">Headers</span><span>] {
-    </span><span class="keyword">def</span><span> </span><span class="declaration-name">get</span><span>(</span><span class="identifier">headers</span><span>: </span><span class="type-name">Headers</span><span>, </span><span class="identifier">key</span><span>: </span><span class="type-name">String</span><span>): </span><span class="type-name">Option</span><span>[</span><span class="type-name">String</span><span>] =
-      </span><span class="identifier">headers</span><span>.</span><span class="identifier">get</span><span>(</span><span class="type-name">CIString</span><span>(</span><span class="identifier">key</span><span>)).</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">head</span><span>.</span><span class="identifier">value</span><span>)
-    </span><span class="keyword">def</span><span> </span><span class="declaration-name">keys</span><span>(</span><span class="identifier">headers</span><span>: </span><span class="type-name">Headers</span><span>): </span><span class="type-name">Iterable</span><span>[</span><span class="type-name">String</span><span>] =
-      </span><span class="identifier">headers</span><span>.</span><span class="identifier">headers</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">name</span><span>.</span><span class="identifier">toString</span><span>)
-  }
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">executeRequest</span><span>(</span><span class="identifier">client</span><span>: </span><span class="type-name">Client</span><span>[</span><span class="type-name">IO</span><span>])(</span><span class="keyword">implicit</span><span> </span><span class="type-name">T</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">req</span><span> = </span><span class="type-name">Request</span><span>[</span><span class="type-name">IO</span><span>](</span><span class="type-name">Method</span><span>.</span><span class="type-name">GET</span><span>, </span><span class="string-literal">uri&quot;http://localhost:8080&quot;</span><span>)
-  
-  </span><span class="identifier">client</span><span>.</span><span class="identifier">run</span><span>(</span><span class="identifier">req</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">response</span><span> =&gt;
-    </span><span class="comment">// use response&#39;s headers to extract tracing details 
-</span><span>    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">joinOrRoot</span><span>(</span><span class="identifier">response</span><span>.</span><span class="identifier">headers</span><span>) {
-      </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;child-span&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-        </span><span class="keyword">for</span><span> {
-          </span><span class="identifier">body</span><span> &lt;- </span><span class="identifier">response</span><span>.</span><span class="identifier">as</span><span>[</span><span class="type-name">String</span><span>]
-          </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">&quot;body: &quot;</span><span> + </span><span class="identifier">body</span><span>)
-          </span><span class="comment">// process response there
-</span><span>        } </span><span class="keyword">yield</span><span> ()
-      }
-    }
-  }
-}</span></code></pre>
-        
-        <h2 id="implementing-a-custom-propagator" class="section"><a class="anchor-link left" href="#implementing-a-custom-propagator"><i class="icofont-laika link">&#xef71;</i></a>Implementing a custom propagator</h2>
-        <p><code>TextMapPropagator</code> injects and extracts values in the form of text into carriers that travel in-band.</p>
-        <p>Let&#39;s say we use <code>platform-id</code> in the HTTP headers. 
-        We can implement a custom <code>TextMapPropagator</code> that will use <code>platform-id</code> header to carry the identifier.</p>
+        <h2 id="custom-propagators" class="section"><a class="anchor-link left" href="#custom-propagators"><i class="icofont-laika link">&#xef71;</i></a>Custom propagators</h2>
+        <p>Use a custom <code>TextMapPropagator</code> when you need to extract or inject a non-standard field into otel4s context.
+        The propagator decides which carrier keys it reads and writes, and how those values are represented in <code>Context</code>.</p>
+        <p>This example carries a <code>platform-id</code> value through text-map carriers:</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="identifier">_</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">_</span><span>
@@ -380,16 +341,26 @@ mermaid.initialize({
       </span><span class="keyword">case</span><span> </span><span class="type-name">None</span><span>        =&gt; </span><span class="identifier">carrier</span><span>
     }
 }</span></code></pre>
-        <p>And wire it up:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="type-name">PropagatorConverters</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.{</span><span class="type-name">TextMapPropagator</span><span> =&gt; </span><span class="type-name">JTextMapPropagator</span><span>}
+        <p>Register the custom propagator with the OpenTelemetry Java backend:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.{</span><span class="type-name">TextMapPropagator</span><span> =&gt; </span><span class="type-name">JTextMapPropagator</span><span>}
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="identifier">propagation</span><span>.</span><span class="type-name">PropagatorConverters</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>] { </span><span class="identifier">builder</span><span> =&gt;
-  </span><span class="identifier">builder</span><span>.</span><span class="identifier">addPropagatorCustomizer</span><span> { (</span><span class="identifier">tmp</span><span>, </span><span class="identifier">_</span><span>) =&gt;
-    </span><span class="type-name">JTextMapPropagator</span><span>.</span><span class="identifier">composite</span><span>(</span><span class="identifier">tmp</span><span>, </span><span class="type-name">PlatformIdPropagator</span><span>.</span><span class="identifier">asJava</span><span>)
+  </span><span class="identifier">builder</span><span>.</span><span class="identifier">addPropagatorCustomizer</span><span> { (</span><span class="identifier">configured</span><span>, </span><span class="identifier">_</span><span>) =&gt;
+    </span><span class="type-name">JTextMapPropagator</span><span>.</span><span class="identifier">composite</span><span>(</span><span class="identifier">configured</span><span>, </span><span class="type-name">PlatformIdPropagator</span><span>.</span><span class="identifier">asJava</span><span>)
   }
 }</span></code></pre>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li>Step-by-step propagation workflow:
+          <a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+          <li>Baggage values:
+          <a href="../how-to-tracing/work-with-baggage.html">Work with baggage</a></li>
+          <li>Parent-span behavior:
+          <a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+        </ul>
 
         
 <hr class="footer-rule"/>

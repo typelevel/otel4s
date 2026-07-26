@@ -1,36 +1,94 @@
-# Tracing | Cross-service propagation
+# Cross-service trace propagation
 
-Cross-service span propagation is a key concept in distributed tracing that enables the tracking 
-of requests as they move through various services.
+Trace propagation carries the current trace context through request or message metadata so another service can continue
+the same trace.
 
-There are two general scenarios:
+Use [Propagate trace context across service boundaries](../how-to-tracing/propagate-trace-context-across-service-boundaries.md)
+for the step-by-step `joinOrRoot` and `propagate` workflow. This page is a reference for propagation configuration,
+carrier support, and custom propagators.
 
-#### 1. Join an external span
+## Propagation model
 
-This occurs when a service receives a request (response) or message that includes tracing context from an external source. 
-The service then joins this existing trace, continuing the span from where it was left off.
+There are two sides to cross-service propagation:
 
-#### 2. Propagate current span downstream 
+- **Extract** incoming context from a carrier, then run local work under that parent context.
+- **Inject** current context into an outgoing carrier, then attach that carrier to the request or message sent downstream.
 
-This scenario involves a service injecting the trace context into outgoing requests or messages. 
-This allows subsequent services to continue the trace, linking their spans to the parent span.
+In otel4s, extraction is exposed through `Tracer[F].joinOrRoot`. Injection is exposed through `Tracer[F].propagate`.
+Both operations use the propagators configured on the OpenTelemetry SDK.
 
-## Configuration
+```mermaid
+sequenceDiagram
+    participant Client
+    participant ServiceA
+    participant ServiceB
 
-There are multiple propagators available out of the box:
-- `tracecontext` - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
-- `baggage` - [W3C Baggage](https://www.w3.org/TR/baggage/)
-- `b3` - [B3 Single](https://github.com/openzipkin/b3-propagation#single-header)
-- `b3multi` - [B3 Multi](https://github.com/openzipkin/b3-propagation#multiple-headers)
-- `jaeger` - [Jaeger](https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format)
+    Client->>ServiceA: Request
+    ServiceA->>ServiceA: Extract trace context
+    ServiceA->>ServiceA: Start local span
+    ServiceA->>ServiceA: Inject trace context
+    ServiceA->>ServiceB: Request with trace context
+    ServiceB->>ServiceB: Extract trace context
+    ServiceB->>ServiceB: Start child span
+    ServiceB-->>ServiceA: Response
+    ServiceA-->>Client: Response
+```
 
-The `tracecontext` is the default propagator. The propagator can be configured via environment variables or system properties:
-- `OTEL_PROPAGATORS=b3multi`
-- `-Dotel.propagators=b3multi`
+The carrier depends on the protocol. HTTP usually uses headers. Messaging systems usually use message headers or
+properties. otel4s only requires carrier-specific `TextMapGetter` and `TextMapUpdater` instances.
 
-Multiple propagators can be enabled too, for example: `OTEL_PROPAGATORS=b3multi,tracecontext`.
+## Common carriers
 
-`Otel4s#propagators` shows the configured propagators: 
+Most propagation work starts by identifying where the protocol carries text metadata.
+
+- HTTP: use request headers. Extract from incoming request headers and inject into outgoing request headers.
+- gRPC: use metadata. Propagation fields are text values, so use regular ASCII metadata keys rather than binary
+  metadata keys.
+- Kafka: use record headers. Header values are bytes, so choose one text encoding, such as UTF-8, for propagation
+  fields.
+- MQTT 5: use user properties. They are text key-value pairs and fit the text-map propagation model.
+- MQTT 3.x: there is no standard text metadata field equivalent to HTTP headers or MQTT 5 user properties. Use a
+  wrapper message, broker-specific metadata, or another agreed carrier when trace propagation is required.
+
+Once you have a carrier shape, the otel4s API is the same: provide `TextMapGetter` for extraction and
+`TextMapUpdater` for injection.
+
+## Built-in propagators
+
+The OpenTelemetry Java backend can use these propagators out of the box:
+
+| Name           | Format                                                                 |
+|----------------|------------------------------------------------------------------------|
+| `tracecontext` | [W3C Trace Context](https://www.w3.org/TR/trace-context/)              |
+| `baggage`      | [W3C Baggage](https://www.w3.org/TR/baggage/)                          |
+| `b3`           | [B3 single header](https://github.com/openzipkin/b3-propagation#single-header) |
+| `b3multi`      | [B3 multiple headers](https://github.com/openzipkin/b3-propagation#multiple-headers) |
+| `jaeger`       | [Jaeger](https://www.jaegertracing.io/docs/1.21/client-libraries/#propagation-format) |
+
+`tracecontext` and `baggage` are the default propagators.
+
+## Configure propagators
+
+Configure propagators when the service must interoperate with systems that use a non-default propagation format.
+Multiple propagators can be enabled with a comma-separated list.
+
+@:select(config-source)
+
+@:choice(env-vars)
+
+```bash
+export OTEL_PROPAGATORS=b3multi,tracecontext
+```
+
+@:choice(jvm-properties)
+
+```bash
+-Dotel.propagators=b3multi,tracecontext
+```
+
+@:@
+
+`Otel4s#propagators` shows the configured propagators:
 
 ```scala mdoc:silent
 import cats.effect.IO
@@ -44,146 +102,24 @@ OtelJava.autoConfigured[IO]().use { otel4s =>
 // }
 ```
 
-## Propagation scenarios
+## Carrier support
 
-Let's take a look at a common cross-service propagation models.
+`Map[String, String]` and `Seq[(String, String)]` work without additional code.
 
-#### HTTP
+For other carrier types, define:
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant ServiceA
-    participant ServiceB
+- `TextMapGetter[C]` when the carrier is used for extraction
+- `TextMapUpdater[C]` when the carrier is used for injection
 
-    Client->>ServiceA: HTTP Request (Start Trace)
-    ServiceA->>ServiceA: Start Span A
-    ServiceA->>ServiceA: Inject Trace Context into HTTP Headers
-    ServiceA->>ServiceB: HTTP Request with Trace Context
-    ServiceB->>ServiceB: Extract Trace Context from HTTP Headers
-    ServiceB->>ServiceB: Start Span B (Child of Span A)
-    ServiceB->>ServiceB: Perform Operation
-    ServiceB->>ServiceA: HTTP Response
-    ServiceB->>ServiceB: End Span B
-    ServiceA->>ServiceA: End Span A
-    ServiceA->>Client: HTTP Response with Result
-```
+For a focused example using `org.http4s.Headers`, see
+[Propagate trace context across service boundaries](../how-to-tracing/propagate-trace-context-across-service-boundaries.md).
 
-#### MQTT
+## Custom propagators
 
-```mermaid
-sequenceDiagram
-    participant ServiceA
-    participant MQTTBroker
-    participant ServiceB
+Use a custom `TextMapPropagator` when you need to extract or inject a non-standard field into otel4s context.
+The propagator decides which carrier keys it reads and writes, and how those values are represented in `Context`.
 
-    ServiceA->>ServiceA: Start Span A
-    ServiceA->>ServiceA: Inject Trace Context into MQTT Message
-    ServiceA->>MQTTBroker: Publish MQTT Message with Trace Context
-    MQTTBroker->>ServiceB: Deliver MQTT Message
-    ServiceB->>ServiceB: Extract Trace Context from MQTT Message
-    ServiceB->>ServiceB: Start Span B (Child of Span A)
-    ServiceB->>ServiceB: Perform Operation
-    ServiceB->>ServiceB: End Span B
-    ServiceB->>ServiceB: Inject Trace Context into MQTT Message
-    ServiceB->>MQTTBroker: Publish response
-    MQTTBroker->>ServiceA: Deliver MQTT Message
-    ServiceA->>ServiceA: Extract Trace Context from MQTT Message
-    ServiceA->>ServiceA: End Span A
-```
-
-## Propagate current span downstream
-
-The `Tracer[F].propagate` injects current span details into the given carrier:
-```scala
-trait Tracer[F[_]] {
-  def propagate[C: TextMapUpdater](carrier: C): F[C] 
-}
-```
-Any carrier would work as long as `TextMapUpdater` is available for this type.
-For example, `Map[String, String]` and `Seq[(String, String)]` work out of the box.
-
-We can also implement a `TextMapUpdater` for arbitrary types, for example `org.http4s.Headers`:
-```scala mdoc:silent
-import cats.effect.IO
-import org.http4s._
-import org.http4s.client.Client
-import org.http4s.syntax.literals._
-import org.typelevel.ci.CIString
-import org.typelevel.otel4s.context.propagation._
-import org.typelevel.otel4s.trace.Tracer
-
-implicit val headersTextMapUpdater: TextMapUpdater[Headers] = 
-  new TextMapUpdater[Headers] {
-    def updated(headers: Headers, key: String, value: String): Headers =
-      headers.put(Header.Raw(CIString(key), value))
-  }
-
-def sendRequest(client: Client[IO])(implicit T: Tracer[IO]): IO[String] = 
-  Tracer[IO].span("send-request").surround {
-    val req = Request[IO](Method.GET, uri"http://localhost:8080")
-    
-    for  {
-      traceHeaders <- Tracer[IO].propagate(Headers.empty)
-      // Headers(traceparent: 00-82383569b2b84276342a70581dc625ad-083b7f94913d787a-01)
-
-      // add trace headers to the request and execute it
-      result <- client.expect[String](req.withHeaders(req.headers ++ traceHeaders))
-    } yield result
-  }
-```
-
-## Join an external span
-
-The `Tracer[F].joinOrRoot` extracts span details from the carrier:
-```scala
-trait Tracer[F[_]] {
-  def joinOrRoot[A, C: TextMapGetter](carrier: C)(fa: F[A]): F[A]
-}
-```
-
-Similarly to the `TextMapUpdater`, we can implement a `TextMapGetter` for arbitrary types:
-```scala mdoc:silent
-import cats.effect.IO
-import org.http4s._
-import org.http4s.client.Client
-import org.http4s.syntax.literals._
-import org.typelevel.ci.CIString
-import org.typelevel.otel4s.context.propagation._
-import org.typelevel.otel4s.trace.Tracer
-
-implicit val headersTextMapGetter: TextMapGetter[Headers] =
-  new TextMapGetter[Headers] {
-    def get(headers: Headers, key: String): Option[String] =
-      headers.get(CIString(key)).map(_.head.value)
-    def keys(headers: Headers): Iterable[String] =
-      headers.headers.map(_.name.toString)
-  }
-
-def executeRequest(client: Client[IO])(implicit T: Tracer[IO]): IO[Unit] = {
-  val req = Request[IO](Method.GET, uri"http://localhost:8080")
-  
-  client.run(req).use { response =>
-    // use response's headers to extract tracing details 
-    Tracer[IO].joinOrRoot(response.headers) {
-      Tracer[IO].span("child-span").surround {
-        for {
-          body <- response.as[String]
-          _ <- IO.println("body: " + body)
-          // process response there
-        } yield ()
-      }
-    }
-  }
-}
-```
-
-## Implementing a custom propagator
-
-`TextMapPropagator` injects and extracts values in the form of text into carriers that travel in-band.
-
-Let's say we use `platform-id` in the HTTP headers. 
-We can implement a custom `TextMapPropagator` that will use `platform-id` header to carry the identifier.
+This example carries a `platform-id` value through text-map carriers:
 
 ```scala mdoc:reset:silent
 import cats.effect._
@@ -211,15 +147,25 @@ object PlatformIdPropagator extends TextMapPropagator[Context] {
 }
 ```
 
-And wire it up:
+Register the custom propagator with the OpenTelemetry Java backend:
+
 ```scala mdoc:silent
-import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import io.opentelemetry.context.propagation.{TextMapPropagator => JTextMapPropagator}
 import org.typelevel.otel4s.oteljava.OtelJava
+import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 
 OtelJava.autoConfigured[IO] { builder =>
-  builder.addPropagatorCustomizer { (tmp, _) =>
-    JTextMapPropagator.composite(tmp, PlatformIdPropagator.asJava)
+  builder.addPropagatorCustomizer { (configured, _) =>
+    JTextMapPropagator.composite(configured, PlatformIdPropagator.asJava)
   }
 }
 ```
+
+## Related material
+
+- Step-by-step propagation workflow:
+  [Propagate trace context across service boundaries](../how-to-tracing/propagate-trace-context-across-service-boundaries.md)
+- Baggage values:
+  [Work with baggage](../how-to-tracing/work-with-baggage.md)
+- Parent-span behavior:
+  [Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md)

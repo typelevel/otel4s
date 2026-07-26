@@ -17,6 +17,8 @@
 package org.typelevel.otel4s.baggage
 
 import cats.Applicative
+import cats.mtl.LiftKind
+import cats.~>
 
 /** A utility for accessing and modifying [[`Baggage`]].
   *
@@ -59,6 +61,11 @@ sealed trait BaggageManager[F[_]] {
   /** Creates a new scope in which the given `Baggage` is used. */
   def scope[A](baggage: Baggage)(fa: F[A]): F[A]
 
+  /** Modify the context `F` using an implicit [[cats.mtl.LiftKind]] from `F` to `G`.
+    */
+  def liftTo[G[_]](implicit lift: LiftKind[F, G]): BaggageManager[G] =
+    new BaggageManager.Lifted(this)
+
 }
 
 object BaggageManager {
@@ -82,6 +89,24 @@ object BaggageManager {
     def local[A](modify: Baggage => Baggage)(fa: F[A]): F[A] = fa
     def scope[A](baggage: Baggage)(fa: F[A]): F[A] = fa
     override def toString: String = "BaggageManager.Noop"
+  }
+
+  /** Implementation for [[BaggageManager.liftTo]]. */
+  private final class Lifted[F[_], G[_]](
+      manager: BaggageManager[F]
+  )(implicit lift: LiftKind[F, G])
+      extends BaggageManager[G] {
+    def current: G[Baggage] = lift(manager.current)
+    def get(key: String): G[Option[Baggage.Entry]] = lift(manager.get(key))
+    def getValue(key: String): G[Option[String]] = lift(manager.getValue(key))
+    def local[A](modify: Baggage => Baggage)(ga: G[A]): G[A] =
+      lift.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = manager.local(modify)(fb)
+      })
+    def scope[A](baggage: Baggage)(ga: G[A]): G[A] =
+      lift.limitedMapK(ga)(new (F ~> F) {
+        def apply[B](fb: F[B]): F[B] = manager.scope(baggage)(fb)
+      })
   }
 
 }

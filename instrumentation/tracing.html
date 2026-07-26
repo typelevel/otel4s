@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Tracing</title>
+  <title>Tracing API reference</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -136,7 +136,7 @@
     <li class="level1 nav-header">Instrumentation</li>
     <li class="level2 nav-leaf"><a href="metrics.html">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Tracing</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Tracing API reference</a></li>
     <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
     <li class="level2 nav-leaf"><a href="logs.html">Logs</a></li>
     <li class="level2 nav-leaf"><a href="semantic-conventions.html">Semantic conventions</a></li>
@@ -161,14 +161,26 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Tracing</a></p>
+  <p class="header"><a href="#">Tracing API reference</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#how-to-get-the-tracer">How to get the <code>Tracer</code></a></li>
-    <li class="level1 nav-leaf"><a href="#creating-a-span">Creating a span</a></li>
-    <li class="level1 nav-leaf"><a href="#starting-an-unmanaged-span">Starting an unmanaged span</a></li>
-    <li class="level1 nav-leaf"><a href="#tracing-a-resource">Tracing a resource</a></li>
-    <li class="level1 nav-leaf"><a href="#tracing-a-stream">Tracing a stream</a></li>
+    <li class="level1 nav-leaf"><a href="#tracerprovider-f"><code>TracerProvider[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#tracerbuilder-f"><code>TracerBuilder[F]</code></a></li>
+    <li class="level1 nav-node"><a href="#tracer-f"><code>Tracer[F]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#span-access-and-creation">Span access and creation</a></li>
+    <li class="level2 nav-leaf"><a href="#scope-control">Scope control</a></li>
+    <li class="level2 nav-leaf"><a href="#carrier-propagation">Carrier propagation</a></li>
+    <li class="level2 nav-leaf"><a href="#effect-lifting">Effect lifting</a></li>
+    <li class="level1 nav-leaf"><a href="#spanbuilder-f"><code>SpanBuilder[F]</code></a></li>
+    <li class="level1 nav-node"><a href="#spanops-f"><code>SpanOps[F]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#spanops-res-f"><code>SpanOps.Res[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#span-f"><code>Span[F]</code></a></li>
+    <li class="level1 nav-node"><a href="#supporting-types">Supporting types</a></li>
+    <li class="level2 nav-leaf"><a href="#spancontext"><code>SpanContext</code></a></li>
+    <li class="level2 nav-leaf"><a href="#spankind"><code>SpanKind</code></a></li>
+    <li class="level2 nav-leaf"><a href="#statuscode"><code>StatusCode</code></a></li>
+    <li class="level2 nav-leaf"><a href="#spanfinalizer-strategy"><code>SpanFinalizer.Strategy</code></a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -177,117 +189,656 @@
 
       <main class="content">
 
-        <h1 id="tracing" class="title">Tracing</h1>
-        <p><code>Tracer</code> is an entry point to the tracing capabilities and instrumentation.
-        It provides various functionalities for creating and managing spans,
-        extracting context from carriers, propagating context downstream, and more.</p>
+        <h1 id="tracing-api-reference" class="title">Tracing API reference</h1>
+        <p>The core tracing API is in <code>org.typelevel.otel4s.trace</code>.</p>
+        <p>The main types form this construction and lifecycle chain:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Role</th>
+              <th>Obtained through</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>TracerProvider[F]</code></td>
+              <td>Creates named tracers</td>
+              <td>An otel4s backend, such as <code>OtelJava</code></td>
+            </tr>
+            <tr>
+              <td><code>TracerBuilder[F]</code></td>
+              <td>Configures tracer instrumentation-scope metadata</td>
+              <td><code>TracerProvider[F].tracer</code></td>
+            </tr>
+            <tr>
+              <td><code>Tracer[F]</code></td>
+              <td>Creates spans and controls tracing scopes and propagation</td>
+              <td><code>TracerProvider[F].get</code> or <code>TracerBuilder[F].get</code></td>
+            </tr>
+            <tr>
+              <td><code>SpanBuilder[F]</code></td>
+              <td>Configures a span before it starts</td>
+              <td><code>Tracer[F].spanBuilder</code></td>
+            </tr>
+            <tr>
+              <td><code>SpanOps[F]</code></td>
+              <td>Selects how a configured span is started and ended</td>
+              <td><code>SpanBuilder[F].build</code>, <code>Tracer[F].span</code>, or <code>Tracer[F].rootSpan</code></td>
+            </tr>
+            <tr>
+              <td><code>Span[F]</code></td>
+              <td>Represents a running span</td>
+              <td><code>SpanOps[F].use</code> callback, <code>SpanOps[F].resource</code> as <code>SpanOps.Res[F].span</code>, or <code>SpanOps[F].startUnmanaged</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>For setup and task-oriented examples, see:</p>
+        <ul>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+          <li><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+          <li><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+          <li><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+        </ul>
         
-        <h3 id="how-to-get-the-tracer" class="section"><a class="anchor-link left" href="#how-to-get-the-tracer"><i class="icofont-laika link">&#xef71;</i></a>How to get the <code>Tracer</code></h3>
-        <p>Currently, <code>otel4s</code> has a backend built on top of <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a>.
-        Add the following configuration to the favorite build tool:</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.0.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
-          <li>Add an OpenTelemetry autoconfigure extension</li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
-        </ol>
-        <p>Once the build configuration is up-to-date, the <code>Tracer</code> can be created:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
+        <h2 id="tracerprovider-f" class="section"><a class="anchor-link left" href="#tracerprovider-f"><i class="icofont-laika link">&#xef71;</i></a><code>TracerProvider[F]</code></h2>
+        <p><code>TracerProvider[F]</code> is the entry point for creating <code>Tracer[F]</code> instances.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>get(name)</code></td>
+              <td><code>F[Tracer[F]]</code></td>
+              <td>Creates a named tracer. Equivalent to <code>tracer(name).get</code>.</td>
+            </tr>
+            <tr>
+              <td><code>tracer(name)</code></td>
+              <td><code>TracerBuilder[F]</code></td>
+              <td>Creates a builder for a named tracer.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>TracerProvider[G]</code></td>
+              <td>Lifts the provider from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The <code>name</code> identifies the instrumentation scope that emits spans. Use a stable library, module, or application name.</p>
+        <p>The companion object provides:</p>
+        <ul>
+          <li><code>TracerProvider[F]</code> to summon an implicit provider</li>
+          <li><code>TracerProvider.noop[F]</code> to create a provider whose tracers are no-op</li>
+        </ul>
+        
+        <h2 id="tracerbuilder-f" class="section"><a class="anchor-link left" href="#tracerbuilder-f"><i class="icofont-laika link">&#xef71;</i></a><code>TracerBuilder[F]</code></h2>
+        <p><code>TracerBuilder[F]</code> adds instrumentation-scope metadata before creating a tracer.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withVersion(version)</code></td>
+              <td>Sets the instrumentation-scope version.</td>
+            </tr>
+            <tr>
+              <td><code>withSchemaUrl(schemaUrl)</code></td>
+              <td>Sets the OpenTelemetry schema URL associated with the instrumentation scope.</td>
+            </tr>
+            <tr>
+              <td><code>get</code></td>
+              <td>Creates <code>F[Tracer[F]]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the builder from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Use <code>TracerProvider[F].get</code> when the tracer does not need a version or schema URL.</p>
+        <p><code>TracerBuilder.noop[F]</code> creates a builder that returns a no-op tracer. It is also the builder returned by
+        <code>TracerProvider.noop[F]</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-
-</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">tracer</span><span> </span><span class="comment">// use tracer here
-</span><span>    ???
-  }
-}</span></code></pre>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance.
-          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
-        </div>
-        
-        <h3 id="creating-a-span" class="section"><a class="anchor-link left" href="#creating-a-span"><i class="icofont-laika link">&#xef71;</i></a>Creating a span</h3>
-        <p>You can use the <code>span</code> or <code>spanBuilder</code> API to create a new span.</p>
-        <p>The tracer automatically determines whether to create a child span or a root span based on the presence of a valid
-        parent in the tracing context.
-        If a valid parent is available, the new span becomes a child of it. Otherwise, it becomes a root span.</p>
-        <p>Here&#39;s how you can do it:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Ref</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
-
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>: </span><span class="type-name">Tracer</span><span>](</span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]]) {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
-    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;find-user&quot;</span><span>, </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_id&quot;</span><span>, </span><span class="identifier">userId</span><span>)).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
-      </span><span class="keyword">for</span><span> {
-        </span><span class="identifier">current</span><span> &lt;- </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>
-        </span><span class="identifier">user</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>))
-        </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">span</span><span>.</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;user_exists&quot;</span><span>, </span><span class="identifier">user</span><span>.</span><span class="identifier">isDefined</span><span>))
-      } </span><span class="keyword">yield</span><span> </span><span class="identifier">user</span><span>
-    }
-
-}</span></code></pre>
-        <p>For how the current tracing context affects <code>span</code>, <code>childScope</code>, <code>withParent</code>, <code>joinOrRoot</code>, <code>rootScope</code>,
-        <code>rootSpan</code>, and <code>noopScope</code>, see
+</span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+    </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>
+      .</span><span class="identifier">tracer</span><span>(</span><span class="string-literal">&quot;com.example.checkout&quot;</span><span>)
+      .</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>)
+      .</span><span class="identifier">get</span><span>
+      .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+        </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;checkout&quot;</span><span>).</span><span class="identifier">use_</span><span>
+      }
+  }</span></code></pre>
+        
+        <h2 id="tracer-f" class="section"><a class="anchor-link left" href="#tracer-f"><i class="icofont-laika link">&#xef71;</i></a><code>Tracer[F]</code></h2>
+        <p><code>Tracer[F]</code> creates spans, reads the current span, changes the active tracing scope, and propagates context through
+        carriers.</p>
+        
+        <h3 id="span-access-and-creation" class="section"><a class="anchor-link left" href="#span-access-and-creation"><i class="icofont-laika link">&#xef71;</i></a>Span access and creation</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+              <td>Reports whether the tracer is enabled.</td>
+            </tr>
+            <tr>
+              <td><code>currentSpanContext</code></td>
+              <td><code>F[Option[SpanContext]]</code></td>
+              <td>Returns the current non-no-op span context, if one exists.</td>
+            </tr>
+            <tr>
+              <td><code>currentSpanOrNoop</code></td>
+              <td><code>F[Span[F]]</code></td>
+              <td>Returns the current span or a no-op span.</td>
+            </tr>
+            <tr>
+              <td><code>currentSpanOrThrow</code></td>
+              <td><code>F[Span[F]]</code></td>
+              <td>Returns the current span or raises <code>IllegalStateException</code> when no span is in scope.</td>
+            </tr>
+            <tr>
+              <td><code>withCurrentSpanOrNoop(f)</code></td>
+              <td><code>F[A]</code></td>
+              <td>Applies <code>f</code> to the current span or a no-op span.</td>
+            </tr>
+            <tr>
+              <td><code>span(name, attributes*)</code></td>
+              <td><code>SpanOps[F]</code></td>
+              <td>Configures a span that follows the current tracing scope.</td>
+            </tr>
+            <tr>
+              <td><code>rootSpan(name, attributes*)</code></td>
+              <td><code>SpanOps[F]</code></td>
+              <td>Configures a span that ignores the current parent.</td>
+            </tr>
+            <tr>
+              <td><code>spanBuilder(name)</code></td>
+              <td><code>SpanBuilder[F]</code></td>
+              <td>Creates a builder for additional span configuration.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>span</code> and <code>rootSpan</code> accept individual attributes or an immutable collection of attributes. They are shortcuts for
+        configuring and building a <code>SpanBuilder</code>.</p>
+        <p><code>Tracer.noop[F].currentSpanOrThrow</code> returns its no-op span rather than raising an error.</p>
+        
+        <h3 id="scope-control" class="section"><a class="anchor-link left" href="#scope-control"><i class="icofont-laika link">&#xef71;</i></a>Scope control</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>childScope(parent)(fa)</code></td>
+              <td>Runs <code>fa</code> with <code>parent</code> as the parent of newly created non-root spans.</td>
+            </tr>
+            <tr>
+              <td><code>childOrContinue(parent)(fa)</code></td>
+              <td>Uses <code>childScope</code> for <code>Some(parent)</code> and runs <code>fa</code> unchanged for <code>None</code>.</td>
+            </tr>
+            <tr>
+              <td><code>joinOrRoot(carrier)(fa)</code></td>
+              <td>Extracts a parent with <code>TextMapGetter</code>; runs <code>fa</code> in a root scope when extraction fails.</td>
+            </tr>
+            <tr>
+              <td><code>rootScope(fa)</code></td>
+              <td>Runs <code>fa</code> without the current parent span.</td>
+            </tr>
+            <tr>
+              <td><code>noopScope(fa)</code></td>
+              <td>Runs <code>fa</code> with tracing operations disabled in that scope.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>For the parent-selection rules, see
         <a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a>.</p>
         
-        <h3 id="starting-an-unmanaged-span" class="section"><a class="anchor-link left" href="#starting-an-unmanaged-span"><i class="icofont-laika link">&#xef71;</i></a>Starting an unmanaged span</h3>
-        <p><code>Tracer[F].span(&quot;...&quot;).startUnmanaged</code> creates a span that must be ended manually with <code>end</code>.</p>
-        <p>Use it when a span must stay open until later code finishes the work, such as an async callback.</p>
-        <p>For the current guidance and examples, see:</p>
+        <h3 id="carrier-propagation" class="section"><a class="anchor-link left" href="#carrier-propagation"><i class="icofont-laika link">&#xef71;</i></a>Carrier propagation</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>propagate(carrier)</code></td>
+              <td>Returns <code>F[C]</code> with the current context injected through <code>TextMapUpdater[C]</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>joinOrRoot</code> reads an incoming carrier. <code>propagate</code> writes to an outgoing immutable carrier and returns the updated
+        value. See <a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a> for carrier and propagator details.</p>
+        
+        <h3 id="effect-lifting" class="section"><a class="anchor-link left" href="#effect-lifting"><i class="icofont-laika link">&#xef71;</i></a>Effect lifting</h3>
+        <p><code>liftTo[G]</code> creates a <code>Tracer[G]</code> using an implicit <code>cats.mtl.LiftKind[F, G]</code>. The source and target effects require
+        <code>MonadCancelThrow</code>.</p>
+        <p>The companion object provides:</p>
         <ul>
-          <li><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+          <li><code>Tracer[F]</code> to summon an implicit tracer</li>
+          <li><code>Tracer.noop[F]</code> to create a no-op tracer</li>
+          <li><code>Tracer.Implicits.noop</code> to supply a no-op implicit tracer</li>
+        </ul>
+        
+        <h2 id="spanbuilder-f" class="section"><a class="anchor-link left" href="#spanbuilder-f"><i class="icofont-laika link">&#xef71;</i></a><code>SpanBuilder[F]</code></h2>
+        <p><code>SpanBuilder[F]</code> stores span configuration. Calling <code>build</code> returns <code>SpanOps[F]</code>; it does not start the span.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>meta</code></td>
+              <td>Returns <code>InstrumentMeta[F]</code> for the builder.</td>
+            </tr>
+            <tr>
+              <td><code>addAttribute(attribute)</code></td>
+              <td>Adds or replaces one attribute.</td>
+            </tr>
+            <tr>
+              <td><code>addAttributes(attributes*)</code></td>
+              <td>Adds or replaces multiple attributes.</td>
+            </tr>
+            <tr>
+              <td><code>addLink(context, attributes*)</code></td>
+              <td>Adds a link to another span context.</td>
+            </tr>
+            <tr>
+              <td><code>withFinalizationStrategy(strategy)</code></td>
+              <td>Selects the finalizer applied to managed spans.</td>
+            </tr>
+            <tr>
+              <td><code>withSpanKind(kind)</code></td>
+              <td>Sets the span kind.</td>
+            </tr>
+            <tr>
+              <td><code>withStartTimestamp(timestamp)</code></td>
+              <td>Sets an epoch-based start timestamp.</td>
+            </tr>
+            <tr>
+              <td><code>withParent(parent)</code></td>
+              <td>Sets an explicit parent span context.</td>
+            </tr>
+            <tr>
+              <td><code>root</code></td>
+              <td>Configures the span to ignore the current parent.</td>
+            </tr>
+            <tr>
+              <td><code>modifyState(f)</code></td>
+              <td>Applies a lower-level update to <code>SpanBuilder.State</code>.</td>
+            </tr>
+            <tr>
+              <td><code>build</code></td>
+              <td>Returns <code>SpanOps[F]</code> using the current builder state.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the builder from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The initial <code>SpanBuilder.State</code> is:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Initial value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Attributes</td>
+              <td><code>Attributes.empty</code></td>
+            </tr>
+            <tr>
+              <td>Links</td>
+              <td><code>Vector.empty</code></td>
+            </tr>
+            <tr>
+              <td>Parent</td>
+              <td><code>SpanBuilder.Parent.propagate</code></td>
+            </tr>
+            <tr>
+              <td>Finalization strategy</td>
+              <td><code>SpanFinalizer.Strategy.reportAbnormal</code></td>
+            </tr>
+            <tr>
+              <td>Span kind</td>
+              <td><code>None</code></td>
+            </tr>
+            <tr>
+              <td>Start timestamp</td>
+              <td><code>None</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>SpanBuilder.Parent.propagate</code> follows the current tracing scope: a valid current span becomes the parent, no current
+        span starts a root span, and <code>noopScope</code> keeps tracing disabled. When the span kind is <code>None</code>, the backend uses
+        <code>SpanKind.Internal</code>. When the start timestamp is <code>None</code>, the backend uses <code>Clock[F].realTime</code> when the span starts.
+        <code>root</code> and <code>withParent</code> both update the parent-selection setting. When both are called, the last call takes effect.
+        Explicit timestamps must use the same epoch-based time source as <code>Clock[F].realTime</code>.</p>
+        <p>For lower-level state updates, <code>SpanBuilder.Parent</code> provides <code>propagate</code>, <code>root</code>, and <code>explicit(context)</code>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">SpanKind</span><span>, </span><span class="type-name">Tracer</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">serverSpan</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]
+    .</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;http.request&quot;</span><span>)
+    .</span><span class="identifier">withSpanKind</span><span>(</span><span class="type-name">SpanKind</span><span>.</span><span class="type-name">Server</span><span>)
+    .</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;http.route&quot;</span><span>, </span><span class="string-literal">&quot;/users&quot;</span><span>))
+    .</span><span class="identifier">build</span><span>
+    .</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)</span></code></pre>
+        
+        <h2 id="spanops-f" class="section"><a class="anchor-link left" href="#spanops-f"><i class="icofont-laika link">&#xef71;</i></a><code>SpanOps[F]</code></h2>
+        <p><code>SpanOps[F]</code> selects the lifecycle used to start and end a configured span.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Lifecycle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>use(f)</code></td>
+              <td><code>F[A]</code></td>
+              <td>Starts the span, passes it to <code>f</code>, and ends it when <code>f</code> completes.</td>
+            </tr>
+            <tr>
+              <td><code>surround(fa)</code></td>
+              <td><code>F[A]</code></td>
+              <td>Starts the span around <code>fa</code> and ends it when <code>fa</code> completes.</td>
+            </tr>
+            <tr>
+              <td><code>use_</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Starts and immediately ends the span.</td>
+            </tr>
+            <tr>
+              <td><code>resource</code></td>
+              <td><code>Resource[F, SpanOps.Res[F]]</code></td>
+              <td>Manages the span and exposes its handle and scope transformation.</td>
+            </tr>
+            <tr>
+              <td><code>startUnmanaged</code></td>
+              <td><code>F[Span[F]]</code></td>
+              <td>Starts a span that the caller must end.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>SpanOps[G]</code></td>
+              <td>Lifts the operations from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>use</code>, <code>surround</code>, and <code>resource</code> use the builder&#39;s finalization strategy. The default strategy records errors and
+        cancellation on abnormal termination.</p>
+        <p><code>startUnmanaged</code> does not make the returned span current. Use <code>Tracer[F].childScope(span.context)</code> when later work
+        should create children of it.</p>
+        
+        <h3 id="spanops-res-f" class="section"><a class="anchor-link left" href="#spanops-res-f"><i class="icofont-laika link">&#xef71;</i></a><code>SpanOps.Res[F]</code></h3>
+        <p><code>resource</code> returns a managed <code>SpanOps.Res[F]</code> with these members:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>span</code></td>
+              <td>The managed <code>Span[F]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>trace</code></td>
+              <td>An <code>F ~&gt; F</code> natural transformation that runs an effect in the span&#39;s scope.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts both the span and scope transformation to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The body of <code>Resource.use</code> does not automatically run in the managed span&#39;s scope. Apply <code>trace</code> to effects that should
+        run in that scope. See <a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a>
+        for the complete workflow.</p>
+        
+        <h2 id="span-f" class="section"><a class="anchor-link left" href="#span-f"><i class="icofont-laika link">&#xef71;</i></a><code>Span[F]</code></h2>
+        <p><code>Span[F]</code> is the handle to a running span.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>context</code></td>
+              <td>Returns the span&#39;s <code>SpanContext</code>.</td>
+            </tr>
+            <tr>
+              <td><code>isRecording</code></td>
+              <td>Returns <code>F[Boolean]</code> indicating whether the span records updates.</td>
+            </tr>
+            <tr>
+              <td><code>updateName(name)</code></td>
+              <td>Replaces the span name.</td>
+            </tr>
+            <tr>
+              <td><code>addAttribute(attribute)</code></td>
+              <td>Adds or replaces one attribute.</td>
+            </tr>
+            <tr>
+              <td><code>addAttributes(attributes*)</code></td>
+              <td>Adds or replaces multiple attributes.</td>
+            </tr>
+            <tr>
+              <td><code>addEvent(name, attributes*)</code></td>
+              <td>Adds an event using the current timestamp.</td>
+            </tr>
+            <tr>
+              <td><code>addEvent(name, timestamp, attributes*)</code></td>
+              <td>Adds an event using an explicit epoch-based timestamp.</td>
+            </tr>
+            <tr>
+              <td><code>addLink(context, attributes*)</code></td>
+              <td>Adds a link to another span context.</td>
+            </tr>
+            <tr>
+              <td><code>recordException(exception, attributes*)</code></td>
+              <td>Records an exception and optional attributes.</td>
+            </tr>
+            <tr>
+              <td><code>setStatus(status)</code></td>
+              <td>Sets the span status.</td>
+            </tr>
+            <tr>
+              <td><code>setStatus(status, description)</code></td>
+              <td>Sets the span status and description.</td>
+            </tr>
+            <tr>
+              <td><code>end</code></td>
+              <td>Ends the span using the current real time.</td>
+            </tr>
+            <tr>
+              <td><code>end(timestamp)</code></td>
+              <td>Ends the span using an explicit epoch-based timestamp.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the span using an implicit <code>cats.mtl.LiftValue[F, G]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>backend</code></td>
+              <td>Returns the low-level <code>Span.Backend[F]</code> used by the public operations.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Attribute, event, link, and exception methods also accept immutable collections of attributes.</p>
+        <p>Only the first call to <code>end</code> determines the end timestamp. Spans passed to <code>use</code> or <code>resource</code> are ended by their
+        managed lifecycle. Call <code>end</code> explicitly for spans created by <code>startUnmanaged</code>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attribute</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.{</span><span class="type-name">StatusCode</span><span>, </span><span class="type-name">Tracer</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">annotate</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;job.run&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
+    </span><span class="identifier">span</span><span>
+      .</span><span class="identifier">addEvent</span><span>(</span><span class="string-literal">&quot;job.started&quot;</span><span>)
+      .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="identifier">span</span><span>.</span><span class="identifier">addAttribute</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;job.id&quot;</span><span>, </span><span class="string-literal">&quot;42&quot;</span><span>)))
+      .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="identifier">span</span><span>.</span><span class="identifier">setStatus</span><span>(</span><span class="type-name">StatusCode</span><span>.</span><span class="type-name">Ok</span><span>))
+  }</span></code></pre>
+        
+        <h2 id="supporting-types" class="section"><a class="anchor-link left" href="#supporting-types"><i class="icofont-laika link">&#xef71;</i></a>Supporting types</h2>
+        
+        <h3 id="spancontext" class="section"><a class="anchor-link left" href="#spancontext"><i class="icofont-laika link">&#xef71;</i></a><code>SpanContext</code></h3>
+        <p><code>SpanContext</code> contains the identifiers and propagation state associated with a span.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>traceId</code> / <code>traceIdHex</code></td>
+              <td>The 16-byte trace identifier as a <code>ByteVector</code> or 32-character lowercase hexadecimal string.</td>
+            </tr>
+            <tr>
+              <td><code>spanId</code> / <code>spanIdHex</code></td>
+              <td>The 8-byte span identifier as a <code>ByteVector</code> or 16-character lowercase hexadecimal string.</td>
+            </tr>
+            <tr>
+              <td><code>traceFlags</code></td>
+              <td>The <code>TraceFlags</code> associated with the trace.</td>
+            </tr>
+            <tr>
+              <td><code>traceState</code></td>
+              <td>The vendor-specific <code>TraceState</code> entries.</td>
+            </tr>
+            <tr>
+              <td><code>isSampled</code></td>
+              <td>Indicates whether the sampled trace flag is set.</td>
+            </tr>
+            <tr>
+              <td><code>isValid</code></td>
+              <td>Indicates whether the trace and span identifiers are valid.</td>
+            </tr>
+            <tr>
+              <td><code>isRemote</code></td>
+              <td>Indicates whether the context came from a remote parent.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>SpanContext.invalid</code> is the standard invalid context. <code>SpanContext.apply</code> creates a context from trace and span
+        identifiers, flags, state, and the remote flag.</p>
+        
+        <h3 id="spankind" class="section"><a class="anchor-link left" href="#spankind"><i class="icofont-laika link">&#xef71;</i></a><code>SpanKind</code></h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Internal</code></td>
+              <td>Internal application or library work. This is the default.</td>
+            </tr>
+            <tr>
+              <td><code>Server</code></td>
+              <td>Server-side handling of a remote request.</td>
+            </tr>
+            <tr>
+              <td><code>Client</code></td>
+              <td>Client-side work for a remote request.</td>
+            </tr>
+            <tr>
+              <td><code>Producer</code></td>
+              <td>Sending a message to a broker or other destination.</td>
+            </tr>
+            <tr>
+              <td><code>Consumer</code></td>
+              <td>Receiving a message from a broker or other source.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="statuscode" class="section"><a class="anchor-link left" href="#statuscode"><i class="icofont-laika link">&#xef71;</i></a><code>StatusCode</code></h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Unset</code></td>
+              <td>No explicit status has been assigned.</td>
+            </tr>
+            <tr>
+              <td><code>Ok</code></td>
+              <td>The operation completed successfully.</td>
+            </tr>
+            <tr>
+              <td><code>Error</code></td>
+              <td>The operation completed with an error.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h3 id="spanfinalizer-strategy" class="section"><a class="anchor-link left" href="#spanfinalizer-strategy"><i class="icofont-laika link">&#xef71;</i></a><code>SpanFinalizer.Strategy</code></h3>
+        <p><code>SpanFinalizer.Strategy</code> is a <code>PartialFunction[Resource.ExitCase, SpanFinalizer]</code>.</p>
+        <p>The built-in strategies are:</p>
+        <ul>
+          <li><code>reportAbnormal</code>, the default, which records an exception and error status for failure and sets an error status for
+          cancellation</li>
+          <li><code>empty</code>, which does not apply a finalizer</li>
+        </ul>
+        <p>Custom strategies can return finalizers created with <code>SpanFinalizer.recordException</code>, <code>setStatus</code>, <code>addAttribute</code>,
+        <code>addAttributes</code>, <code>updateName</code>, <code>addEvent</code>, <code>addLink</code>, or <code>multiple</code>.</p>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
           <li><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
-        </ul>
-        
-        <h3 id="tracing-a-resource" class="section"><a class="anchor-link left" href="#tracing-a-resource"><i class="icofont-laika link">&#xef71;</i></a>Tracing a resource</h3>
-        <p>You can use <code>Tracer[F].span(&quot;...&quot;).resource</code> to create a managed span, but the effect inside <code>Resource.use</code> does not
-        automatically run with that span as current.</p>
-        <p>Use the <code>trace</code> function from <code>SpanOps.Res</code> to re-enter the span scope. If you need traced acquire and release steps,
-        combine <code>mapK(res.trace)</code> with <code>res.trace(...)</code> around the <code>use</code> body.</p>
-        <p>For the current guidance and examples, see:</p>
-        <ul>
-          <li><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
           <li><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
-        </ul>
-        
-        <h3 id="tracing-a-stream" class="section"><a class="anchor-link left" href="#tracing-a-stream"><i class="icofont-laika link">&#xef71;</i></a>Tracing a stream</h3>
-        <p>When you build a stream branch from <code>Tracer[F].span(&quot;...&quot;).resource</code>, use <code>fs2.Stream#translate</code> with the captured
-        <code>trace</code> function to run that branch in the expected span scope.</p>
-        <p>For the current guidance and examples, see:</p>
-        <ul>
-          <li><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
-          <li><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+          <li><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+          <li><a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
         </ul>
 
         

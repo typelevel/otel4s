@@ -16,6 +16,7 @@
 
 package org.typelevel.otel4s.metrics
 
+import cats.data.Kleisli
 import cats.effect.IO
 import cats.effect.Resource
 import cats.effect.testkit.TestControl
@@ -171,6 +172,34 @@ abstract class BaseMeterSuite extends CatsEffectSuite {
       _ <- histogram.record(1.0)
       metrics <- sdk.collectMetrics
     } yield assertEquals(metrics, List(expected))
+  }
+
+  sdkTest("Synchronous Meter - liftTo records values") { sdk =>
+    type G[A] = Kleisli[IO, Unit, A]
+
+    val expected =
+      List(
+        MetricData.sum("counter", monotonic = true, 1L, Some(1L)),
+        MetricData.gauge("gauge", 2L, Some(2L)),
+        MetricData.sum("up-down-counter", monotonic = false, 3L, Some(3L)),
+        MetricData.histogram("histogram", List(4.0), exemplarValue = Some(4.0))
+      )
+
+    for {
+      meter <- sdk.provider.get("meter")
+      synchronous = meter.liftTo[G]
+      _ <- (for {
+        counter <- synchronous.counter[Long]("counter").create
+        gauge <- synchronous.gauge[Long]("gauge").create
+        upDownCounter <- synchronous.upDownCounter[Long]("up-down-counter").create
+        histogram <- synchronous.histogram[Double]("histogram").create
+        _ <- counter.inc()
+        _ <- gauge.record(2L)
+        _ <- upDownCounter.add(3L)
+        _ <- histogram.record(4.0)
+      } yield ()).run(())
+      metrics <- sdk.collectMetrics
+    } yield assertEquals(metrics.sortBy(_.name), expected.sortBy(_.name))
   }
 
   sdkTest("ObservableCounter - record values") { sdk =>

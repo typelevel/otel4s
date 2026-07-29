@@ -17,7 +17,9 @@
 package org.typelevel.otel4s.metrics
 
 import cats.Applicative
+import cats.effect.kernel.MonadCancel
 import cats.effect.kernel.Resource
+import cats.mtl.LiftValue
 import org.typelevel.otel4s.metrics.meta.InstrumentMeta
 
 @annotation.implicitNotFound("""
@@ -34,128 +36,7 @@ meterProvider
   .get("com.service.runtime")
   .flatMap { implicit meter: Meter[IO] => ??? }
 """)
-sealed trait Meter[F[_]] {
-
-  /** The instrument's metadata. Indicates whether instrumentation is enabled.
-    */
-  def meta: InstrumentMeta[F]
-
-  /** Creates a builder of [[Counter]] instrument that records values of type `A`.
-    *
-    * The [[Counter]] is monotonic. This means the aggregated value is nominally increasing.
-    *
-    * @note
-    *   the `A` type must be provided explicitly, for example `meter.counter[Long]` or `meter.counter[Double]`
-    *
-    * @example
-    *   {{{
-    * val meter: Meter[F] = ???
-    *
-    * val doubleCounter: F[Counter[F, Double]] =
-    *   meter.counter[Double]("double-counter").create
-    *
-    * val longCounter: F[Counter[F, Long]] =
-    *   meter.counter[Long]("long-counter").create
-    *   }}}
-    *
-    * @see
-    *   See [[upDownCounter]] for non-monotonic alternative
-    *
-    * @param name
-    *   the name of the instrument
-    *
-    * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
-    */
-  def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
-
-  /** Creates a builder of [[Histogram]] instrument that records values of type `A`.
-    *
-    * [[Histogram]] metric data points convey a population of recorded measurements in a compressed format. A histogram
-    * bundles a set of events into divided populations with an overall event count and aggregate sum for all events.
-    *
-    * @note
-    *   the `A` type must be provided explicitly, for example `meter.histogram[Long]` or `meter.histogram[Double]`
-    *
-    * @example
-    *   {{{
-    * val meter: Meter[F] = ???
-    *
-    * val doubleHistogram: F[Histogram[F, Double]] =
-    *   meter.histogram[Double]("double-histogram").create
-    *
-    * val longHistogram: F[Histogram[F, Long]] =
-    *   meter.histogram[Long]("long-histogram").create
-    *   }}}
-    *
-    * @param name
-    *   the name of the instrument
-    *
-    * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
-    */
-  def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
-
-  /** Creates a builder of [[UpDownCounter]] instrument that records values of type `A`.
-    *
-    * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
-    *
-    * @note
-    *   the `A` type must be provided explicitly, for example `meter.upDownCounter[Long]` or
-    *   `meter.upDownCounter[Double]`
-    *
-    * @example
-    *   {{{
-    * val meter: Meter[F] = ???
-    *
-    * val doubleUpDownCounter: F[UpDownCounter[F, Double]] =
-    *   meter.upDownCounter[Double]("double-up-down-counter").create
-    *
-    * val longUpDownCounter: F[UpDownCounter[F, Long]] =
-    *   meter.upDownCounter[Long]("long-up-down-counter").create
-    *   }}}
-    *
-    * @see
-    *   See [[counter]] for monotonic alternative
-    *
-    * @param name
-    *   the name of the instrument
-    *
-    * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
-    */
-  def upDownCounter[A: MeasurementValue](
-      name: String
-  ): UpDownCounter.Builder[F, A]
-
-  /** Creates a builder of [[Gauge]] instrument that records values of type `A`.
-    *
-    * The [[Gauge]] records non-additive values.
-    *
-    * @note
-    *   the `A` type must be provided explicitly, for example `meter.gauge[Long]` or `meter.gauge[Double]`
-    *
-    * @example
-    *   {{{
-    * val meter: Meter[F] = ???
-    *
-    * val doubleGauge: F[Gauge[F, Double]] =
-    *   meter.gauge[Double]("double-gauge").create
-    *
-    * val longGauge: F[Gauge[F, Long]] =
-    *   meter.gauge[Long]("long-gauge").create
-    *   }}}
-    *
-    * @see
-    *   See [[upDownCounter]] to record additive values
-    *
-    * @param name
-    *   the name of the instrument
-    *
-    * @tparam A
-    *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
-    */
-  def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
+sealed trait Meter[F[_]] extends Meter.Synchronous[F] {
 
   /** Creates a builder of [[ObservableGauge]] instrument that collects values of type `A` from the given callback.
     *
@@ -293,6 +174,199 @@ sealed trait Meter[F[_]] {
 }
 
 object Meter {
+
+  /** The subset of a [[Meter]] that creates synchronous OpenTelemetry instruments.
+    *
+    * "Synchronous" is OpenTelemetry terminology for instruments that are updated directly by application code, such as
+    * [[Counter]], [[UpDownCounter]], [[Histogram]], and [[Gauge]]. It is unrelated to [[cats.effect.Sync]] and does not
+    * imply anything about blocking, suspension, or synchronous execution of `F`.
+    *
+    * This narrower interface exists because these instruments can be lifted from `F` to `G` with a one-way
+    * [[cats.mtl.LiftValue]]. Asynchronous instruments and batch callbacks accept user callbacks in `F`, so lifting the
+    * full [[Meter]] would also require transforming callback effects back from `G` to `F`.
+    */
+  @annotation.implicitNotFound("""
+Could not find the `Meter.Synchronous` for ${F}. `Meter.Synchronous` can be one of the following:
+
+1) No-operation (a.k.a. without measurements)
+
+import Meter.Synchronous.Implicits.noop
+
+2) Manually from MeterProvider
+
+val meterProvider: MeterProvider[IO] = ???
+meterProvider
+  .get("com.service.runtime")
+  .flatMap { implicit meter: Meter.Synchronous[IO] => ??? }
+""")
+  sealed trait Synchronous[F[_]] {
+
+    /** The instrument's metadata. Indicates whether instrumentation is enabled.
+      */
+    def meta: InstrumentMeta[F]
+
+    /** Creates a builder of [[Counter]] instrument that records values of type `A`.
+      *
+      * The [[Counter]] is monotonic. This means the aggregated value is nominally increasing.
+      *
+      * @note
+      *   the `A` type must be provided explicitly, for example `meter.counter[Long]` or `meter.counter[Double]`
+      *
+      * @example
+      *   {{{
+      * val meter: Meter[F] = ???
+      *
+      * val doubleCounter: F[Counter[F, Double]] =
+      *   meter.counter[Double]("double-counter").create
+      *
+      * val longCounter: F[Counter[F, Long]] =
+      *   meter.counter[Long]("long-counter").create
+      *   }}}
+      *
+      * @see
+      *   See [[upDownCounter]] for non-monotonic alternative
+      *
+      * @param name
+      *   the name of the instrument
+      *
+      * @tparam A
+      *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+      */
+    def counter[A: MeasurementValue](name: String): Counter.Builder[F, A]
+
+    /** Creates a builder of [[Histogram]] instrument that records values of type `A`.
+      *
+      * [[Histogram]] metric data points convey a population of recorded measurements in a compressed format. A
+      * histogram bundles a set of events into divided populations with an overall event count and aggregate sum for all
+      * events.
+      *
+      * @note
+      *   the `A` type must be provided explicitly, for example `meter.histogram[Long]` or `meter.histogram[Double]`
+      *
+      * @example
+      *   {{{
+      * val meter: Meter[F] = ???
+      *
+      * val doubleHistogram: F[Histogram[F, Double]] =
+      *   meter.histogram[Double]("double-histogram").create
+      *
+      * val longHistogram: F[Histogram[F, Long]] =
+      *   meter.histogram[Long]("long-histogram").create
+      *   }}}
+      *
+      * @param name
+      *   the name of the instrument
+      *
+      * @tparam A
+      *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+      */
+    def histogram[A: MeasurementValue](name: String): Histogram.Builder[F, A]
+
+    /** Creates a builder of [[UpDownCounter]] instrument that records values of type `A`.
+      *
+      * The [[UpDownCounter]] is non-monotonic. This means the aggregated value can increase and decrease.
+      *
+      * @note
+      *   the `A` type must be provided explicitly, for example `meter.upDownCounter[Long]` or
+      *   `meter.upDownCounter[Double]`
+      *
+      * @example
+      *   {{{
+      * val meter: Meter[F] = ???
+      *
+      * val doubleUpDownCounter: F[UpDownCounter[F, Double]] =
+      *   meter.upDownCounter[Double]("double-up-down-counter").create
+      *
+      * val longUpDownCounter: F[UpDownCounter[F, Long]] =
+      *   meter.upDownCounter[Long]("long-up-down-counter").create
+      *   }}}
+      *
+      * @see
+      *   See [[counter]] for monotonic alternative
+      *
+      * @param name
+      *   the name of the instrument
+      *
+      * @tparam A
+      *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+      */
+    def upDownCounter[A: MeasurementValue](
+        name: String
+    ): UpDownCounter.Builder[F, A]
+
+    /** Creates a builder of [[Gauge]] instrument that records values of type `A`.
+      *
+      * The [[Gauge]] records non-additive values.
+      *
+      * @note
+      *   the `A` type must be provided explicitly, for example `meter.gauge[Long]` or `meter.gauge[Double]`
+      *
+      * @example
+      *   {{{
+      * val meter: Meter[F] = ???
+      *
+      * val doubleGauge: F[Gauge[F, Double]] =
+      *   meter.gauge[Double]("double-gauge").create
+      *
+      * val longGauge: F[Gauge[F, Long]] =
+      *   meter.gauge[Long]("long-gauge").create
+      *   }}}
+      *
+      * @see
+      *   See [[upDownCounter]] to record additive values
+      *
+      * @param name
+      *   the name of the instrument
+      *
+      * @tparam A
+      *   the type of the measurement. [[scala.Long]] and [[scala.Double]] are supported out of the box
+      */
+    def gauge[A: MeasurementValue](name: String): Gauge.Builder[F, A]
+
+    /** Modify the context `F` using an implicit [[cats.mtl.LiftValue]] from `F` to `G`.
+      */
+    def liftTo[G[_]](implicit F: MonadCancel[F, _], G: MonadCancel[G, _], lift: LiftValue[F, G]): Synchronous[G] =
+      new Synchronous.Lifted[F, G](this)
+  }
+
+  object Synchronous {
+    def apply[F[_]](implicit ev: Synchronous[F]): Synchronous[F] = ev
+
+    /** Creates a no-op implementation of the [[Meter.Synchronous]].
+      *
+      * All synchronous meter instruments ([[Counter]], [[Histogram]], etc) have no-op implementation too.
+      *
+      * @tparam F
+      *   the higher-kinded type of a polymorphic effect
+      */
+    def noop[F[_]](implicit F: Applicative[F]): Synchronous[F] =
+      Meter.noop[F]
+
+    /** Implementation for [[Meter.Synchronous.liftTo]]. */
+    private class Lifted[F[_], G[_]](
+        meter: Synchronous[F]
+    )(implicit F: MonadCancel[F, _], G: MonadCancel[G, _], lift: LiftValue[F, G])
+        extends Synchronous[G] {
+      val meta: InstrumentMeta[G] = meter.meta.liftTo[G]
+
+      def counter[A: MeasurementValue](name: String): Counter.Builder[G, A] =
+        meter.counter[A](name).liftTo[G]
+
+      def histogram[A: MeasurementValue](name: String): Histogram.Builder[G, A] =
+        meter.histogram[A](name).liftTo[G]
+
+      def upDownCounter[A: MeasurementValue](name: String): UpDownCounter.Builder[G, A] =
+        meter.upDownCounter[A](name).liftTo[G]
+
+      def gauge[A: MeasurementValue](name: String): Gauge.Builder[G, A] =
+        meter.gauge[A](name).liftTo[G]
+    }
+
+    object Implicits {
+      implicit def noop[F[_]: Applicative]: Synchronous[F] = Synchronous.noop
+    }
+  }
+
   private[otel4s] trait Unsealed[F[_]] extends Meter[F]
 
   def apply[F[_]](implicit ev: Meter[F]): Meter[F] = ev

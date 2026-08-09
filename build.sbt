@@ -538,6 +538,7 @@ lazy val docs = project
   )
   .settings(
     libraryDependencies ++= Seq(
+      "org.apache.pekko" %% "pekko-stream" % PekkoStreamVersion,
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "org.http4s" %% "http4s-client" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
@@ -550,8 +551,11 @@ lazy val docs = project
     ),
     mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
+      "OPEN_TELEMETRY_INSTRUMENTATION_VERSION" -> OpenTelemetryInstrumentationVersion,
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion,
       "OTEL4S_AGENT_VERSION" -> Otel4sAgentVersion,
+      "PEKKO_HTTP_VERSION" -> PekkoHttpVersion,
+      "PEKKO_STREAM_VERSION" -> PekkoStreamVersion,
     ),
     tlSiteApiPackage := Some("org.typelevel.otel4s"),
     run / fork := true,

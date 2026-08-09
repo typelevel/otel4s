@@ -9,9 +9,15 @@ OpenTelemetry Java context.
 
 ## Prerequisites
 
-- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
-- Keep otel4s context in sync with OpenTelemetry Java context by following
-  [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).
+Choose the setup that owns your OpenTelemetry SDK:
+
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md) when your
+  application creates the SDK
+- [Use the global OpenTelemetry instance](../how-to-jvm-setup/use-the-global-opentelemetry-instance.md) when a Java
+  agent or framework creates it
+
+The examples below use `OtelJava.autoConfigured`. Both setup paths provide `otel4s.localContext`, which gives you the
+`Local[F, Context]` instance used by the bridging helpers.
 
 ## 1. Create `OtelJava` and bring `Local[F, Context]` into scope
 
@@ -63,7 +69,10 @@ def handleRequest(implicit tracer: Tracer[IO], local: Local[IO, Context]): IO[Un
   }
 ```
 
-## 3. Run Java library calls under the current otel4s context
+`Context.wrap(ctx)` converts the Java context to the otel4s context type.
+`Local[F, Context].scope` then makes it current while `fa` runs.
+
+## 3. Use the current otel4s context with OpenTelemetry Java
 
 Use this pattern at a client or library boundary, when otel4s created the current span and Java code expects
 the current Java context.
@@ -90,19 +99,39 @@ def useJContext[F[_]: Sync, A](use: JContext => A)(implicit
   }
 
 def callJavaLibrary(implicit tracer: Tracer[IO], local: Local[IO, Context]): IO[Unit] =
-  Tracer[IO].span("client.call").surround {
-    useJContext[IO, Unit] { _ =>
-      val _ = JSpan.current().getSpanContext
-      ()
+  Tracer[IO].span("client.call").use { span =>
+    useJContext[IO, String] { _ =>
+      JSpan.current().getSpanContext.toString
+    }.flatMap { javaContext =>
+      IO.println(s"Java ctx: $javaContext").flatMap { _ =>
+        IO.println(s"otel4s ctx: ${span.context}")
+      }
     }
   }
 ```
 
+The helper performs four operations:
+
+1. `Local[F, Context].ask` reads the current otel4s context.
+2. `ctx.underlying` extracts its OpenTelemetry Java context.
+3. `makeCurrent()` installs that context in the Java thread-local storage.
+4. `scope.close()` restores the previous Java context.
+
+`Sync[F].delay` keeps those side effects inside `F`.
+For a blocking Java call, define a variant that uses `Sync[F].blocking` or `Sync[F].interruptible` instead.
+
+The Java and otel4s output should contain the same trace and span IDs:
+
+```text
+Java ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}
+otel4s ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}
+```
+
 ## What's next
 
-- Reuse a global SDK when something else owns OpenTelemetry setup:
-  [Use the global OpenTelemetry instance](../how-to-jvm-setup/use-the-global-opentelemetry-instance.md)
+- Apply both bridging patterns with the standard OpenTelemetry Java agent:
+  [Use otel4s with Pekko HTTP instrumentation](use-otel4s-with-pekko-http-instrumentation.md)
 - Continue incoming traces and propagate them downstream:
   [Propagate trace context across service boundaries](propagate-trace-context-across-service-boundaries.md)
-- For more background and framework-specific examples, use the existing
-  [Tracing | Interop with Java](../oteljava/tracing-java-interop.md) page.
+- Understand why otel4s and OpenTelemetry Java have separate current-context views:
+  [How otel4s context propagation works](../explanations/how-otel4s-context-propagation-works.md)

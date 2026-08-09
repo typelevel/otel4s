@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Metrics</title>
+  <title>Metrics API reference</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -135,7 +135,7 @@
     <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
     <li class="level1 nav-header">Instrumentation</li>
-    <li class="level2 active nav-leaf"><a href="#">Metrics</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Metrics API reference</a></li>
     <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Metrics | Cats Effect IO runtime</a></li>
     <li class="level2 nav-leaf"><a href="tracing.html">Tracing API reference</a></li>
     <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
@@ -161,13 +161,31 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Metrics</a></p>
+  <p class="header"><a href="#">Metrics API reference</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#how-to-get-the-meter">How to get the <code>Meter</code></a></li>
-    <li class="level1 nav-leaf"><a href="#available-instruments">Available instruments</a></li>
-    <li class="level1 nav-leaf"><a href="#synchronous-instruments">Synchronous instruments</a></li>
-    <li class="level1 nav-leaf"><a href="#asynchronous-observable-instruments">Asynchronous (observable) instruments</a></li>
+    <li class="level1 nav-leaf"><a href="#meterprovider-f"><code>MeterProvider[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#meterbuilder-f"><code>MeterBuilder[F]</code></a></li>
+    <li class="level1 nav-node"><a href="#meter-f"><code>Meter[F]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#synchronous-instrument-builders-1">Synchronous instrument builders</a></li>
+    <li class="level2 nav-leaf"><a href="#observable-instrument-builders-1">Observable instrument builders</a></li>
+    <li class="level2 nav-leaf"><a href="#other-members">Other members</a></li>
+    <li class="level1 nav-leaf"><a href="#meter-synchronous-f"><code>Meter.Synchronous[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#synchronous-instrument-builders-2">Synchronous instrument builders</a></li>
+    <li class="level1 nav-node"><a href="#synchronous-instruments">Synchronous instruments</a></li>
+    <li class="level2 nav-leaf"><a href="#counter-f-a"><code>Counter[F, A]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#updowncounter-f-a"><code>UpDownCounter[F, A]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#gauge-f-a"><code>Gauge[F, A]</code></a></li>
+    <li class="level2 nav-leaf"><a href="#histogram-f-a"><code>Histogram[F, A]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#low-level-instrument-backends">Low-level instrument backends</a></li>
+    <li class="level1 nav-leaf"><a href="#observable-instrument-builders-2">Observable instrument builders</a></li>
+    <li class="level1 nav-leaf"><a href="#measurement-a"><code>Measurement[A]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#observablemeasurement-f-a"><code>ObservableMeasurement[F, A]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#batchcallback-f"><code>BatchCallback[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#measurementvalue-a"><code>MeasurementValue[A]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#bucketboundaries"><code>BucketBoundaries</code></a></li>
+    <li class="level1 nav-leaf"><a href="#instrumentmeta-f"><code>InstrumentMeta[F]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -176,207 +194,961 @@
 
       <main class="content">
 
-        <h1 id="metrics" class="title">Metrics</h1>
-        <p><code>Meter</code> is an entry point to the metrics capabilities and instrumentation.</p>
-        
-        <h2 id="how-to-get-the-meter" class="section"><a class="anchor-link left" href="#how-to-get-the-meter"><i class="icofont-laika link">&#xef71;</i></a>How to get the <code>Meter</code></h2>
-        <p>Currently, <code>otel4s</code> has a backend built on top of <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java</a>.
-        Add the following configuration to the favorite build tool:</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.0.1&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.0.1&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
-          <li>Add an OpenTelemetry autoconfigure extension</li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
-        </ol>
-        <p>Once the build configuration is up-to-date, the <code>Meter</code> can be created:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-
-</span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">evalMap</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
-    </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="identifier">meter</span><span> </span><span class="comment">// use meter here
-</span><span>    ???
-  }
-}</span></code></pre>
-        
-        <h2 id="available-instruments" class="section"><a class="anchor-link left" href="#available-instruments"><i class="icofont-laika link">&#xef71;</i></a>Available instruments</h2>
-        <p>The instruments are split into two categories: synchronous and asynchronous (observable).</p>
-        <div class="callout info">
-          <i class="icofont-laika info">&#xef4e;</i>
-          <p>The terms synchronous and asynchronous have nothing to do with
-          asynchronous programming. The naming follows the OpenTelemetry specification.</p>
-        </div>
-        <p>To create an instrument, you must specify the measurement type. The <code>Long</code> and <code>Double</code> are available out of the box.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Counter</span><span>, </span><span class="type-name">Meter</span><span>}
-
-</span><span class="annotation">@annotation</span><span>.</span><span class="identifier">nowarn</span><span>
-</span><span class="keyword">val</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = ???
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">doubleCounter</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Counter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Double</span><span>]] =
-  </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;double-counter&quot;</span><span>).</span><span class="identifier">create</span><span>
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">longCounter</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Counter</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Long</span><span>]] =
-  </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;long-counter&quot;</span><span>).</span><span class="identifier">create</span></code></pre>
-        <p>The recommended measurement types per instrument:</p>
+        <h1 id="metrics-api-reference" class="title">Metrics API reference</h1>
+        <p>The core metrics API is in <code>org.typelevel.otel4s.metrics</code>.</p>
+        <p>The main types form this construction and lifecycle chain:</p>
         <table>
           <thead>
             <tr>
-              <th>Instrument</th>
               <th>Type</th>
-              <th>Measurement type</th>
+              <th>Role</th>
+              <th>Obtained through</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Counter</td>
-              <td>Synchronous</td>
-              <td>Long</td>
+              <td><code>MeterProvider[F]</code></td>
+              <td>Creates named meters</td>
+              <td>An otel4s backend, such as <code>OtelJava</code></td>
             </tr>
             <tr>
-              <td>UpDownCounter</td>
-              <td>Synchronous</td>
-              <td>Long</td>
+              <td><code>MeterBuilder[F]</code></td>
+              <td>Configures meter instrumentation-scope metadata</td>
+              <td><code>MeterProvider[F].meter</code></td>
             </tr>
             <tr>
-              <td>Histogram</td>
-              <td>Synchronous</td>
-              <td>Double</td>
+              <td><code>Meter[F]</code></td>
+              <td>Creates synchronous and observable instruments</td>
+              <td><code>MeterProvider[F].get</code> or <code>MeterBuilder[F].get</code></td>
             </tr>
             <tr>
-              <td>ObservableCounter</td>
-              <td>Asynchronous</td>
-              <td>Long</td>
+              <td>Instrument builder</td>
+              <td>Configures an instrument before creating it</td>
+              <td>A method such as <code>Meter[F].counter</code></td>
             </tr>
             <tr>
-              <td>ObservableGauge</td>
-              <td>Asynchronous</td>
-              <td>Double</td>
+              <td>Synchronous instrument</td>
+              <td>Records measurements directly from application code</td>
+              <td>The builder&#39;s <code>create</code> method</td>
             </tr>
             <tr>
-              <td>ObservableUpDownCounter</td>
-              <td>Asynchronous</td>
-              <td>Long</td>
+              <td>Observable instrument</td>
+              <td>Registers a collection callback</td>
+              <td><code>create</code> or <code>createWithCallback</code> on an observable builder</td>
+            </tr>
+            <tr>
+              <td><code>ObservableMeasurement[F, A]</code></td>
+              <td>Records values in a batch callback</td>
+              <td>An observable builder&#39;s <code>createObserver</code> method</td>
+            </tr>
+            <tr>
+              <td><code>BatchCallback[F]</code></td>
+              <td>Registers one callback for multiple observable instruments</td>
+              <td><code>Meter[F].batchCallback</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>For setup and task-oriented examples, see:</p>
+        <ul>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+          <li><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+          <li><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+          <li><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+        </ul>
+        <p>This page focuses on methods for creating, configuring, and recording metrics, including the low-level instrument
+        backends. The Scala 2 and Scala 3 <code>*Macro</code> objects implement instrument recording methods at compile time; they are
+        implementation details rather than instrumentation interfaces.</p>
+        
+        <h2 id="meterprovider-f" class="section"><a class="anchor-link left" href="#meterprovider-f"><i class="icofont-laika link">&#xef71;</i></a><code>MeterProvider[F]</code></h2>
+        <p><code>MeterProvider[F]</code> is the entry point for creating <code>Meter[F]</code> instances.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>get(name)</code></td>
+              <td><code>F[Meter[F]]</code></td>
+              <td>Creates a named meter. Equivalent to <code>meter(name).get</code>.</td>
+            </tr>
+            <tr>
+              <td><code>meter(name)</code></td>
+              <td><code>MeterBuilder[F]</code></td>
+              <td>Creates a builder for a named meter.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The <code>name</code> identifies the instrumentation scope that emits metrics. Use a stable library, module, or application name.</p>
+        <p>The companion object provides:</p>
+        <ul>
+          <li><code>MeterProvider[F]</code> to summon an implicit provider</li>
+          <li><code>MeterProvider.noop[F]</code> to create a provider whose meters are no-op</li>
+        </ul>
+        
+        <h2 id="meterbuilder-f" class="section"><a class="anchor-link left" href="#meterbuilder-f"><i class="icofont-laika link">&#xef71;</i></a><code>MeterBuilder[F]</code></h2>
+        <p><code>MeterBuilder[F]</code> adds instrumentation-scope metadata before creating a meter.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withVersion(version)</code></td>
+              <td>Sets the instrumentation-scope version.</td>
+            </tr>
+            <tr>
+              <td><code>withSchemaUrl(schemaUrl)</code></td>
+              <td>Sets the OpenTelemetry schema URL associated with the instrumentation scope.</td>
+            </tr>
+            <tr>
+              <td><code>get</code></td>
+              <td>Creates <code>F[Meter[F]]</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Use <code>MeterProvider[F].get</code> when the meter does not need a version or schema URL.</p>
+        <p><code>MeterBuilder.noop[F]</code> creates a builder that returns a no-op meter. It is also the builder returned by
+        <code>MeterProvider.noop[F]</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+    </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>
+      .</span><span class="identifier">meter</span><span>(</span><span class="string-literal">&quot;com.example.checkout&quot;</span><span>)
+      .</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>)
+      .</span><span class="identifier">get</span><span>
+      .</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] =&gt;
+        </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;checkout.requests&quot;</span><span>).</span><span class="identifier">create</span><span>.</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">inc</span><span>())
+      }
+  }</span></code></pre>
+        
+        <h2 id="meter-f" class="section"><a class="anchor-link left" href="#meter-f"><i class="icofont-laika link">&#xef71;</i></a><code>Meter[F]</code></h2>
+        <p><code>Meter[F]</code> creates synchronous and observable instruments. Instrument methods require an explicit measurement type,
+        such as <code>Long</code> or <code>Double</code>.</p>
+        
+        <h3 id="synchronous-instrument-builders-1" class="section"><a class="anchor-link left" href="#synchronous-instrument-builders-1"><i class="icofont-laika link">&#xef71;</i></a>Synchronous instrument builders</h3>
+        <p>OpenTelemetry calls instruments synchronous when application code records measurements directly. The term does not
+        describe how the effect <code>F</code> is evaluated.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Builder</th>
+              <th>Instrument behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>counter[A](name)</code></td>
+              <td><code>Counter.Builder[F, A]</code></td>
+              <td>Records non-negative additions to a monotonic sum.</td>
+            </tr>
+            <tr>
+              <td><code>upDownCounter[A](name)</code></td>
+              <td><code>UpDownCounter.Builder[F, A]</code></td>
+              <td>Records changes to a non-monotonic sum.</td>
+            </tr>
+            <tr>
+              <td><code>gauge[A](name)</code></td>
+              <td><code>Gauge.Builder[F, A]</code></td>
+              <td>Records current, non-additive values.</td>
+            </tr>
+            <tr>
+              <td><code>histogram[A](name)</code></td>
+              <td><code>Histogram.Builder[F, A]</code></td>
+              <td>Records values into a distribution.</td>
             </tr>
           </tbody>
         </table>
         
-        <h2 id="synchronous-instruments" class="section"><a class="anchor-link left" href="#synchronous-instruments"><i class="icofont-laika link">&#xef71;</i></a>Synchronous instruments</h2>
-        <p>Synchronous instruments  are meant to be invoked inline with application/business processing logic.
-        For instance, an HTTP client might utilize a counter to record the number of received bytes.</p>
-        <p>The synchronous instruments are:</p>
-        <ul>
-          <li><code>Counter</code> - the monotonic instrument, the aggregated value is nominally increasing.</li>
-          <li><code>UpDownCounter</code> - the non-monotonic instrument, the aggregated value can increase and decrease.</li>
-          <li><code>Histogram</code> - the instrument bundles a set of events into divided populations with an overall 
-          event count and aggregate sum for all events.</li>
-        </ul>
-        <p>The following example tracks the number of users missing in the storage and the duration of the retrieval:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="type-name">TimeUnit</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Concurrent</span><span>, </span><span class="type-name">MonadCancelThrow</span><span>, </span><span class="type-name">Ref</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">applicative</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">flatMap</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">functor</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">Counter</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">Meter</span><span>}
-
-</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">User</span><span>(</span><span class="identifier">email</span><span>: </span><span class="type-name">String</span><span>)
-
-</span><span class="keyword">class</span><span> </span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">MonadCancelThrow</span><span>](
-    </span><span class="identifier">storage</span><span>: </span><span class="type-name">Ref</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Map</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>]],
-    </span><span class="identifier">missingCounter</span><span>: </span><span class="type-name">Counter</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Long</span><span>],
-    </span><span class="identifier">searchDuration</span><span>: </span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>]
-) {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">findUser</span><span>(</span><span class="identifier">userId</span><span>: </span><span class="type-name">Long</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Option</span><span>[</span><span class="type-name">User</span><span>]] =
-    </span><span class="identifier">searchDuration</span><span>.</span><span class="identifier">recordDuration</span><span>(</span><span class="type-name">TimeUnit</span><span>.</span><span class="type-name">SECONDS</span><span>).</span><span class="identifier">surround</span><span>(
-      </span><span class="keyword">for</span><span> {
-        </span><span class="identifier">current</span><span> &lt;- </span><span class="identifier">storage</span><span>.</span><span class="identifier">get</span><span>
-        </span><span class="identifier">user</span><span>    &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">current</span><span>.</span><span class="identifier">get</span><span>(</span><span class="identifier">userId</span><span>))
-        </span><span class="identifier">_</span><span>       &lt;- </span><span class="identifier">missingCounter</span><span>.</span><span class="identifier">inc</span><span>().</span><span class="identifier">whenA</span><span>(</span><span class="identifier">user</span><span>.</span><span class="identifier">isEmpty</span><span>)
-      } </span><span class="keyword">yield</span><span> </span><span class="identifier">user</span><span>
-    )
-
-}
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">UserRepository</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">create</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Concurrent</span><span>: </span><span class="type-name">Meter</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">UserRepository</span><span>[</span><span class="type-name">F</span><span>]] = {
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">storage</span><span>  &lt;- </span><span class="type-name">Concurrent</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">ref</span><span>(</span><span class="type-name">Map</span><span>.</span><span class="identifier">empty</span><span>[</span><span class="type-name">Long</span><span>, </span><span class="type-name">User</span><span>])
-      </span><span class="identifier">missing</span><span>  &lt;- </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;user.search.missing&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">duration</span><span> &lt;- </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;user.search.duration&quot;</span><span>).</span><span class="identifier">withUnit</span><span>(</span><span class="string-literal">&quot;s&quot;</span><span>).</span><span class="identifier">create</span><span>
-    } </span><span class="keyword">yield</span><span> </span><span class="keyword">new</span><span> </span><span class="type-name">UserRepository</span><span>(</span><span class="identifier">storage</span><span>, </span><span class="identifier">missing</span><span>, </span><span class="identifier">duration</span><span>)
-  }
-
-}</span></code></pre>
+        <h3 id="observable-instrument-builders-1" class="section"><a class="anchor-link left" href="#observable-instrument-builders-1"><i class="icofont-laika link">&#xef71;</i></a>Observable instrument builders</h3>
+        <p>Observable instruments run registered callbacks when the backend collects metrics.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Builder</th>
+              <th>Instrument behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>observableCounter[A](name)</code></td>
+              <td><code>ObservableCounter.Builder[F, A]</code></td>
+              <td>Observes a monotonic sum.</td>
+            </tr>
+            <tr>
+              <td><code>observableUpDownCounter[A](name)</code></td>
+              <td><code>ObservableUpDownCounter.Builder[F, A]</code></td>
+              <td>Observes a non-monotonic sum.</td>
+            </tr>
+            <tr>
+              <td><code>observableGauge[A](name)</code></td>
+              <td><code>ObservableGauge.Builder[F, A]</code></td>
+              <td>Observes current, non-additive values.</td>
+            </tr>
+          </tbody>
+        </table>
         
-        <h2 id="asynchronous-observable-instruments" class="section"><a class="anchor-link left" href="#asynchronous-observable-instruments"><i class="icofont-laika link">&#xef71;</i></a>Asynchronous (observable) instruments</h2>
-        <p>Asynchronous instruments offer users the ability to register callback functions, 
-        which are only triggered on demand. 
-        For example, an asynchronous gauge can be used to collect the temperature
-        from a sensor every 15 seconds, which means the callback function will
-        only be invoked every 15 seconds.</p>
-        <p>The asynchronous instruments are:</p>
+        <h3 id="other-members" class="section"><a class="anchor-link left" href="#other-members"><i class="icofont-laika link">&#xef71;</i></a>Other members</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+              <td>Reports whether the meter is enabled.</td>
+            </tr>
+            <tr>
+              <td><code>batchCallback</code></td>
+              <td><code>BatchCallback[F]</code></td>
+              <td>Observes several instruments in one callback.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The companion object provides:</p>
         <ul>
-          <li><code>ObservableCounter</code> - the monotonic instrument, the aggregated value is nominally increasing.</li>
-          <li><code>ObservableUpDownCounter</code> - the non-monotonic instrument, the aggregated value can increase and decrease.</li>
-          <li><code>ObservableGauge</code> - the instrument can be used to record non-additive values.</li>
+          <li><code>Meter[F]</code> to summon an implicit meter</li>
+          <li><code>Meter.noop[F]</code> to create a meter whose instruments are no-op</li>
+          <li><code>Meter.Implicits.noop</code> to supply a no-op implicit meter</li>
         </ul>
-        <p>The following example shows how to collect MBean metrics:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">java</span><span>.</span><span class="identifier">lang</span><span>.</span><span class="identifier">management</span><span>.</span><span class="type-name">ManagementFactory</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">javax</span><span>.</span><span class="identifier">management</span><span>.</span><span class="type-name">ObjectName</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">Resource</span><span>, </span><span class="type-name">Sync</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">CatsEffectMetrics</span><span> {
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">mbeanName</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ObjectName</span><span>(
-    </span><span class="string-literal">&quot;cats.effect.metrics:type=CpuStarvation&quot;</span><span>
-  )
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">register</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Sync</span><span>: </span><span class="type-name">Meter</span><span>]: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Unit</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">mBeanServer</span><span> &lt;- </span><span class="type-name">Resource</span><span>.</span><span class="identifier">eval</span><span>(
-        </span><span class="type-name">Sync</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">delay</span><span>(</span><span class="type-name">ManagementFactory</span><span>.</span><span class="identifier">getPlatformMBeanServer</span><span>)
-      )
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>]
-        .</span><span class="identifier">observableCounter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;cats_effect.runtime.cpu_starvation.count&quot;</span><span>)
-        .</span><span class="identifier">createWithCallback</span><span> { </span><span class="identifier">cb</span><span> =&gt;
-          </span><span class="identifier">cb</span><span>.</span><span class="identifier">record</span><span>(
-            </span><span class="identifier">mBeanServer</span><span>
-              .</span><span class="identifier">getAttribute</span><span>(</span><span class="identifier">mbeanName</span><span>, </span><span class="string-literal">&quot;CpuStarvationCount&quot;</span><span>)
-              .</span><span class="identifier">asInstanceOf</span><span>[</span><span class="type-name">Long</span><span>]
-          )
-        }
-    } </span><span class="keyword">yield</span><span> ()
-
-}</span></code></pre>
+        
+        <h2 id="meter-synchronous-f" class="section"><a class="anchor-link left" href="#meter-synchronous-f"><i class="icofont-laika link">&#xef71;</i></a><code>Meter.Synchronous[F]</code></h2>
+        <p><code>Meter.Synchronous[F]</code> exposes <code>meta</code> and the four synchronous instrument builders without the observable APIs. It is
+        useful when code only records measurements directly and needs to lift its metrics capability to another effect.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>meta</code></td>
+              <td>Returns <code>InstrumentMeta[F]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>counter[A](name)</code></td>
+              <td>Creates a <code>Counter.Builder[F, A]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>upDownCounter[A](name)</code></td>
+              <td>Creates an <code>UpDownCounter.Builder[F, A]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>gauge[A](name)</code></td>
+              <td>Creates a <code>Gauge.Builder[F, A]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>histogram[A](name)</code></td>
+              <td>Creates a <code>Histogram.Builder[F, A]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the synchronous meter from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Every <code>Meter[F]</code> is also a <code>Meter.Synchronous[F]</code>.</p>
+        <p>The companion object provides:</p>
+        <ul>
+          <li><code>Meter.Synchronous[F]</code> to summon an implicit synchronous meter</li>
+          <li><code>Meter.Synchronous.noop[F]</code> to create a no-op synchronous meter</li>
+          <li><code>Meter.Synchronous.Implicits.noop</code> to supply a no-op implicit synchronous meter</li>
+        </ul>
+        <p><code>liftTo[G]</code> requires <code>MonadCancel</code> for <code>F</code> and <code>G</code> and a <code>LiftValue[F, G]</code>.</p>
+        
+        <h2 id="synchronous-instrument-builders-2" class="section"><a class="anchor-link left" href="#synchronous-instrument-builders-2"><i class="icofont-laika link">&#xef71;</i></a>Synchronous instrument builders</h2>
+        <p><code>Counter.Builder</code>, <code>UpDownCounter.Builder</code>, <code>Gauge.Builder</code>, and <code>Histogram.Builder</code> share these members:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withUnit(unit)</code></td>
+              <td>The same builder type</td>
+              <td>Sets the unit, which may contain at most 63 ASCII characters.</td>
+            </tr>
+            <tr>
+              <td><code>withDescription(description)</code></td>
+              <td>The same builder type</td>
+              <td>Sets the instrument description.</td>
+            </tr>
+            <tr>
+              <td><code>create</code></td>
+              <td><code>F[instrument]</code></td>
+              <td>Creates the configured instrument.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>The corresponding builder in <code>G</code></td>
+              <td>Lifts the builder from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The <code>create</code> result depends on the builder:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Builder</th>
+              <th><code>create</code> result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Counter.Builder[F, A]</code></td>
+              <td><code>F[Counter[F, A]]</code></td>
+            </tr>
+            <tr>
+              <td><code>UpDownCounter.Builder[F, A]</code></td>
+              <td><code>F[UpDownCounter[F, A]]</code></td>
+            </tr>
+            <tr>
+              <td><code>Gauge.Builder[F, A]</code></td>
+              <td><code>F[Gauge[F, A]]</code></td>
+            </tr>
+            <tr>
+              <td><code>Histogram.Builder[F, A]</code></td>
+              <td><code>F[Histogram[F, A]]</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>Histogram.Builder</code> also provides <code>withExplicitBucketBoundaries(boundaries)</code>. The boundaries are advisory; a backend
+        may use them when selecting the histogram aggregation.</p>
+        
+        <h2 id="synchronous-instruments" class="section"><a class="anchor-link left" href="#synchronous-instruments"><i class="icofont-laika link">&#xef71;</i></a>Synchronous instruments</h2>
+        <p>Recording methods have two attribute forms:</p>
+        <ul>
+          <li>a varargs form for individual attributes</li>
+          <li>an <code>immutable.Iterable[Attribute[_]]</code> form</li>
+        </ul>
+        <p>On Scala 3, the varargs form accepts <code>AttributeOrIterableOnce*</code>, so a call can also include iterable attribute values.</p>
+        
+        <h3 id="counter-f-a" class="section"><a class="anchor-link left" href="#counter-f-a"><i class="icofont-laika link">&#xef71;</i></a><code>Counter[F, A]</code></h3>
+        <p><code>Counter[F, A]</code> records non-negative additions to a monotonic sum.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>backend</code></td>
+              <td><code>Counter.Backend[F, A]</code></td>
+              <td>Returns the instrument&#39;s low-level backend.</td>
+            </tr>
+            <tr>
+              <td><code>add(value, attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds a non-negative value with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>add(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds a non-negative value with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>inc(attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds one with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>inc(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds one with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Counter[G, A]</code></td>
+              <td>Lifts the instrument from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>Counter.noop[F, A]</code> creates a counter that discards measurements.</p>
+        
+        <h3 id="updowncounter-f-a" class="section"><a class="anchor-link left" href="#updowncounter-f-a"><i class="icofont-laika link">&#xef71;</i></a><code>UpDownCounter[F, A]</code></h3>
+        <p><code>UpDownCounter[F, A]</code> records changes to a non-monotonic sum.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>backend</code></td>
+              <td><code>UpDownCounter.Backend[F, A]</code></td>
+              <td>Returns the instrument&#39;s low-level backend.</td>
+            </tr>
+            <tr>
+              <td><code>add(value, attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds a value with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>add(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds a value with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>inc(attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds one with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>inc(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Adds one with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>dec(attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Subtracts one with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>dec(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Subtracts one with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>UpDownCounter[G, A]</code></td>
+              <td>Lifts the instrument from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>UpDownCounter.noop[F, A]</code> creates an up-down counter that discards measurements.</p>
+        
+        <h3 id="gauge-f-a" class="section"><a class="anchor-link left" href="#gauge-f-a"><i class="icofont-laika link">&#xef71;</i></a><code>Gauge[F, A]</code></h3>
+        <p><code>Gauge[F, A]</code> records current, non-additive values.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>backend</code></td>
+              <td><code>Gauge.Backend[F, A]</code></td>
+              <td>Returns the instrument&#39;s low-level backend.</td>
+            </tr>
+            <tr>
+              <td><code>record(value, attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>record(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Gauge[G, A]</code></td>
+              <td>Lifts the instrument from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>Gauge.noop[F, A]</code> creates a gauge that discards measurements.</p>
+        
+        <h3 id="histogram-f-a" class="section"><a class="anchor-link left" href="#histogram-f-a"><i class="icofont-laika link">&#xef71;</i></a><code>Histogram[F, A]</code></h3>
+        <p><code>Histogram[F, A]</code> records values into a distribution and can measure the duration of a <code>Resource</code> scope.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>backend</code></td>
+              <td><code>Histogram.Backend[F, A]</code></td>
+              <td>Returns the instrument&#39;s low-level backend.</td>
+            </tr>
+            <tr>
+              <td><code>record(value, attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>record(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>recordDuration(timeUnit, attributes*)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Records elapsed time with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>recordDuration(timeUnit, attributes)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Uses an immutable attribute collection.</td>
+            </tr>
+            <tr>
+              <td><code>recordDuration(timeUnit, attributesForExit)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Computes attributes from <code>Resource.ExitCase</code>.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Histogram[G, A]</code></td>
+              <td>Lifts the instrument from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>recordDuration</code> records the elapsed time when its resource is released.</p>
+        <p>The companion object provides:</p>
+        <ul>
+          <li><code>Histogram.noop[F, A]</code> to create a histogram that discards measurements</li>
+          <li><code>Histogram.causeAttributes(exitCase)</code> to map failure or cancellation to a <code>cause</code> attribute</li>
+        </ul>
+        <p><code>causeAttributes</code> returns no attributes for a successful exit case.</p>
+        <p><code>Counter</code>, <code>UpDownCounter</code>, and <code>Gauge</code> lifting requires <code>Monad[G]</code> and <code>LiftValue[F, G]</code>. <code>Histogram</code> lifting also
+        requires <code>MonadCancel</code> for both effects because <code>recordDuration</code> manages a <code>Resource</code> lifecycle. The same requirements
+        apply to the corresponding builders.</p>
+        
+        <h2 id="low-level-instrument-backends" class="section"><a class="anchor-link left" href="#low-level-instrument-backends"><i class="icofont-laika link">&#xef71;</i></a>Low-level instrument backends</h2>
+        <p>Each synchronous instrument exposes a sealed <code>Backend</code> interface. The top-level recording methods use <code>meta</code> to skip
+        disabled instrumentation before invoking these lower-level methods.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Interface</th>
+              <th>Member</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Counter.Backend[F, A]</code></td>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>add(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>inc(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Counter.Backend[G, A]</code></td>
+            </tr>
+            <tr>
+              <td><code>UpDownCounter.Backend[F, A]</code></td>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>add(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>inc(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>dec(attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>liftTo[G]</code></td>
+              <td><code>UpDownCounter.Backend[G, A]</code></td>
+            </tr>
+            <tr>
+              <td><code>Gauge.Backend[F, A]</code></td>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>record(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Gauge.Backend[G, A]</code></td>
+            </tr>
+            <tr>
+              <td><code>Histogram.Backend[F, A]</code></td>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>record(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>recordDuration(timeUnit, attributesForExit)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Histogram.Backend[G, A]</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>For every backend, <code>meta</code> returns <code>InstrumentMeta[F]</code> and recording attributes use
+        <code>immutable.Iterable[Attribute[_]]</code>. Backend lifting has the same effect constraints as its enclosing instrument.</p>
+        
+        <h2 id="observable-instrument-builders-2" class="section"><a class="anchor-link left" href="#observable-instrument-builders-2"><i class="icofont-laika link">&#xef71;</i></a>Observable instrument builders</h2>
+        <p><code>ObservableCounter.Builder</code>, <code>ObservableUpDownCounter.Builder</code>, and <code>ObservableGauge.Builder</code> share these members:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withUnit(unit)</code></td>
+              <td>The same builder type</td>
+              <td>Sets the instrument unit.</td>
+            </tr>
+            <tr>
+              <td><code>withDescription(description)</code></td>
+              <td>The same builder type</td>
+              <td>Sets the instrument description.</td>
+            </tr>
+            <tr>
+              <td><code>create(measurements)</code></td>
+              <td><code>Resource</code></td>
+              <td>Registers an effect that returns <code>Iterable[Measurement[A]]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>createWithCallback(callback)</code></td>
+              <td><code>Resource</code></td>
+              <td>Registers an <code>ObservableMeasurement[F, A]</code> callback.</td>
+            </tr>
+            <tr>
+              <td><code>createObserver</code></td>
+              <td><code>F[ObservableMeasurement[F, A]]</code></td>
+              <td>Creates an observer for registration with <code>BatchCallback[F]</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The resource result depends on the builder:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Builder</th>
+              <th><code>create</code> and <code>createWithCallback</code> result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ObservableCounter.Builder[F, A]</code></td>
+              <td><code>Resource[F, ObservableCounter]</code></td>
+            </tr>
+            <tr>
+              <td><code>ObservableUpDownCounter.Builder[F, A]</code></td>
+              <td><code>Resource[F, ObservableUpDownCounter]</code></td>
+            </tr>
+            <tr>
+              <td><code>ObservableGauge.Builder[F, A]</code></td>
+              <td><code>Resource[F, ObservableGauge]</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Keep the resource returned by <code>create</code> or <code>createWithCallback</code> open for as long as the instrument should be registered.
+        Releasing it unregisters the callback.</p>
+        <p>Observable callbacks may run repeatedly or concurrently. They should complete in finite time and avoid blocking work.</p>
+        <p><code>createObserver</code> does not register a callback. Measurements recorded through the observer are used only inside a
+        <code>BatchCallback[F]</code> that includes that observer.</p>
+        <p><code>ObservableCounter</code>, <code>ObservableUpDownCounter</code>, and <code>ObservableGauge</code> are lifecycle handles with no public members.</p>
+        
+        <h2 id="measurement-a" class="section"><a class="anchor-link left" href="#measurement-a"><i class="icofont-laika link">&#xef71;</i></a><code>Measurement[A]</code></h2>
+        <p><code>Measurement[A]</code> pairs a value with the attributes attached to that observation.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>value</code></td>
+              <td><code>A</code></td>
+              <td>Returns the value to record.</td>
+            </tr>
+            <tr>
+              <td><code>attributes</code></td>
+              <td><code>Attributes</code></td>
+              <td>Returns the attributes associated with the value.</td>
+            </tr>
+            <tr>
+              <td><code>Measurement(value)</code></td>
+              <td><code>Measurement[A]</code></td>
+              <td>Creates a measurement without attributes.</td>
+            </tr>
+            <tr>
+              <td><code>Measurement(value, attributes*)</code></td>
+              <td><code>Measurement[A]</code></td>
+              <td>Creates a measurement with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>Measurement(value, attributes)</code></td>
+              <td><code>Measurement[A]</code></td>
+              <td>Creates a measurement with an <code>Attributes</code> collection.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="observablemeasurement-f-a" class="section"><a class="anchor-link left" href="#observablemeasurement-f-a"><i class="icofont-laika link">&#xef71;</i></a><code>ObservableMeasurement[F, A]</code></h2>
+        <p><code>ObservableMeasurement[F, A]</code> is passed to observable callbacks and created explicitly for batch callbacks.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>record(value, attributes*)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with individual attributes.</td>
+            </tr>
+            <tr>
+              <td><code>record(value, attributes)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Records a value with an <code>Attributes</code> collection.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>ObservableMeasurement.noop[F, A]</code> creates an observer that discards measurements.</p>
+        
+        <h2 id="batchcallback-f" class="section"><a class="anchor-link left" href="#batchcallback-f"><i class="icofont-laika link">&#xef71;</i></a><code>BatchCallback[F]</code></h2>
+        <p><code>BatchCallback[F]</code> registers one callback for multiple observable instruments. Registration returns a
+        <code>Resource[F, Unit]</code>; keep it open while the callback should be active.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>apply(callback, observable, rest*)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Registers a callback and one or more observers.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, a2)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates two observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, a2, a3)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates three observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a4)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates four observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a5)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates five observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a6)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates six observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a7)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates seven observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a8)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates eight observer effects and registers the callback.</td>
+            </tr>
+            <tr>
+              <td><code>of(a1, ..., a9)(callback)</code></td>
+              <td><code>Resource[F, Unit]</code></td>
+              <td>Evaluates nine observer effects and registers the callback.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Every <code>of</code> overload requires <code>Apply[F]</code>. Values recorded for observers that are not part of the registered callback are
+        ignored.</p>
+        <p><code>BatchCallback.noop[F]</code> creates a callback registrar that does nothing.</p>
+        
+        <h2 id="measurementvalue-a" class="section"><a class="anchor-link left" href="#measurementvalue-a"><i class="icofont-laika link">&#xef71;</i></a><code>MeasurementValue[A]</code></h2>
+        <p><code>MeasurementValue[A]</code> identifies how an instrument value is represented by a metrics backend.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>contramap[B](f)</code></td>
+              <td><code>MeasurementValue[B]</code></td>
+              <td>Derives a value for <code>B</code> by converting it to <code>A</code>.</td>
+            </tr>
+            <tr>
+              <td><code>apply[A]</code> or <code>MeasurementValue[A]</code></td>
+              <td><code>MeasurementValue[A]</code></td>
+              <td>Summons the implicit instance.</td>
+            </tr>
+            <tr>
+              <td><code>longMeasurementValue</code></td>
+              <td><code>MeasurementValue[Long]</code></td>
+              <td>The default <code>Long</code> instance.</td>
+            </tr>
+            <tr>
+              <td><code>doubleMeasurementValue</code></td>
+              <td><code>MeasurementValue[Double]</code></td>
+              <td>The default <code>Double</code> instance.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="bucketboundaries" class="section"><a class="anchor-link left" href="#bucketboundaries"><i class="icofont-laika link">&#xef71;</i></a><code>BucketBoundaries</code></h2>
+        <p><code>BucketBoundaries</code> stores the explicit boundaries supplied to <code>Histogram.Builder</code>.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>boundaries</code></td>
+              <td><code>Vector[Double]</code></td>
+              <td>Returns the underlying boundaries.</td>
+            </tr>
+            <tr>
+              <td><code>length</code></td>
+              <td><code>Int</code></td>
+              <td>Returns the number of boundaries.</td>
+            </tr>
+            <tr>
+              <td><code>apply(vector)</code> or <code>BucketBoundaries(vector)</code></td>
+              <td><code>BucketBoundaries</code></td>
+              <td>Creates boundaries from a <code>Vector[Double]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>apply(values*)</code> or <code>BucketBoundaries(values*)</code></td>
+              <td><code>BucketBoundaries</code></td>
+              <td>Creates boundaries from <code>Double</code> values.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The two constructors validate that:</p>
+        <ul>
+          <li>no boundary is <code>NaN</code></li>
+          <li>boundaries are strictly increasing</li>
+          <li>the first boundary is not negative infinity</li>
+          <li>the last boundary is not positive infinity</li>
+        </ul>
+        <p>For task-oriented bucket configuration, see
+        <a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a>.</p>
+        
+        <h2 id="instrumentmeta-f" class="section"><a class="anchor-link left" href="#instrumentmeta-f"><i class="icofont-laika link">&#xef71;</i></a><code>InstrumentMeta[F]</code></h2>
+        <p><code>InstrumentMeta[F]</code> is in <code>org.typelevel.otel4s.metrics.meta</code>. It reports whether instrumentation is enabled.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>isEnabled</code></td>
+              <td><code>F[Boolean]</code></td>
+              <td>Reports whether instrumentation is enabled.</td>
+            </tr>
+            <tr>
+              <td><code>unit</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Returns a no-op effect.</td>
+            </tr>
+            <tr>
+              <td><code>whenEnabled(f)</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Runs <code>f</code> only when instrumentation is enabled.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>InstrumentMeta[G]</code></td>
+              <td>Lifts the metadata from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+          <li><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+          <li><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+        </ul>
 
         
 <hr class="footer-rule"/>

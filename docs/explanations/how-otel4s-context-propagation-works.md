@@ -73,6 +73,8 @@ On JVM, otel4s and OpenTelemetry Java use different context propagation mechanis
 - OpenTelemetry Java uses `ThreadLocal`
 
 Without extra setup, those two views of the current span do not stay aligned automatically.
+For example, code inside an otel4s span can see that span through otel4s while
+`io.opentelemetry.api.trace.Span.current()` still returns the Java thread-local view.
 
 For the setup that keeps them in sync, use
 [Keep otel4s context in sync with OpenTelemetry Java](../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.md).

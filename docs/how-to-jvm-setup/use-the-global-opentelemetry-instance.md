@@ -12,9 +12,10 @@ Common cases:
 
 - Your application depends on `"org.typelevel" %% "otel4s-oteljava" % "@VERSION@"`.
 - A global OpenTelemetry SDK is configured elsewhere.
-- If you need Cats Effect and Java SDK context to stay aligned, add
-  `otel4s-oteljava-context-storage` and follow
-  [Keep otel4s context in sync with OpenTelemetry Java](keep-otel4s-context-in-sync-with-opentelemetry-java.md).
+- If the standard OpenTelemetry Java agent configures the global SDK, do not add
+  `otel4s-oteljava-context-storage`. Use
+  [explicit context bridging at Java boundaries](../how-to-tracing/use-otel4s-with-java-instrumented-libraries.md)
+  instead.
 
 ## 1. Make sure the global SDK is configured elsewhere
 
@@ -68,14 +69,12 @@ Use:
 
 ## What's next
 
-- Align Cats Effect and Java SDK context:
-  [Keep otel4s context in sync with OpenTelemetry Java](keep-otel4s-context-in-sync-with-opentelemetry-java.md)
-- Use otel4s with the Java agent:
+- Bridge context when a Java agent or framework owns the current Java context:
+  [Use otel4s with Java-instrumented libraries](../how-to-tracing/use-otel4s-with-java-instrumented-libraries.md)
+- Use the otel4s-specific Java agent and shared-context setup:
   [Use the otel4s Java agent](use-the-otel4s-java-agent.md)
 - Create spans in your application code:
   [Create spans around effectful code](../how-to-tracing/create-spans-around-effectful-code.md)
-- Use otel4s with Java-instrumented libraries:
-  [Use otel4s with Java-instrumented libraries](../how-to-tracing/use-otel4s-with-java-instrumented-libraries.md)
 - Record application metrics:
   [Record application metrics](../how-to-metrics/record-application-metrics.md)
 - Register Cats Effect runtime metrics:

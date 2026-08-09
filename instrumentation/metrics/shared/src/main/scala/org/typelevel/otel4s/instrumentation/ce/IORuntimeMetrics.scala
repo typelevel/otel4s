@@ -24,6 +24,11 @@ import cats.syntax.functor._
 import org.typelevel.otel4s.Attributes
 import org.typelevel.otel4s.metrics.Meter
 
+/** Registers Cats Effect runtime metrics with an otel4s meter provider.
+  *
+  * @see
+  *   [[https://typelevel.org/otel4s/how-to-metrics/register-cats-effect-runtime-metrics.html Register Cats Effect runtime metrics]]
+  */
 object IORuntimeMetrics extends IORuntimeMetricsPlatform {
 
   protected object Const {

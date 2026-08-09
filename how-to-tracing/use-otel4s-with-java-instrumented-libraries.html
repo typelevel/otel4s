@@ -112,6 +112,7 @@
     <li class="level2 nav-leaf"><a href="work-with-baggage.html">Work with baggage</a></li>
     <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
     <li class="level2 active nav-leaf"><a href="#">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
     <li class="level2 nav-leaf"><a href="use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
@@ -141,7 +142,6 @@
     <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">OtelJava</li>
-    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Traces testkit reference</a></li>
@@ -167,7 +167,7 @@
     <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
     <li class="level1 nav-leaf"><a href="#_1-create-oteljava-and-bring-local-f-context-into-scope">1. Create <code>OtelJava</code> and bring <code>Local[F, Context]</code> into scope</a></li>
     <li class="level1 nav-leaf"><a href="#_2-run-otel4s-code-under-an-existing-java-context">2. Run otel4s code under an existing Java context</a></li>
-    <li class="level1 nav-leaf"><a href="#_3-run-java-library-calls-under-the-current-otel4s-context">3. Run Java library calls under the current otel4s context</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-use-the-current-otel4s-context-with-opentelemetry-java">3. Use the current otel4s context with OpenTelemetry Java</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -185,11 +185,15 @@
         OpenTelemetry Java context.</p>
         
         <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <p>Choose the setup that owns your OpenTelemetry SDK:</p>
         <ul>
-          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
-          <li>Keep otel4s context in sync with OpenTelemetry Java context by following
-          <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a>.</li>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a> when your
+          application creates the SDK</li>
+          <li><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a> when a Java
+          agent or framework creates it</li>
         </ul>
+        <p>The examples below use <code>OtelJava.autoConfigured</code>. Both setup paths provide <code>otel4s.localContext</code>, which gives you the
+        <code>Local[F, Context]</code> instance used by the bridging helpers.</p>
         
         <h2 id="_1-create-oteljava-and-bring-local-f-context-into-scope" class="section"><a class="anchor-link left" href="#_1-create-oteljava-and-bring-local-f-context-into-scope"><i class="icofont-laika link">&#xef71;</i></a>1. Create <code>OtelJava</code> and bring <code>Local[F, Context]</code> into scope</h2>
         <p><code>Local[F, Context]</code> lets you move between Cats Effect code and the OpenTelemetry Java context.</p>
@@ -231,8 +235,10 @@
   </span><span class="identifier">withJContext</span><span>(</span><span class="type-name">JContext</span><span>.</span><span class="identifier">current</span><span>()) {
     </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;request.handle&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
   }</span></code></pre>
+        <p><code>Context.wrap(ctx)</code> converts the Java context to the otel4s context type.
+        <code>Local[F, Context].scope</code> then makes it current while <code>fa</code> runs.</p>
         
-        <h2 id="_3-run-java-library-calls-under-the-current-otel4s-context" class="section"><a class="anchor-link left" href="#_3-run-java-library-calls-under-the-current-otel4s-context"><i class="icofont-laika link">&#xef71;</i></a>3. Run Java library calls under the current otel4s context</h2>
+        <h2 id="_3-use-the-current-otel4s-context-with-opentelemetry-java" class="section"><a class="anchor-link left" href="#_3-use-the-current-otel4s-context-with-opentelemetry-java"><i class="icofont-laika link">&#xef71;</i></a>3. Use the current otel4s context with OpenTelemetry Java</h2>
         <p>Use this pattern at a client or library boundary, when otel4s created the current span and Java code expects
         the current Java context.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">Sync</span><span>}
@@ -256,21 +262,36 @@
   }
 
 </span><span class="keyword">def</span><span> </span><span class="declaration-name">callJavaLibrary</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>], </span><span class="identifier">local</span><span>: </span><span class="type-name">Local</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;client.call&quot;</span><span>).</span><span class="identifier">surround</span><span> {
-    </span><span class="identifier">useJContext</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Unit</span><span>] { </span><span class="identifier">_</span><span> =&gt;
-      </span><span class="keyword">val</span><span> </span><span class="identifier">_</span><span> = </span><span class="type-name">JSpan</span><span>.</span><span class="identifier">current</span><span>().</span><span class="identifier">getSpanContext</span><span>
-      ()
+  </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>].</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;client.call&quot;</span><span>).</span><span class="identifier">use</span><span> { </span><span class="identifier">span</span><span> =&gt;
+    </span><span class="identifier">useJContext</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">String</span><span>] { </span><span class="identifier">_</span><span> =&gt;
+      </span><span class="type-name">JSpan</span><span>.</span><span class="identifier">current</span><span>().</span><span class="identifier">getSpanContext</span><span>.</span><span class="identifier">toString</span><span>
+    }.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">javaContext</span><span> =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;Java ctx: </span><span class="substitution">$javaContext</span><span class="string-literal">&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">_</span><span> =&gt;
+        </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">s&quot;otel4s ctx: </span><span class="substitution">${span.context}</span><span class="string-literal">&quot;</span><span>)
+      }
     }
   }</span></code></pre>
+        <p>The helper performs four operations:</p>
+        <ol class="arabic">
+          <li><code>Local[F, Context].ask</code> reads the current otel4s context.</li>
+          <li><code>ctx.underlying</code> extracts its OpenTelemetry Java context.</li>
+          <li><code>makeCurrent()</code> installs that context in the Java thread-local storage.</li>
+          <li><code>scope.close()</code> restores the previous Java context.</li>
+        </ol>
+        <p><code>Sync[F].delay</code> keeps those side effects inside <code>F</code>.
+        For a blocking Java call, define a variant that uses <code>Sync[F].blocking</code> or <code>Sync[F].interruptible</code> instead.</p>
+        <p>The Java and otel4s output should contain the same trace and span IDs:</p>
+        <pre class="keep-together pdf epub"><code class="text">Java ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}
+otel4s ctx: {traceId=06f5d9112efbe711947ebbded1287a30, spanId=26ed80c398cc039f, ...}</code></pre>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li>Reuse a global SDK when something else owns OpenTelemetry setup:
-          <a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+          <li>Apply both bridging patterns with the standard OpenTelemetry Java agent:
+          <a href="use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
           <li>Continue incoming traces and propagate them downstream:
           <a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
-          <li>For more background and framework-specific examples, use the existing
-          <a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java</a> page.</li>
+          <li>Understand why otel4s and OpenTelemetry Java have separate current-context views:
+          <a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
         </ul>
 
         

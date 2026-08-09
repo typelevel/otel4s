@@ -112,6 +112,7 @@
     <li class="level2 nav-leaf"><a href="work-with-baggage.html">Work with baggage</a></li>
     <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
     <li class="level2 nav-leaf"><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
     <li class="level2 nav-leaf"><a href="use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
@@ -141,7 +142,6 @@
     <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs</a></li>
     <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">OtelJava</li>
-    <li class="level2 nav-leaf"><a href="../oteljava/tracing-java-interop.html">Tracing | Interop with Java-instrumented libraries</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Traces testkit reference</a></li>
@@ -186,6 +186,7 @@
           <li><a href="work-with-baggage.html">Work with baggage</a></li>
           <li><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
           <li><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+          <li><a href="use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
         </ul>
         
         <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
@@ -193,8 +194,10 @@
           <li>For how <code>span</code>, <code>childScope</code>, <code>withParent</code>, <code>joinOrRoot</code>, <code>rootScope</code>, <code>rootSpan</code>, and <code>noopScope</code> affect
           parent-child relationships, see
           <a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a>.</li>
-          <li>To keep otel4s context in sync with OpenTelemetry Java context, follow
+          <li>When your application creates the OpenTelemetry SDK, keep otel4s context in sync with OpenTelemetry Java context:
           <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a>.</li>
+          <li>When the standard OpenTelemetry Java agent or a framework owns the current Java context, use
+          <a href="use-otel4s-with-java-instrumented-libraries.html">explicit context bridging at Java boundaries</a>.</li>
           <li>For the mental model behind <code>Local</code>, fiber-local context, and explicit scope re-entry, see
           <a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a>.</li>
           <li>For more background on <code>Resource</code> and <code>fs2.Stream</code> tracing scopes, see

@@ -1,6 +1,46 @@
-# Metrics | Cats Effect IO runtime
+# Cats Effect IO runtime metrics reference
 
-## Available metrics
+`IORuntimeMetrics` registers observable metrics from Cats Effect's runtime metrics interface. It uses the
+`cats.effect.runtime` meter scope and returns a `Resource` that owns the collector registrations.
+
+For dependency setup, registration, and a focused configuration example, see
+[Register Cats Effect runtime metrics](../how-to-metrics/register-cats-effect-runtime-metrics.md).
+
+## `IORuntimeMetrics.register`
+
+`register[F]` requires `Sync[F]` and an implicit `MeterProvider[F]`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `metrics` | `cats.effect.unsafe.metrics.IORuntimeMetrics` | The runtime metrics interface to observe. |
+| `config` | `IORuntimeMetrics.Config` | Selects the collectors to register and their additional attributes. |
+
+The result is a `Resource[F, Unit]`. Acquiring the resource registers the selected observable instruments; releasing it
+removes their callbacks.
+
+```scala mdoc:silent
+import cats.effect.{IO, Resource}
+import cats.effect.unsafe.metrics.{IORuntimeMetrics => CatsIORuntimeMetrics}
+import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
+import org.typelevel.otel4s.metrics.MeterProvider
+
+def registerRuntimeMetrics(
+    metrics: CatsIORuntimeMetrics
+)(implicit meterProvider: MeterProvider[IO]): Resource[IO, Unit] =
+  IORuntimeMetrics.register[IO](
+    metrics = metrics,
+    config = IORuntimeMetrics.Config.default,
+  )
+```
+
+## Platform support
+
+| Metric group | JVM | Scala.js | Scala Native |
+|--------------|:---:|:--------:|:------------:|
+| CPU starvation | ✓ | ✓ | ✓ |
+| Work-stealing thread pool | ✓ | — | ✓ |
+
+## Metric catalog
 
 ```scala mdoc:invisible
 import cats.effect.IO
@@ -20,36 +60,44 @@ def printMetrics(config: IORuntimeMetrics.Config): Unit = {
   }.unsafeRunSync()
 
   println("| Name | Description | Unit |")
-  println("|-|-|-|")
-  println(metrics.sortBy(_.getName).map(m => s"${m.getName} | ${Option(m.getDescription).getOrElse("")} | ${Option(m.getUnit).getOrElse("")}").mkString("\n"))
+  println("|------|-------------|------|")
+  println(
+    metrics
+      .sortBy(_.getName)
+      .map { metric =>
+        val description = Option(metric.getDescription).getOrElse("")
+        val unit = Option(metric.getUnit).filter(_.nonEmpty).fold("")(value => s"`$value`")
+        s"| `${metric.getName}` | $description | $unit |"
+      }
+      .mkString("\n")
+  )
 }
 ```
 
-### CPU Starvation
+### CPU starvation
 
-**Platforms**: JVM, Scala.js, Scala Native.
+**Platforms:** JVM, Scala.js, Scala Native.
 
-These metrics could help identify performance bottlenecks caused by an overloaded compute pool, 
-excessive task scheduling, or lack of CPU resources.
+These metrics report CPU starvation events and the current and maximum clock drift observed by the Cats Effect runtime.
 
 ```scala mdoc:passthrough
 printMetrics(IORuntimeMetrics.Config(CpuStarvationConfig.enabled, WorkStealingThreadPoolConfig.disabled))
 ```
 
-### Work-stealing thread pool - compute
+### Work-stealing thread pool: compute
 
-**Platforms**: JVM.
+**Platforms:** JVM, Scala Native.
 
-**Built-in attributes**:
-* `pool.id` - the id of the work-stealing thread pool
+| Built-in attribute | Description |
+|--------------------|-------------|
+| `pool.id` | Identifier of the work-stealing thread pool. |
 
-These metrics provide insights about fibers and threads within the compute pool.
-They help diagnose load distribution, identify bottlenecks, and monitor the pool’s efficiency in handling tasks.
+These metrics report fiber and worker-thread activity for the compute pool.
 
 ```scala mdoc:passthrough
 printMetrics(
   IORuntimeMetrics.Config(
-    CpuStarvationConfig.disabled, 
+    CpuStarvationConfig.disabled,
     WorkStealingThreadPoolConfig(
       WorkStealingThreadPoolConfig.ComputeConfig.enabled,
       WorkStealingThreadPoolConfig.WorkerThreadsConfig.disabled,
@@ -58,48 +106,53 @@ printMetrics(
 )
 ```
 
-### Work-stealing thread pool - thread
+### Work-stealing thread pool: threads
 
-**Platforms**: JVM.
+**Platforms:** JVM, Scala Native.
 
-**Built-in attributes**:
-* `pool.id` - the id of the work-stealing thread pool the worker is used by
-* `worker.index` - the index of the worker thread
-* `thread.event` - the thread event 
-    * `parked` - a thread is parked
-    * `polled` - a thread is polled for I/O events 
-    * `blocked` - a thread is switched to a blocking thread and been replaced
-    * `respawn` - a thread is replaced by a newly spawned thread
+| Built-in attribute | Description |
+|--------------------|-------------|
+| `pool.id` | Identifier of the work-stealing thread pool. |
+| `worker.index` | Index of the worker thread within the pool. |
+| `thread.event` | Worker-thread lifecycle event. |
 
-These metrics provide detailed information about threads state within the compute pool. 
+Every thread metric includes `pool.id` and `worker.index`. The
+`cats.effect.runtime.wstp.worker.thread.event.count` metric also includes `thread.event`, with these values:
+
+| Value | Description |
+|-------|-------------|
+| `parked` | The thread was parked. |
+| `polled` | The thread polled for I/O events. |
+| `blocked` | The thread switched to blocking work and was replaced. |
+| `respawn` | The thread was replaced by a newly spawned thread. |
 
 ```scala mdoc:passthrough
 printMetrics(
   IORuntimeMetrics.Config(
-    CpuStarvationConfig.disabled, 
+    CpuStarvationConfig.disabled,
     WorkStealingThreadPoolConfig(
       WorkStealingThreadPoolConfig.ComputeConfig.disabled,
       WorkStealingThreadPoolConfig.WorkerThreadsConfig(
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.ThreadConfig.enabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.LocalQueueConfig.disabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.TimerHeapConfig.disabled,
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled,
       ),
     )
   )
 )
 ```
 
-### Work-stealing thread pool - local queue
+### Work-stealing thread pool: local queue
 
-**Platforms**: JVM.
+**Platforms:** JVM, Scala Native.
 
-**Built-in attributes**:
-* `pool.id` - the id of the work-stealing thread pool the queue is used by
-* `worker.index` - the index of the worker thread the queue is used by
+| Built-in attribute | Description |
+|--------------------|-------------|
+| `pool.id` | Identifier of the work-stealing thread pool. |
+| `worker.index` | Index of the worker thread that owns the queue. |
 
-These metrics provide a detailed view of fiber distribution within the pool. They help diagnose 
-load imbalances and system inefficiency.
+These metrics report the distribution of fibers across worker-local queues.
 
 ```scala mdoc:passthrough
 printMetrics(
@@ -111,26 +164,31 @@ printMetrics(
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.ThreadConfig.disabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.LocalQueueConfig.enabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.TimerHeapConfig.disabled,
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled,
       ),
     )
   )
 )
 ```
 
-### Work-stealing thread pool - timer heap
+### Work-stealing thread pool: timer heap
 
-**Platforms**: JVM.
+**Platforms:** JVM, Scala Native.
 
-**Built-in attributes**:
-* `pool.id` - the id of the work-stealing thread pool the timer heap is used by
-* `worker.index` - the index of the worker thread the timer heap is used by
-* `timer.state` - the state of the timer
-    * `executed` - the successfully executed timer
-    * `scheduled` - the scheduled timer
-    * `canceled` - the canceled timer
+| Built-in attribute | Description |
+|--------------------|-------------|
+| `pool.id` | Identifier of the work-stealing thread pool. |
+| `worker.index` | Index of the worker thread that owns the timer heap. |
+| `timer.state` | State reported for the timer. |
 
-These metrics provide a detailed view of timer stats within the pool. 
+Every timer-heap metric includes `pool.id` and `worker.index`. The
+`cats.effect.runtime.wstp.worker.timerheap.timer.count` metric also includes `timer.state`, with these values:
+
+| Value | Description |
+|-------|-------------|
+| `executed` | The timer was executed. |
+| `scheduled` | The timer was scheduled. |
+| `canceled` | The timer was canceled. |
 
 ```scala mdoc:passthrough
 printMetrics(
@@ -142,32 +200,36 @@ printMetrics(
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.ThreadConfig.disabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.LocalQueueConfig.disabled,
         WorkStealingThreadPoolConfig.WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.disabled,
       ),
     )
   )
 )
 ```
 
-### Work-stealing thread pool - poller
+### Work-stealing thread pool: poller
 
-**Platforms**: JVM.
+**Platforms:** JVM, Scala Native.
 
-**Built-in attributes**:
-* `pool.id` - the id of the work-stealing thread pool the poller is used by
-* `worker.index` - the index of the worker thread the poller is used by
-* `poller.operation` - the operation performed by the poller
-    * `accept`
-    * `connect` 
-    * `read`
-    * `write` 
-* `poller.operation.status` - the status of the operation
-    * `submitted` - the operation has been submitted
-    * `succeeded` - the operation has errored
-    * `errored` - the operation has errored
-    * `canceled` - the operation has been canceled
+| Built-in attribute | Description |
+|--------------------|-------------|
+| `pool.id` | Identifier of the work-stealing thread pool. |
+| `worker.index` | Index of the worker thread that owns the poller. |
+| `poller.operation` | I/O operation performed by the poller. |
+| `poller.operation.status` | State of the I/O operation. |
 
-These metrics provide a detailed view of poller stats within the pool. 
+Every poller metric includes `pool.id`, `worker.index`, and `poller.operation`. `poller.operation` has the values
+`accept`, `connect`, `read`, and `write`.
+
+The `cats.effect.runtime.wstp.worker.poller.operation.count` metric also includes `poller.operation.status`, with these
+values:
+
+| Value | Description |
+|-------|-------------|
+| `submitted` | The operation was submitted. |
+| `succeeded` | The operation completed successfully. |
+| `errored` | The operation completed with an error. |
+| `canceled` | The operation was canceled. |
 
 ```scala mdoc:passthrough
 printMetrics(
@@ -176,368 +238,125 @@ printMetrics(
     WorkStealingThreadPoolConfig(
       WorkStealingThreadPoolConfig.ComputeConfig.disabled,
       WorkStealingThreadPoolConfig.WorkerThreadsConfig(
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.ThreadConfig.disabled,  
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.LocalQueueConfig.disabled,  
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.TimerHeapConfig.disabled,  
-        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.enabled  
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.ThreadConfig.disabled,
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.LocalQueueConfig.disabled,
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.TimerHeapConfig.disabled,
+        WorkStealingThreadPoolConfig.WorkerThreadsConfig.PollerConfig.enabled,
       ),
     )
   )
 )
 ```
 
-## Getting started
+## Configuration
 
-Add the following configuration to the favorite build tool:
+The configuration surface differs by platform because Scala.js does not expose work-stealing thread-pool metrics.
 
-@:select(build-tool)
+### Configuration hierarchy
 
-@:choice(sbt)
+| Field | Type | Platforms |
+|-------|------|-----------|
+| `config.cpuStarvation` | `CpuStarvationConfig` | All |
+| `config.workStealingThreadPool` | `WorkStealingThreadPoolConfig` | JVM, Scala Native |
+| `workStealingThreadPool.compute` | `ComputeConfig` | JVM, Scala Native |
+| `workStealingThreadPool.workerThreads` | `WorkerThreadsConfig` | JVM, Scala Native |
+| `workerThreads.thread` | `ThreadConfig` | JVM, Scala Native |
+| `workerThreads.localQueue` | `LocalQueueConfig` | JVM, Scala Native |
+| `workerThreads.timerHeap` | `TimerHeapConfig` | JVM, Scala Native |
+| `workerThreads.poller` | `PollerConfig` | JVM, Scala Native |
 
-Add settings to the `build.sbt`:
+### Create an `IORuntimeMetrics.Config`
 
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %%% "otel4s-instrumentation-metrics" % "@VERSION@" // <1>
-)
-```
+The `IORuntimeMetrics.Config` companion object provides these methods:
 
-@:choice(scala-cli)
+| Companion method | Platforms | Description |
+|------------------|-----------|-------------|
+| `default` | All | Returns a config with every collector available on the current platform enabled. |
+| `apply(cpuStarvation)` | Scala.js | Creates a config from a CPU starvation config. |
+| `apply(cpuStarvation, workStealingThreadPool)` | JVM, Scala Native | Creates a config from both top-level configs. |
 
-Add directives to the `*.scala` file:
+Scala allows an `apply` method to be called with the companion object's name. For example,
+`IORuntimeMetrics.Config(cpuStarvation, workStealingThreadPool)` calls the two-argument `apply` method.
 
-```scala
-//> using dep "org.typelevel::otel4s-instrumentation-metrics::@VERSION@" // <1>
-```
-
-@:@
-
-1. Add the `otel4s-instrumentation-metrics` library
-
-## Registering metrics collectors
-
-`IORuntimeMetrics.register` takes care of the metrics lifecycle management.
-
-```scala mdoc:reset:silent
-import cats.effect._
-import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.otel4s.oteljava.OtelJava
-
-object Main extends IOApp.Simple {
-
-  def run: IO[Unit] =
-    OtelJava.autoConfigured[IO]().use { otel4s =>
-      implicit val mp: MeterProvider[IO] = otel4s.meterProvider
-      IORuntimeMetrics
-        .register[IO](runtime.metrics, IORuntimeMetrics.Config.default)
-        .surround {
-          program(otel4s.meterProvider, otel4s.tracerProvider)
-        }
-    }
-
-  def program(
-      meterProvider: MeterProvider[IO],
-      tracerProvider: TracerProvider[IO]
-  ): IO[Unit] = {
-    val _ = (meterProvider, tracerProvider)
-    IO.unit
-  }
-
-}
-```
-
-## Grafana dashboard
-
-You can use a Grafana [dashboard][grafana-dashboard] to visualize collected metrics.
-
-@:image(grafana_dashboard.png) {
-  alt = Grafana Dashboard
-}
-
-## Customization
-
-The behavior of the `IORuntimeMetrics.register` can be customized via `IORuntimeMetrics.Config`.
-
-### CPU Starvation
-
-```scala mdoc:reset:invisible
-import cats.effect.IO
-import org.typelevel.otel4s.{Attribute, Attributes}
-import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
-import org.typelevel.otel4s.metrics.MeterProvider
-
-val runtime = cats.effect.unsafe.implicits.global
-implicit val mp: MeterProvider[IO] = MeterProvider.noop[IO]
-```
-
-To disable CPU starvation metrics:
 ```scala mdoc:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.disabled, // disable CPU starvation metrics 
-    WorkStealingThreadPoolConfig.enabled
-  )
-}
+import org.typelevel.otel4s.instrumentation.ce.IORuntimeMetrics
+import IORuntimeMetrics.Config._
 
-IORuntimeMetrics.register[IO](runtime.metrics, config)
+val config: IORuntimeMetrics.Config =
+  IORuntimeMetrics.Config(
+    cpuStarvation = CpuStarvationConfig.disabled,
+    workStealingThreadPool = WorkStealingThreadPoolConfig.enabled,
+  )
 ```
 
-To attach attributes to CPU starvation metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled(
-      Attributes(Attribute("key", "value")) // the attributes
-    ), 
-    WorkStealingThreadPoolConfig.enabled
-  )
-}
+### Configure an individual collector
 
-IORuntimeMetrics.register[IO](runtime.metrics, config)
+| Type | Metric group | Platforms |
+|------|--------------|-----------|
+| `CpuStarvationConfig` | CPU starvation | All |
+| `ComputeConfig` | Work-stealing compute pool | JVM, Scala Native |
+| `ThreadConfig` | Worker-thread events | JVM, Scala Native |
+| `LocalQueueConfig` | Worker-local queues | JVM, Scala Native |
+| `TimerHeapConfig` | Worker timer heaps | JVM, Scala Native |
+| `PollerConfig` | Worker pollers | JVM, Scala Native |
+
+Each config value exposes these fields:
+
+| Field | Description |
+|-------|-------------|
+| `enabled: Boolean` | Whether the collector is enabled. |
+| `attributes: Attributes` | Additional attributes attached to every metric from the collector. |
+
+The companion object for each type provides the same creation methods. For example,
+`CpuStarvationConfig` provides:
+
+| Companion method | Description |
+|------------------|-------------|
+| `enabled` | Returns an enabled config with no additional attributes. |
+| `enabled(attributes)` | Returns an enabled config with the given attributes. |
+| `disabled` | Returns a disabled config. |
+
+```scala mdoc:silent
+import org.typelevel.otel4s.{Attribute, Attributes}
+
+val cpuStarvation: CpuStarvationConfig =
+  CpuStarvationConfig.enabled(
+    attributes = Attributes(Attribute("example.attribute", "value"))
+  )
 ```
 
-### Work-stealing thread pool - compute
+### Create composite work-stealing configs
 
-To disable worker metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
+These types are available on the JVM and Scala Native.
 
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.disabled, // disable compute metrics
-      WorkStealingThreadPoolConfig.WorkerThreadsConfig.enabled
-    )
+| Companion method | Description |
+|------------------|-------------|
+| `WorkStealingThreadPoolConfig.apply(compute, workerThreads)` | Creates a config from its two child configs. |
+| `WorkStealingThreadPoolConfig.enabled` | Returns a config with every work-stealing collector enabled. |
+| `WorkStealingThreadPoolConfig.disabled` | Returns a config with every work-stealing collector disabled. |
+| `WorkerThreadsConfig.apply(thread, localQueue, timerHeap, poller)` | Creates a config from its four child configs. |
+| `WorkerThreadsConfig.enabled` | Returns a config with every worker-thread collector enabled. |
+| `WorkerThreadsConfig.disabled` | Returns a config with every worker-thread collector disabled. |
+
+```scala mdoc:silent
+import WorkStealingThreadPoolConfig.{ComputeConfig, WorkerThreadsConfig}
+import WorkerThreadsConfig._
+
+val workStealingThreadPool: WorkStealingThreadPoolConfig =
+  WorkStealingThreadPoolConfig(
+    compute = ComputeConfig.enabled,
+    workerThreads = WorkerThreadsConfig(
+      thread = ThreadConfig.enabled,
+      localQueue = LocalQueueConfig.disabled,
+      timerHeap = TimerHeapConfig.enabled,
+      poller = PollerConfig.disabled,
+    ),
   )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
 ```
 
-To attach attributes to compute metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
+All configuration types provide a `Show` instance and use it for `toString`.
 
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled(
-        Attributes(Attribute("key", "value")) // attributes
-      ),
-      WorkStealingThreadPoolConfig.WorkerThreadsConfig.enabled
-    )
-  )
-}
+## Related material
 
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-### Work-stealing thread pool - thread
-
-To disable thread metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.disabled, // disable worker thread metrics
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-To attach attributes to thread metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled(
-          Attributes(Attribute("key", "value")) // the attributes
-        ),
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-### Work-stealing thread pool - local queue
-
-To disable local queue metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.disabled, // disable local queue metrics
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-To attach attributes to local queue metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.enabled(
-          Attributes(Attribute("key", "value")) // the attributes
-        ),
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-### Work-stealing thread pool - timer heap
-
-To disable timer heap metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.disabled, // disable timer heap metrics
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-To attach attributes to timer heap metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled(
-          Attributes(Attribute("key", "value")) // the attributes
-        ),
-        WorkerThreadsConfig.PollerConfig.enabled
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-### Work-stealing thread pool - poller
-
-To disable poller metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-  
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.disabled // disable poller metrics
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-To attach attributes to poller metrics:
-```scala mdoc:nest:silent
-val config: IORuntimeMetrics.Config = {
-  import IORuntimeMetrics.Config._
-  import WorkStealingThreadPoolConfig._
-
-  IORuntimeMetrics.Config(
-    CpuStarvationConfig.enabled,
-    WorkStealingThreadPoolConfig(
-      ComputeConfig.enabled,
-      WorkerThreadsConfig(
-        WorkerThreadsConfig.ThreadConfig.enabled,
-        WorkerThreadsConfig.LocalQueueConfig.enabled,
-        WorkerThreadsConfig.TimerHeapConfig.enabled,
-        WorkerThreadsConfig.PollerConfig.enabled(
-          Attributes(Attribute("key", "value")) // the attributes
-        )
-      )
-    )
-  )
-}
-
-IORuntimeMetrics.register[IO](runtime.metrics, config)
-```
-
-[grafana-dashboard]: https://grafana.com/grafana/dashboards/21487-cats-effect-runtime-metrics/
+- [Register Cats Effect runtime metrics](../how-to-metrics/register-cats-effect-runtime-metrics.md)
+- [Metrics API reference](metrics.md)

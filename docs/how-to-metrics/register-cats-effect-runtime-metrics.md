@@ -90,8 +90,19 @@ def register(implicit meterProvider: MeterProvider[IO]) =
   IORuntimeMetrics.register[IO](runtime.metrics, config)
 ```
 
-For the full metric list and the full configuration surface, see
-[Metrics | Cats Effect IO runtime](../instrumentation/metrics-cats-effect-io-runtime.md).
+For the complete metric catalog and configuration surface, see the
+[Cats Effect IO runtime metrics reference](../instrumentation/metrics-cats-effect-io-runtime.md).
+
+## 5. Import the Grafana dashboard
+
+The dashboard requires a Prometheus data source containing the exported runtime metrics.
+
+In Grafana, import the [Cats Effect runtime metrics dashboard][grafana-dashboard] with ID `21487`, then select that
+Prometheus data source.
+
+@:image(grafana_dashboard.png) {
+  alt = Cats Effect runtime metrics Grafana dashboard
+}
 
 ## What's next
 
@@ -99,3 +110,5 @@ For the full metric list and the full configuration surface, see
   [Record application metrics](record-application-metrics.md)
 - Export JVM runtime metrics with OpenTelemetry Java:
   [Register JVM runtime metrics](register-jvm-runtime-metrics.md)
+
+[grafana-dashboard]: https://grafana.com/grafana/dashboards/21487-cats-effect-runtime-metrics/

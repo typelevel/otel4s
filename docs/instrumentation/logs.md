@@ -1,321 +1,180 @@
-# Logs
+# Logs API reference
 
-@:callout(warning)
+The core logs API is in `org.typelevel.otel4s.logs`.
 
-The logging module is meant for **library authors** who want to **bridge logs** from an existing logging API into OpenTelemetry, 
-not for application developers to replace their logging library.
+It is intended for adapters that forward records from an existing logging framework into OpenTelemetry. Application
+code continues to use its logging facade or implementation for log levels, formatting, appenders, and output.
 
-It is **not a replacement** for a full logging API.
+The main types form this construction and emission chain:
 
-@:@
+| Type | Role | Obtained through |
+|------|------|------------------|
+| `LoggerProvider[F, Ctx]` | Creates named loggers | An otel4s backend, such as `OtelJava` |
+| `LoggerBuilder[F, Ctx]` | Configures logger instrumentation-scope metadata | `LoggerProvider.logger` |
+| `Logger[F, Ctx]` | Creates log records and exposes the current context | `LoggerProvider.get` or `LoggerBuilder.get` |
+| `InstrumentMeta[F, Ctx]` | Reports whether the logs pipeline accepts a record | `Logger.meta` |
+| `LogRecordBuilder[F, Ctx]` | Configures and emits one log record | `Logger.logRecordBuilder` |
+| `Severity` | Represents an OpenTelemetry severity number and name | The `Severity` companion object |
 
-The API mirrors the [OpenTelemetry Logs spec][opentelemetry-logs-spec] and focuses on structured, 
-context-aware log records.
+`Ctx` is the context type supplied by the backend. The OpenTelemetry Java backend uses
+`org.typelevel.otel4s.oteljava.context.Context`.
 
-## 1. When you should use this module
+For setup and task-oriented examples, see:
 
-Use it when your library already relies on a logging facade or implementation, and you want those log events to 
-**flow into the same OpenTelemetry pipeline as traces and metrics**. 
-The module does not format console output, rotate files, manage log levels of a specific logger, or manage appenders. 
-It only allows turning log events into OpenTelemetry `LogRecord`s and exporting them through OTLP.
+- [Set up otel4s in a JVM application](../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md)
+- [Bridge Scribe logs into OpenTelemetry](../how-to-logs/bridge-scribe-logs-into-opentelemetry.md)
+- [Test logs emitted by your code](../how-to-testkit/test-logs-emitted-by-your-code.md)
 
-Library authors should provide an integration through a separate module, for example `logs4cats-otel4s`.
-End users, such as application developers, should keep their preferred logger and level management, for example `logback` or `slf4j`.
+## `LoggerProvider[F, Ctx]`
 
-## 2. Core ideas
+`LoggerProvider[F, Ctx]` is the entry point for creating `Logger[F, Ctx]` instances.
 
-You should bridge logs from your logging framework into OpenTelemetry as close to the source as possible. 
-That means you implement a small adapter that, for each log event, does the following: build a `LogRecordBuilder`, 
-copy the message and attributes, attach the current context so trace and span ids propagate, set severity and observed time, then emit.
+| Member | Result | Description |
+|--------|--------|-------------|
+| `get(name)` | `F[Logger[F, Ctx]]` | Creates a named logger. Equivalent to `logger(name).get`. |
+| `logger(name)` | `LoggerBuilder[F, Ctx]` | Creates a builder for a named logger. |
+| `liftTo[G]` | `LoggerProvider[G, Ctx]` | Lifts the provider from effect `F` to effect `G`. |
 
-There are three main interfaces:
-- `LoggerProvider[F, Ctx]` - factory for `Logger`. Usually created during startup by the backend, for example `otel4s-oteljava` in this repo or the separate `otel4s-sdk` project.
-- `Logger[F, Ctx]` - use `logRecordBuilder` to create a new empty log record.
-- `LogRecordBuilder[F, Ctx]` - set timestamps, severity, attributes, body, and context, then call `emit`.
+The `name` identifies the instrumentation scope that emits log records. Use a stable library, module, or fully
+qualified class name.
 
-The `Ctx` parameter refers to the backend-specific context type. In most cases, you don't need to use it directly.
+The companion object provides:
 
-## 3. Tips for library authors
+- `LoggerProvider[F, Ctx]` to summon an implicit provider
+- `LoggerProvider.noop[F, Ctx]` to create a provider whose loggers are no-op
 
-Use `otel4s-core-logs` module, you don't need to use a specific otel4s backend: `otel4s-oteljava` or the separate `otel4s-sdk` project.
-That way, users can choose their preferred otel4s backend.
+## `LoggerBuilder[F, Ctx]`
 
-Keep in mind that the logs module **doesn't** manage log files, appenders, or log levels. 
-It's the responsibility of a logging library to decide whether the given logger is enabled.  
+`LoggerBuilder[F, Ctx]` adds instrumentation-scope metadata before creating a logger.
 
-However, you can use the `logger.meta.isEnabled` to check whether the logging pipeline is active.
-If the pipeline is active, `isEnabled` will always return true regardless of the specific logger.
-If the implementation is no-op, `isEnabled` will always return false.
+| Member | Description |
+|--------|-------------|
+| `withVersion(version)` | Sets the instrumentation-scope version. |
+| `withSchemaUrl(schemaUrl)` | Sets the OpenTelemetry schema URL associated with the instrumentation scope. |
+| `get` | Creates `F[Logger[F, Ctx]]`. |
+| `liftTo[G]` | Lifts the builder from effect `F` to effect `G`. |
 
-### 3.1. Timestamps
+Use `LoggerProvider.get` when the logger does not need a version or schema URL.
 
-Use `withObservedTimestamp` for the time your adapter observed the event. 
-If your source event carries the original creation time, set `withTimestamp` to that origin time too. 
+`LoggerBuilder.noop[F, Ctx]` creates a builder that returns a no-op logger. It is also the builder returned by
+`LoggerProvider.noop[F, Ctx]`.
 
-### 3.2. Attributes
-
-Use semantic conventions when applicable, for example:
-- `code.filepath`, `code.lineno`, `code.function` when provided by your logging framework
-- `exception.type`, `exception.message`, `exception.stacktrace` for failures
-
-Prefer stable names and values that are easy to aggregate.
-
-### 3.3. Context propagation
-
-Logs become far more valuable when they carry trace and span ids. 
-By default, otel4s uses the current context to propagate trace and span ids.
-For background on how that works, see
-[How otel4s context propagation works](../explanations/how-otel4s-context-propagation-works.md).
-
-However, you can also use the `withContext` to inject a specific context into the log record.
-
-### 3.4. Backpressure and performance
-
-The `emit` call sends the record into the processing pipeline. 
-By default, the backend configures a batch processor, so the effect is usually non-blocking. 
-
-Avoid heavy string concatenation and unnecessary exception stack traces on the hot path. 
-Prefer structured attributes over preformatted strings. 
-If your logging facade supports lazy messages, keep that behavior and only build a log record when severity passes the library-level filter.
-
-## 4. Integration example with `scribe`
-
-[Scribe][scribe] is a fast, flexible, and asynchronous Scala logging library that provides rich features like log levels, 
-structured logging, and customizable handlers. It is also available for all platforms: JVM, Scala.js, and Scala Native.
-
-Here is an example of how to forward `scribe` log events into OpenTelemetry using `otel4s-core-logs`:
 ```scala mdoc:silent
-import cats.Monad
-import cats.syntax.all._
-import org.typelevel.otel4s.{AnyValue, Attribute, Attributes}
-import org.typelevel.otel4s.logs.{LogRecordBuilder, LoggerProvider, Severity}
-import org.typelevel.otel4s.logs.{Logger => OtelLogger}
-import org.typelevel.otel4s.semconv.attributes.CodeAttributes
-
-import scribe._
-
-import scala.concurrent.duration._
-import scala.util.chaining._
-
-final class ScriberLoggerSupport[F[_]: Monad](
-  provider: LoggerProvider[F, _],
-) extends LoggerSupport[F[Unit]] {
-  
-  def log(record: => LogRecord): F[Unit] =
-    for {
-      r <- Monad[F].pure(record)
-      // use the library version here
-      logger <- provider.logger(r.className).withVersion("0.0.1").get
-
-      // retrieve the current context
-      ctx <- logger.currentContext
-      
-      // Check if logging instrumentation is enabled for the current context.
-      // NOTE: this does not check whether an individual logger is enabled.
-      // If the OpenTelemetry logging pipeline (backed by OTLP) is active, 
-      // `isEnabled` will always return true regardless of the specific logger 
-      isEnabled <- logger.meta.isEnabled(ctx, toSeverity(r.level), None)
-      
-      // if enabled, build and emit the log record
-      _ <- if (isEnabled) buildLogRecord(logger, r).emit else Monad[F].unit
-    } yield ()
-
-  private def buildLogRecord(
-      logger: OtelLogger[F, _], 
-      record: LogRecord
-  ): LogRecordBuilder[F, _] =
-    logger.logRecordBuilder
-      // severity
-      .pipe { l =>
-        toSeverity(record.level).fold(l)(l.withSeverity)
-      }
-      .withSeverityText(record.level.name)
-      // timestamp
-      .withTimestamp(record.timeStamp.millis)
-      // log message
-      .withBody(AnyValue.string(record.logOutput.plainText))
-      // thread info
-      .pipe { builder =>
-        builder.addAttributes(
-          if (record.thread.getId != -1) {
-            Attributes(
-              Attribute("thread.id", record.thread.getId),
-              Attribute("thread.name", record.thread.getName),
-            )
-          } else {
-            Attributes(
-              Attribute("thread.name", record.thread.getName),
-            )
-          }
-        )
-      }
-      // code path info
-      .pipe { builder =>
-        builder.addAttributes(codePathAttributes(record))
-      }
-      // exception info
-      .pipe { builder =>
-        record.messages
-          .collect  {
-            case scribe.throwable.TraceLoggableMessage(throwable) => throwable
-          }
-          .foldLeft(builder)((b, t) => b.withException(t))
-      }
-      // context
-      // MDC
-      .pipe { builder =>
-        if (record.data.nonEmpty) builder.addAttributes(dataAttributes(record.data)) 
-        else builder
-      }
-
-  private def toSeverity(level: Level): Option[Severity] =
-    level match {
-      case Level("TRACE", _) => Some(Severity.trace)
-      case Level("DEBUG", _) => Some(Severity.debug)
-      case Level("INFO", _)  => Some(Severity.info)
-      case Level("WARN", _)  => Some(Severity.warn)
-      case Level("ERROR", _) => Some(Severity.error)
-      case Level("FATAL", _) => Some(Severity.fatal)
-      case _                 => None
-    }
-
-  private def codePathAttributes(record: LogRecord): Attributes = {
-    val builder = Attributes.newBuilder
-
-    builder += Attribute("code.namespace", record.className)
-    builder += CodeAttributes.CodeFilePath(record.fileName)
-    builder ++= record.line.map(line => CodeAttributes.CodeLineNumber(line.toLong))
-    builder ++= record.column.map(col => CodeAttributes.CodeColumnNumber(col.toLong))
-    builder ++= record.methodName.map(name => CodeAttributes.CodeFunctionName(name))
-    
-    builder.result()
-  }
-  
-  private def dataAttributes(data: Map[String, () => Any]): Attributes = {
-    val builder = Attributes.newBuilder
-    data.foreach { case (key, getValue) =>
-      getValue() match {
-        case v: String  => builder += Attribute(key, v)
-        case v: Boolean => builder += Attribute(key, v)
-        case v: Byte    => builder += Attribute(key, v.toLong)
-        case v: Short   => builder += Attribute(key, v.toLong)
-        case v: Int     => builder += Attribute(key, v.toLong)
-        case v: Long    => builder += Attribute(key, v)
-        case v: Double  => builder += Attribute(key, v)
-        case v: Float   => builder += Attribute(key, v.toDouble)
-        case _          => 
-          // ignore the rest. 
-          // alternatively, you can stringify the value:
-          // builder += Attribute(key, v.toString)
-      }
-    }
-    builder.result()
-  }
-}
-```
-
-_____
-
-
-Then, you can use it in your application:
-```scala mdoc:silent
-import org.typelevel.otel4s.Otel4s
-
-def program[F[_]: Monad](otel4s: Otel4s[F]): F[Unit] = {
-  val logger = new ScriberLoggerSupport(otel4s.loggerProvider)
-
-  otel4s.tracerProvider.get("tracer").flatMap { tracer =>
-    tracer.spanBuilder("test-span").build.surround {
-      logger.error(
-        "something went wrong", 
-        new RuntimeException("Oops, something went wrong")
-      )
-    }
-  }
-}
-```
-
-As you can see, the log record is automatically correlated with the current tracing context. 
-
-@:image(grafana-logs-example.png) {
-  alt = Grafana Logs Example
-}
-
-## 5. Getting a `LoggerProvider`
-
-You can acquire a provider from either backend. 
-You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.
-
-The `otel4s-oteljava` uses the [OpenTelemetry Java SDK][opentelemetry-java] under the hood.
-Check out [The JVM backend](../explanations/oteljava-jvm-backend.md) for more details.
-
-@:select(build-tool)
-
-@:choice(sbt)
-
-Add settings to the `build.sbt`:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
-  "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
-  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
-)
-javaOptions += "-Dotel.java.global-autoconfigure.enabled=true" // <4>
-```
-
-@:choice(scala-cli)
-
-Add directives to the `*.scala` file:
-
-```scala
-//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true" // <4>
-```
-
-@:@
-
-1. Add the `otel4s-oteljava` library
-2. Add an OpenTelemetry exporter. Without the exporter, the application will crash
-3. Add an OpenTelemetry autoconfigure extension
-4. Enable OpenTelemetry SDK [autoconfigure mode][opentelemetry-java-autoconfigure]
-
-_______
-
-Then use `OtelJava.autoConfigured` to autoconfigure the SDK:
-```scala mdoc:silent:reset
-import cats.effect.{IO, IOApp}
-import org.typelevel.otel4s.oteljava.context.Context
+import cats.effect.IO
+import org.typelevel.otel4s.AnyValue
+import org.typelevel.otel4s.logs.Severity
 import org.typelevel.otel4s.oteljava.OtelJava
-import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.trace.TracerProvider
-import org.typelevel.otel4s.logs.LoggerProvider
 
-object TelemetryApp extends IOApp.Simple {
-
-  def run: IO[Unit] =
-    OtelJava
-      .autoConfigured[IO]()
-      .use { sdk =>
-        program(sdk.meterProvider, sdk.tracerProvider, sdk.loggerProvider)
+val program: IO[Unit] =
+  OtelJava.autoConfigured[IO]().use { otel4s =>
+    otel4s.loggerProvider
+      .logger("com.example.logging-bridge")
+      .withVersion("1.0.0")
+      .get
+      .flatMap { logger =>
+        logger.logRecordBuilder
+          .withSeverity(Severity.error)
+          .withSeverityText("ERROR")
+          .withBody(AnyValue.string("request failed"))
+          .emit
       }
-
-  def program(
-      meterProvider: MeterProvider[IO], 
-      tracerProvider: TracerProvider[IO],
-      loggerProvider: LoggerProvider[IO, Context],
-  ): IO[Unit] =
-    ???
-}
+  }
 ```
 
-The `.autoConfigured(...)` relies on the environment variables and system properties to configure the SDK.
-For example, use `export OTEL_SERVICE_NAME=auth-service` to configure the name of the service.
-See the full set of the [supported configuration options][opentelemetry-java-autoconfigure].
+## `Logger[F, Ctx]`
 
-[scribe]: https://github.com/outr/scribe
-[opentelemetry-logs-spec]: https://opentelemetry.io/docs/specs/otel/logs/api/
-[opentelemetry-java]: https://github.com/open-telemetry/opentelemetry-java
-[opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/
+`Logger[F, Ctx]` creates records for one instrumentation scope.
+
+| Member | Result | Description |
+|--------|--------|-------------|
+| `meta` | `InstrumentMeta[F, Ctx]` | Reports whether logging instrumentation is enabled for a record. |
+| `currentContext` | `F[Ctx]` | Returns the context that a record emitted now would use. |
+| `logRecordBuilder` | `LogRecordBuilder[F, Ctx]` | Creates an empty log record builder. |
+| `liftTo[G]` | `Logger[G, Ctx]` | Lifts the logger from effect `F` to effect `G`. |
+
+When `LogRecordBuilder.withContext` is not called, `emit` uses the current context. Use `currentContext` and
+`withContext` when the adapter captures a logging event in one context and emits it later.
+
+The companion object provides:
+
+- `Logger[F, Ctx]` to summon an implicit logger
+- `Logger.noop[F, Ctx]` to create a no-op logger
+- `Logger.Implicits.noop` to supply a no-op implicit logger
+
+## `InstrumentMeta[F, Ctx]`
+
+`Logger.meta` returns logs-specific `InstrumentMeta[F, Ctx]` from `org.typelevel.otel4s.logs.meta`.
+
+| Member | Description |
+|--------|-------------|
+| `isEnabled(severity, eventName)` | Checks the record using the current context. |
+| `isEnabled(context, severity, eventName)` | Checks the record using an explicit context. |
+| `liftTo[G]` | Lifts the metadata check from effect `F` to effect `G`. |
+
+Both checks accept `Option[Severity]` and `Option[String]`. They return `F[Boolean]`.
+
+Call `isEnabled` before formatting messages, converting attributes, or rendering exception stack traces. It is a
+pipeline-level check: an active OpenTelemetry logs pipeline returns `true`, while a no-op implementation returns
+`false`. It does not apply per-logger severity filtering. The source logging framework remains responsible for deciding
+whether a record's level is enabled.
+
+## `LogRecordBuilder[F, Ctx]`
+
+`LogRecordBuilder[F, Ctx]` configures and emits one log record. It provides these setters:
+
+| Member | Accepted value | Description |
+|--------|----------------|-------------|
+| `withTimestamp` | `FiniteDuration` or `Instant` | Sets the time when the event occurred at its source. |
+| `withObservedTimestamp` | `FiniteDuration` or `Instant` | Sets the time when the collection system observed the event. |
+| `withContext` | `Ctx` | Sets the context used for trace and span correlation. |
+| `withSeverity` | `Severity` | Sets the normalized OpenTelemetry severity. |
+| `withSeverityText` | `String` | Preserves the source framework's severity text. |
+| `withBody` | `AnyValue` | Sets a string or structured log body. |
+| `withEventName` | `String` | Identifies the class or type of the event. |
+| `withException` | `Throwable` | Adds `exception.type`, `exception.message`, and `exception.stacktrace`. |
+| `addAttribute` | `Attribute[A]` | Adds or replaces one attribute. |
+| `addAttributes` | `Attribute[_]*` or `immutable.Iterable[Attribute[_]]` | Adds or replaces several attributes. |
+
+Repeated calls to a field setter retain the value from the last call. Adding an attribute whose key already exists
+replaces the previous value for that key.
+
+| Member | Result | Description |
+|--------|--------|-------------|
+| `emit` | `F[Unit]` | Sends the configured record to the processing pipeline. |
+| `liftTo[G]` | `LogRecordBuilder[G, Ctx]` | Lifts the builder from effect `F` to effect `G`. |
+
+`LogRecordBuilder.noop[F, Ctx]` creates a builder whose setters return the same no-op builder and whose `emit` returns
+`F[Unit]` without producing a record.
+
+## `Severity`
+
+`Severity` represents the OpenTelemetry severity number and display name. Each value exposes `value: Int` and
+`name: String`.
+
+| Range | Constructors | Numeric values |
+|-------|--------------|----------------|
+| Trace | `trace`, `trace2`, `trace3`, `trace4` | 1–4 |
+| Debug | `debug`, `debug2`, `debug3`, `debug4` | 5–8 |
+| Info | `info`, `info2`, `info3`, `info4` | 9–12 |
+| Warn | `warn`, `warn2`, `warn3`, `warn4` | 13–16 |
+| Error | `error`, `error2`, `error3`, `error4` | 17–20 |
+| Fatal | `fatal`, `fatal2`, `fatal3`, `fatal4` | 21–24 |
+
+The companion object also provides `Hash[Severity]` and `Show[Severity]` instances. `Show` renders the severity name.
+
+## Effect lifting
+
+`LoggerProvider`, `LoggerBuilder`, `Logger`, `InstrumentMeta`, and `LogRecordBuilder` provide `liftTo[G]` methods backed
+by `cats.mtl.LiftValue`. The target effect requires a `Monad`; the source effect's `Applicative` comes from the
+`LiftValue` instance.
+
+## Related material
+
+- [Bridge Scribe logs into OpenTelemetry](../how-to-logs/bridge-scribe-logs-into-opentelemetry.md)
+- [Test logs emitted by your code](../how-to-testkit/test-logs-emitted-by-your-code.md)
+- [How otel4s context propagation works](../explanations/how-otel4s-context-propagation-works.md)
+- [OpenTelemetry Logs API specification][opentelemetry-logs-api]
+- [OpenTelemetry Logs data model][opentelemetry-logs-data-model]
+
+[opentelemetry-logs-api]: https://opentelemetry.io/docs/specs/otel/logs/api/
+[opentelemetry-logs-data-model]: https://opentelemetry.io/docs/specs/otel/logs/data-model/

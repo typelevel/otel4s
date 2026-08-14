@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Logs</title>
+  <title>Logs API reference</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -120,6 +120,9 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">How-to | Logs</li>
+    <li class="level2 nav-leaf"><a href="../how-to-logs/">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
     <li class="level1 nav-header">How-to | Testkit</li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
@@ -139,7 +142,7 @@
     <li class="level2 nav-leaf"><a href="metrics-cats-effect-io-runtime.html">Cats Effect IO runtime metrics reference</a></li>
     <li class="level2 nav-leaf"><a href="tracing.html">Tracing API reference</a></li>
     <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Logs</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Logs API reference</a></li>
     <li class="level2 nav-leaf"><a href="semantic-conventions.html">Semantic conventions</a></li>
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
@@ -161,18 +164,17 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Logs</a></p>
+  <p class="header"><a href="#">Logs API reference</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#_1-when-you-should-use-this-module">1. When you should use this module</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-core-ideas">2. Core ideas</a></li>
-    <li class="level1 nav-node"><a href="#_3-tips-for-library-authors">3. Tips for library authors</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-1-timestamps">3.1. Timestamps</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-2-attributes">3.2. Attributes</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-3-context-propagation">3.3. Context propagation</a></li>
-    <li class="level2 nav-leaf"><a href="#_3-4-backpressure-and-performance">3.4. Backpressure and performance</a></li>
-    <li class="level1 nav-leaf"><a href="#_4-integration-example-with-scribe">4. Integration example with <code>scribe</code></a></li>
-    <li class="level1 nav-leaf"><a href="#_5-getting-a-loggerprovider">5. Getting a <code>LoggerProvider</code></a></li>
+    <li class="level1 nav-leaf"><a href="#loggerprovider-f-ctx"><code>LoggerProvider[F, Ctx]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#loggerbuilder-f-ctx"><code>LoggerBuilder[F, Ctx]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#logger-f-ctx"><code>Logger[F, Ctx]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#instrumentmeta-f-ctx"><code>InstrumentMeta[F, Ctx]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#logrecordbuilder-f-ctx"><code>LogRecordBuilder[F, Ctx]</code></a></li>
+    <li class="level1 nav-leaf"><a href="#severity"><code>Severity</code></a></li>
+    <li class="level1 nav-leaf"><a href="#effect-lifting">Effect lifting</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -181,284 +183,368 @@
 
       <main class="content">
 
-        <h1 id="logs" class="title">Logs</h1>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p>The logging module is meant for <strong>library authors</strong> who want to <strong>bridge logs</strong> from an existing logging API into OpenTelemetry, 
-          not for application developers to replace their logging library.</p>
-          <p>It is <strong>not a replacement</strong> for a full logging API.</p>
-        </div>
-        <p>The API mirrors the <a href="https://opentelemetry.io/docs/specs/otel/logs/api/">OpenTelemetry Logs spec</a> and focuses on structured, 
-        context-aware log records.</p>
-        
-        <h2 id="_1-when-you-should-use-this-module" class="section"><a class="anchor-link left" href="#_1-when-you-should-use-this-module"><i class="icofont-laika link">&#xef71;</i></a>1. When you should use this module</h2>
-        <p>Use it when your library already relies on a logging facade or implementation, and you want those log events to 
-        <strong>flow into the same OpenTelemetry pipeline as traces and metrics</strong>. 
-        The module does not format console output, rotate files, manage log levels of a specific logger, or manage appenders. 
-        It only allows turning log events into OpenTelemetry <code>LogRecord</code>s and exporting them through OTLP.</p>
-        <p>Library authors should provide an integration through a separate module, for example <code>logs4cats-otel4s</code>.
-        End users, such as application developers, should keep their preferred logger and level management, for example <code>logback</code> or <code>slf4j</code>.</p>
-        
-        <h2 id="_2-core-ideas" class="section"><a class="anchor-link left" href="#_2-core-ideas"><i class="icofont-laika link">&#xef71;</i></a>2. Core ideas</h2>
-        <p>You should bridge logs from your logging framework into OpenTelemetry as close to the source as possible. 
-        That means you implement a small adapter that, for each log event, does the following: build a <code>LogRecordBuilder</code>, 
-        copy the message and attributes, attach the current context so trace and span ids propagate, set severity and observed time, then emit.</p>
-        <p>There are three main interfaces:</p>
+        <h1 id="logs-api-reference" class="title">Logs API reference</h1>
+        <p>The core logs API is in <code>org.typelevel.otel4s.logs</code>.</p>
+        <p>It is intended for adapters that forward records from an existing logging framework into OpenTelemetry. Application
+        code continues to use its logging facade or implementation for log levels, formatting, appenders, and output.</p>
+        <p>The main types form this construction and emission chain:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Role</th>
+              <th>Obtained through</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>LoggerProvider[F, Ctx]</code></td>
+              <td>Creates named loggers</td>
+              <td>An otel4s backend, such as <code>OtelJava</code></td>
+            </tr>
+            <tr>
+              <td><code>LoggerBuilder[F, Ctx]</code></td>
+              <td>Configures logger instrumentation-scope metadata</td>
+              <td><code>LoggerProvider.logger</code></td>
+            </tr>
+            <tr>
+              <td><code>Logger[F, Ctx]</code></td>
+              <td>Creates log records and exposes the current context</td>
+              <td><code>LoggerProvider.get</code> or <code>LoggerBuilder.get</code></td>
+            </tr>
+            <tr>
+              <td><code>InstrumentMeta[F, Ctx]</code></td>
+              <td>Reports whether the logs pipeline accepts a record</td>
+              <td><code>Logger.meta</code></td>
+            </tr>
+            <tr>
+              <td><code>LogRecordBuilder[F, Ctx]</code></td>
+              <td>Configures and emits one log record</td>
+              <td><code>Logger.logRecordBuilder</code></td>
+            </tr>
+            <tr>
+              <td><code>Severity</code></td>
+              <td>Represents an OpenTelemetry severity number and name</td>
+              <td>The <code>Severity</code> companion object</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>Ctx</code> is the context type supplied by the backend. The OpenTelemetry Java backend uses
+        <code>org.typelevel.otel4s.oteljava.context.Context</code>.</p>
+        <p>For setup and task-oriented examples, see:</p>
         <ul>
-          <li><code>LoggerProvider[F, Ctx]</code> - factory for <code>Logger</code>. Usually created during startup by the backend, for example <code>otel4s-oteljava</code> in this repo or the separate <code>otel4s-sdk</code> project.</li>
-          <li><code>Logger[F, Ctx]</code> - use <code>logRecordBuilder</code> to create a new empty log record.</li>
-          <li><code>LogRecordBuilder[F, Ctx]</code> - set timestamps, severity, attributes, body, and context, then call <code>emit</code>.</li>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+          <li><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
+          <li><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
         </ul>
-        <p>The <code>Ctx</code> parameter refers to the backend-specific context type. In most cases, you don&#39;t need to use it directly.</p>
         
-        <h2 id="_3-tips-for-library-authors" class="section"><a class="anchor-link left" href="#_3-tips-for-library-authors"><i class="icofont-laika link">&#xef71;</i></a>3. Tips for library authors</h2>
-        <p>Use <code>otel4s-core-logs</code> module, you don&#39;t need to use a specific otel4s backend: <code>otel4s-oteljava</code> or the separate <code>otel4s-sdk</code> project.
-        That way, users can choose their preferred otel4s backend.</p>
-        <p>Keep in mind that the logs module <strong>doesn&#39;t</strong> manage log files, appenders, or log levels. 
-        It&#39;s the responsibility of a logging library to decide whether the given logger is enabled.<br></p>
-        <p>However, you can use the <code>logger.meta.isEnabled</code> to check whether the logging pipeline is active.
-        If the pipeline is active, <code>isEnabled</code> will always return true regardless of the specific logger.
-        If the implementation is no-op, <code>isEnabled</code> will always return false.</p>
-        
-        <h3 id="_3-1-timestamps" class="section"><a class="anchor-link left" href="#_3-1-timestamps"><i class="icofont-laika link">&#xef71;</i></a>3.1. Timestamps</h3>
-        <p>Use <code>withObservedTimestamp</code> for the time your adapter observed the event. 
-        If your source event carries the original creation time, set <code>withTimestamp</code> to that origin time too. </p>
-        
-        <h3 id="_3-2-attributes" class="section"><a class="anchor-link left" href="#_3-2-attributes"><i class="icofont-laika link">&#xef71;</i></a>3.2. Attributes</h3>
-        <p>Use semantic conventions when applicable, for example:</p>
+        <h2 id="loggerprovider-f-ctx" class="section"><a class="anchor-link left" href="#loggerprovider-f-ctx"><i class="icofont-laika link">&#xef71;</i></a><code>LoggerProvider[F, Ctx]</code></h2>
+        <p><code>LoggerProvider[F, Ctx]</code> is the entry point for creating <code>Logger[F, Ctx]</code> instances.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>get(name)</code></td>
+              <td><code>F[Logger[F, Ctx]]</code></td>
+              <td>Creates a named logger. Equivalent to <code>logger(name).get</code>.</td>
+            </tr>
+            <tr>
+              <td><code>logger(name)</code></td>
+              <td><code>LoggerBuilder[F, Ctx]</code></td>
+              <td>Creates a builder for a named logger.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>LoggerProvider[G, Ctx]</code></td>
+              <td>Lifts the provider from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The <code>name</code> identifies the instrumentation scope that emits log records. Use a stable library, module, or fully
+        qualified class name.</p>
+        <p>The companion object provides:</p>
         <ul>
-          <li><code>code.filepath</code>, <code>code.lineno</code>, <code>code.function</code> when provided by your logging framework</li>
-          <li><code>exception.type</code>, <code>exception.message</code>, <code>exception.stacktrace</code> for failures</li>
+          <li><code>LoggerProvider[F, Ctx]</code> to summon an implicit provider</li>
+          <li><code>LoggerProvider.noop[F, Ctx]</code> to create a provider whose loggers are no-op</li>
         </ul>
-        <p>Prefer stable names and values that are easy to aggregate.</p>
         
-        <h3 id="_3-3-context-propagation" class="section"><a class="anchor-link left" href="#_3-3-context-propagation"><i class="icofont-laika link">&#xef71;</i></a>3.3. Context propagation</h3>
-        <p>Logs become far more valuable when they carry trace and span ids. 
-        By default, otel4s uses the current context to propagate trace and span ids.
-        For background on how that works, see
-        <a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a>.</p>
-        <p>However, you can also use the <code>withContext</code> to inject a specific context into the log record.</p>
-        
-        <h3 id="_3-4-backpressure-and-performance" class="section"><a class="anchor-link left" href="#_3-4-backpressure-and-performance"><i class="icofont-laika link">&#xef71;</i></a>3.4. Backpressure and performance</h3>
-        <p>The <code>emit</code> call sends the record into the processing pipeline. 
-        By default, the backend configures a batch processor, so the effect is usually non-blocking. </p>
-        <p>Avoid heavy string concatenation and unnecessary exception stack traces on the hot path. 
-        Prefer structured attributes over preformatted strings. 
-        If your logging facade supports lazy messages, keep that behavior and only build a log record when severity passes the library-level filter.</p>
-        
-        <h2 id="_4-integration-example-with-scribe" class="section"><a class="anchor-link left" href="#_4-integration-example-with-scribe"><i class="icofont-laika link">&#xef71;</i></a>4. Integration example with <code>scribe</code></h2>
-        <p><a href="https://github.com/outr/scribe">Scribe</a> is a fast, flexible, and asynchronous Scala logging library that provides rich features like log levels, 
-        structured logging, and customizable handlers. It is also available for all platforms: JVM, Scala.js, and Scala Native.</p>
-        <p>Here is an example of how to forward <code>scribe</code> log events into OpenTelemetry using <code>otel4s-core-logs</code>:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordBuilder</span><span>, </span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">Logger</span><span> =&gt; </span><span class="type-name">OtelLogger</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.</span><span class="type-name">CodeAttributes</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">chaining</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>](
-  </span><span class="identifier">provider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>],
-) </span><span class="keyword">extends</span><span> </span><span class="type-name">LoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>]] {
-  
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">log</span><span>(</span><span class="identifier">record</span><span>: =&gt; </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">r</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">record</span><span>)
-      </span><span class="comment">// use the library version here
-</span><span>      </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">provider</span><span>.</span><span class="identifier">logger</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">className</span><span>).</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;0.0.1&quot;</span><span>).</span><span class="identifier">get</span><span>
-
-      </span><span class="comment">// retrieve the current context
-</span><span>      </span><span class="identifier">ctx</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">currentContext</span><span>
-      
-      </span><span class="comment">// Check if logging instrumentation is enabled for the current context.
-</span><span>      </span><span class="comment">// NOTE: this does not check whether an individual logger is enabled.
-</span><span>      </span><span class="comment">// If the OpenTelemetry logging pipeline (backed by OTLP) is active, 
-</span><span>      </span><span class="comment">// `isEnabled` will always return true regardless of the specific logger 
-</span><span>      </span><span class="identifier">isEnabled</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">meta</span><span>.</span><span class="identifier">isEnabled</span><span>(</span><span class="identifier">ctx</span><span>, </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">r</span><span>.</span><span class="identifier">level</span><span>), </span><span class="type-name">None</span><span>)
-      
-      </span><span class="comment">// if enabled, build and emit the log record
-</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="keyword">if</span><span> (</span><span class="identifier">isEnabled</span><span>) </span><span class="identifier">buildLogRecord</span><span>(</span><span class="identifier">logger</span><span>, </span><span class="identifier">r</span><span>).</span><span class="identifier">emit</span><span> </span><span class="keyword">else</span><span> </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
-    } </span><span class="keyword">yield</span><span> ()
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildLogRecord</span><span>(
-      </span><span class="identifier">logger</span><span>: </span><span class="type-name">OtelLogger</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>], 
-      </span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>
-  ): </span><span class="type-name">LogRecordBuilder</span><span>[</span><span class="type-name">F</span><span>, </span><span class="identifier">_</span><span>] =
-    </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
-      </span><span class="comment">// severity
-</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">l</span><span> =&gt;
-        </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>).</span><span class="identifier">fold</span><span>(</span><span class="identifier">l</span><span>)(</span><span class="identifier">l</span><span>.</span><span class="identifier">withSeverity</span><span>)
-      }
-      .</span><span class="identifier">withSeverityText</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>.</span><span class="identifier">name</span><span>)
-      </span><span class="comment">// timestamp
-</span><span>      .</span><span class="identifier">withTimestamp</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">timeStamp</span><span>.</span><span class="identifier">millis</span><span>)
-      </span><span class="comment">// log message
-</span><span>      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">logOutput</span><span>.</span><span class="identifier">plainText</span><span>))
-      </span><span class="comment">// thread info
-</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
-        </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(
-          </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span> != -</span><span class="number-literal">1</span><span>) {
-            </span><span class="type-name">Attributes</span><span>(
-              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.id&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span>),
-              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>),
-            )
-          } </span><span class="keyword">else</span><span> {
-            </span><span class="type-name">Attributes</span><span>(
-              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>),
-            )
-          }
-        )
-      }
-      </span><span class="comment">// code path info
-</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
-        </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>))
-      }
-      </span><span class="comment">// exception info
-</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
-        </span><span class="identifier">record</span><span>.</span><span class="identifier">messages</span><span>
-          .</span><span class="identifier">collect</span><span>  {
-            </span><span class="keyword">case</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">throwable</span><span>.</span><span class="type-name">TraceLoggableMessage</span><span>(</span><span class="identifier">throwable</span><span>) =&gt; </span><span class="identifier">throwable</span><span>
-          }
-          .</span><span class="identifier">foldLeft</span><span>(</span><span class="identifier">builder</span><span>)((</span><span class="identifier">b</span><span>, </span><span class="identifier">t</span><span>) =&gt; </span><span class="identifier">b</span><span>.</span><span class="identifier">withException</span><span>(</span><span class="identifier">t</span><span>))
-      }
-      </span><span class="comment">// context
-</span><span>      </span><span class="comment">// MDC
-</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
-        </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>.</span><span class="identifier">nonEmpty</span><span>) </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">dataAttributes</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>)) 
-        </span><span class="keyword">else</span><span> </span><span class="identifier">builder</span><span>
-      }
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toSeverity</span><span>(</span><span class="identifier">level</span><span>: </span><span class="type-name">Level</span><span>): </span><span class="type-name">Option</span><span>[</span><span class="type-name">Severity</span><span>] =
-    </span><span class="identifier">level</span><span> </span><span class="keyword">match</span><span> {
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;TRACE&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">trace</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;DEBUG&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">debug</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;INFO&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">info</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;WARN&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">warn</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;FATAL&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">fatal</span><span>)
-      </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span>                 =&gt; </span><span class="type-name">None</span><span>
-    }
-
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">Attributes</span><span> = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
-
-    </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;code.namespace&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">className</span><span>)
-    </span><span class="identifier">builder</span><span> += </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFilePath</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">fileName</span><span>)
-    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">line</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">line</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeLineNumber</span><span>(</span><span class="identifier">line</span><span>.</span><span class="identifier">toLong</span><span>))
-    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">column</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">col</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeColumnNumber</span><span>(</span><span class="identifier">col</span><span>.</span><span class="identifier">toLong</span><span>))
-    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">methodName</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">name</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFunctionName</span><span>(</span><span class="identifier">name</span><span>))
-    
-    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
-  }
-  
-  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">dataAttributes</span><span>(</span><span class="identifier">data</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">String</span><span>, () =&gt; </span><span class="type-name">Any</span><span>]): </span><span class="type-name">Attributes</span><span> = {
-    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
-    </span><span class="identifier">data</span><span>.</span><span class="identifier">foreach</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">key</span><span>, </span><span class="identifier">getValue</span><span>) =&gt;
-      </span><span class="identifier">getValue</span><span>() </span><span class="keyword">match</span><span> {
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">String</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Boolean</span><span> =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Byte</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Short</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Int</span><span>     =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toLong</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Long</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Double</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">v</span><span>: </span><span class="type-name">Float</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">v</span><span>.</span><span class="identifier">toDouble</span><span>)
-        </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span>          =&gt; 
-          </span><span class="comment">// ignore the rest. 
-</span><span>          </span><span class="comment">// alternatively, you can stringify the value:
-</span><span>          </span><span class="comment">// builder += Attribute(key, v.toString)
-</span><span>      }
-    }
-    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
-  }
-}</span></code></pre>
-        <hr>
-        <p>Then, you can use it in your application:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Otel4s</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>](</span><span class="identifier">otel4s</span><span>: </span><span class="type-name">Otel4s</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">logger</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ScriberLoggerSupport</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>)
-
-  </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;tracer&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
-    </span><span class="identifier">tracer</span><span>.</span><span class="identifier">spanBuilder</span><span>(</span><span class="string-literal">&quot;test-span&quot;</span><span>).</span><span class="identifier">build</span><span>.</span><span class="identifier">surround</span><span> {
-      </span><span class="identifier">logger</span><span>.</span><span class="identifier">error</span><span>(
-        </span><span class="string-literal">&quot;something went wrong&quot;</span><span>, 
-        </span><span class="keyword">new</span><span> </span><span class="type-name">RuntimeException</span><span>(</span><span class="string-literal">&quot;Oops, something went wrong&quot;</span><span>)
-      )
-    }
-  }
-}</span></code></pre>
-        <p>As you can see, the log record is automatically correlated with the current tracing context. </p>
-        <div class="default-image-block">
-          <img src="grafana-logs-example.png" alt="Grafana Logs Example">
-        </div>
-        
-        <h2 id="_5-getting-a-loggerprovider" class="section"><a class="anchor-link left" href="#_5-getting-a-loggerprovider"><i class="icofont-laika link">&#xef71;</i></a>5. Getting a <code>LoggerProvider</code></h2>
-        <p>You can acquire a provider from either backend. 
-        You typically rely on autoconfiguration or a manual SDK builder that includes the OTLP exporter.</p>
-        <p>The <code>otel4s-oteljava</code> uses the <a href="https://github.com/open-telemetry/opentelemetry-java">OpenTelemetry Java SDK</a> under the hood.
-        Check out <a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a> for more details.</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.1.0&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library</li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash</li>
-          <li>Add an OpenTelemetry autoconfigure extension</li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a></li>
-        </ol>
-        <hr>
-        <p>Then use <code>OtelJava.autoConfigured</code> to autoconfigure the SDK:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+        <h2 id="loggerbuilder-f-ctx" class="section"><a class="anchor-link left" href="#loggerbuilder-f-ctx"><i class="icofont-laika link">&#xef71;</i></a><code>LoggerBuilder[F, Ctx]</code></h2>
+        <p><code>LoggerBuilder[F, Ctx]</code> adds instrumentation-scope metadata before creating a logger.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withVersion(version)</code></td>
+              <td>Sets the instrumentation-scope version.</td>
+            </tr>
+            <tr>
+              <td><code>withSchemaUrl(schemaUrl)</code></td>
+              <td>Sets the OpenTelemetry schema URL associated with the instrumentation scope.</td>
+            </tr>
+            <tr>
+              <td><code>get</code></td>
+              <td>Creates <code>F[Logger[F, Ctx]]</code>.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the builder from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Use <code>LoggerProvider.get</code> when the logger does not need a version or schema URL.</p>
+        <p><code>LoggerBuilder.noop[F, Ctx]</code> creates a builder that returns a no-op logger. It is also the builder returned by
+        <code>LoggerProvider.noop[F, Ctx]</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">AnyValue</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">Severity</span><span>
 </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.</span><span class="type-name">LoggerProvider</span><span>
 
-</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>
-      .</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]()
-      .</span><span class="identifier">use</span><span> { </span><span class="identifier">sdk</span><span> =&gt;
-        </span><span class="identifier">program</span><span>(</span><span class="identifier">sdk</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">tracerProvider</span><span>, </span><span class="identifier">sdk</span><span>.</span><span class="identifier">loggerProvider</span><span>)
+</span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+    </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>
+      .</span><span class="identifier">logger</span><span>(</span><span class="string-literal">&quot;com.example.logging-bridge&quot;</span><span>)
+      .</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>)
+      .</span><span class="identifier">get</span><span>
+      .</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">logger</span><span> =&gt;
+        </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
+          .</span><span class="identifier">withSeverity</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+          .</span><span class="identifier">withSeverityText</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>)
+          .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="string-literal">&quot;request failed&quot;</span><span>))
+          .</span><span class="identifier">emit</span><span>
       }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>], 
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>],
-      </span><span class="identifier">loggerProvider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>],
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    ???
-}</span></code></pre>
-        <p>The <code>.autoConfigured(...)</code> relies on the environment variables and system properties to configure the SDK.
-        For example, use <code>export OTEL_SERVICE_NAME=auth-service</code> to configure the name of the service.
-        See the full set of the <a href="https://opentelemetry.io/docs/languages/java/configuration/">supported configuration options</a>.</p>
+  }</span></code></pre>
+        
+        <h2 id="logger-f-ctx" class="section"><a class="anchor-link left" href="#logger-f-ctx"><i class="icofont-laika link">&#xef71;</i></a><code>Logger[F, Ctx]</code></h2>
+        <p><code>Logger[F, Ctx]</code> creates records for one instrumentation scope.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>meta</code></td>
+              <td><code>InstrumentMeta[F, Ctx]</code></td>
+              <td>Reports whether logging instrumentation is enabled for a record.</td>
+            </tr>
+            <tr>
+              <td><code>currentContext</code></td>
+              <td><code>F[Ctx]</code></td>
+              <td>Returns the context that a record emitted now would use.</td>
+            </tr>
+            <tr>
+              <td><code>logRecordBuilder</code></td>
+              <td><code>LogRecordBuilder[F, Ctx]</code></td>
+              <td>Creates an empty log record builder.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>Logger[G, Ctx]</code></td>
+              <td>Lifts the logger from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>When <code>LogRecordBuilder.withContext</code> is not called, <code>emit</code> uses the current context. Use <code>currentContext</code> and
+        <code>withContext</code> when the adapter captures a logging event in one context and emits it later.</p>
+        <p>The companion object provides:</p>
+        <ul>
+          <li><code>Logger[F, Ctx]</code> to summon an implicit logger</li>
+          <li><code>Logger.noop[F, Ctx]</code> to create a no-op logger</li>
+          <li><code>Logger.Implicits.noop</code> to supply a no-op implicit logger</li>
+        </ul>
+        
+        <h2 id="instrumentmeta-f-ctx" class="section"><a class="anchor-link left" href="#instrumentmeta-f-ctx"><i class="icofont-laika link">&#xef71;</i></a><code>InstrumentMeta[F, Ctx]</code></h2>
+        <p><code>Logger.meta</code> returns logs-specific <code>InstrumentMeta[F, Ctx]</code> from <code>org.typelevel.otel4s.logs.meta</code>.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>isEnabled(severity, eventName)</code></td>
+              <td>Checks the record using the current context.</td>
+            </tr>
+            <tr>
+              <td><code>isEnabled(context, severity, eventName)</code></td>
+              <td>Checks the record using an explicit context.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td>Lifts the metadata check from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Both checks accept <code>Option[Severity]</code> and <code>Option[String]</code>. They return <code>F[Boolean]</code>.</p>
+        <p>Call <code>isEnabled</code> before formatting messages, converting attributes, or rendering exception stack traces. It is a
+        pipeline-level check: an active OpenTelemetry logs pipeline returns <code>true</code>, while a no-op implementation returns
+        <code>false</code>. It does not apply per-logger severity filtering. The source logging framework remains responsible for deciding
+        whether a record&#39;s level is enabled.</p>
+        
+        <h2 id="logrecordbuilder-f-ctx" class="section"><a class="anchor-link left" href="#logrecordbuilder-f-ctx"><i class="icofont-laika link">&#xef71;</i></a><code>LogRecordBuilder[F, Ctx]</code></h2>
+        <p><code>LogRecordBuilder[F, Ctx]</code> configures and emits one log record. It provides these setters:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Accepted value</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>withTimestamp</code></td>
+              <td><code>FiniteDuration</code> or <code>Instant</code></td>
+              <td>Sets the time when the event occurred at its source.</td>
+            </tr>
+            <tr>
+              <td><code>withObservedTimestamp</code></td>
+              <td><code>FiniteDuration</code> or <code>Instant</code></td>
+              <td>Sets the time when the collection system observed the event.</td>
+            </tr>
+            <tr>
+              <td><code>withContext</code></td>
+              <td><code>Ctx</code></td>
+              <td>Sets the context used for trace and span correlation.</td>
+            </tr>
+            <tr>
+              <td><code>withSeverity</code></td>
+              <td><code>Severity</code></td>
+              <td>Sets the normalized OpenTelemetry severity.</td>
+            </tr>
+            <tr>
+              <td><code>withSeverityText</code></td>
+              <td><code>String</code></td>
+              <td>Preserves the source framework&#39;s severity text.</td>
+            </tr>
+            <tr>
+              <td><code>withBody</code></td>
+              <td><code>AnyValue</code></td>
+              <td>Sets a string or structured log body.</td>
+            </tr>
+            <tr>
+              <td><code>withEventName</code></td>
+              <td><code>String</code></td>
+              <td>Identifies the class or type of the event.</td>
+            </tr>
+            <tr>
+              <td><code>withException</code></td>
+              <td><code>Throwable</code></td>
+              <td>Adds <code>exception.type</code>, <code>exception.message</code>, and <code>exception.stacktrace</code>.</td>
+            </tr>
+            <tr>
+              <td><code>addAttribute</code></td>
+              <td><code>Attribute[A]</code></td>
+              <td>Adds or replaces one attribute.</td>
+            </tr>
+            <tr>
+              <td><code>addAttributes</code></td>
+              <td><code>Attribute[_]*</code> or <code>immutable.Iterable[Attribute[_]]</code></td>
+              <td>Adds or replaces several attributes.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Repeated calls to a field setter retain the value from the last call. Adding an attribute whose key already exists
+        replaces the previous value for that key.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Result</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>emit</code></td>
+              <td><code>F[Unit]</code></td>
+              <td>Sends the configured record to the processing pipeline.</td>
+            </tr>
+            <tr>
+              <td><code>liftTo[G]</code></td>
+              <td><code>LogRecordBuilder[G, Ctx]</code></td>
+              <td>Lifts the builder from effect <code>F</code> to effect <code>G</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>LogRecordBuilder.noop[F, Ctx]</code> creates a builder whose setters return the same no-op builder and whose <code>emit</code> returns
+        <code>F[Unit]</code> without producing a record.</p>
+        
+        <h2 id="severity" class="section"><a class="anchor-link left" href="#severity"><i class="icofont-laika link">&#xef71;</i></a><code>Severity</code></h2>
+        <p><code>Severity</code> represents the OpenTelemetry severity number and display name. Each value exposes <code>value: Int</code> and
+        <code>name: String</code>.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Range</th>
+              <th>Constructors</th>
+              <th>Numeric values</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Trace</td>
+              <td><code>trace</code>, <code>trace2</code>, <code>trace3</code>, <code>trace4</code></td>
+              <td>1–4</td>
+            </tr>
+            <tr>
+              <td>Debug</td>
+              <td><code>debug</code>, <code>debug2</code>, <code>debug3</code>, <code>debug4</code></td>
+              <td>5–8</td>
+            </tr>
+            <tr>
+              <td>Info</td>
+              <td><code>info</code>, <code>info2</code>, <code>info3</code>, <code>info4</code></td>
+              <td>9–12</td>
+            </tr>
+            <tr>
+              <td>Warn</td>
+              <td><code>warn</code>, <code>warn2</code>, <code>warn3</code>, <code>warn4</code></td>
+              <td>13–16</td>
+            </tr>
+            <tr>
+              <td>Error</td>
+              <td><code>error</code>, <code>error2</code>, <code>error3</code>, <code>error4</code></td>
+              <td>17–20</td>
+            </tr>
+            <tr>
+              <td>Fatal</td>
+              <td><code>fatal</code>, <code>fatal2</code>, <code>fatal3</code>, <code>fatal4</code></td>
+              <td>21–24</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>The companion object also provides <code>Hash[Severity]</code> and <code>Show[Severity]</code> instances. <code>Show</code> renders the severity name.</p>
+        
+        <h2 id="effect-lifting" class="section"><a class="anchor-link left" href="#effect-lifting"><i class="icofont-laika link">&#xef71;</i></a>Effect lifting</h2>
+        <p><code>LoggerProvider</code>, <code>LoggerBuilder</code>, <code>Logger</code>, <code>InstrumentMeta</code>, and <code>LogRecordBuilder</code> provide <code>liftTo[G]</code> methods backed
+        by <code>cats.mtl.LiftValue</code>. The target effect requires a <code>Monad</code>; the source effect&#39;s <code>Applicative</code> comes from the
+        <code>LiftValue</code> instance.</p>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
+          <li><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+          <li><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+          <li><a href="https://opentelemetry.io/docs/specs/otel/logs/api/">OpenTelemetry Logs API specification</a></li>
+          <li><a href="https://opentelemetry.io/docs/specs/otel/logs/data-model/">OpenTelemetry Logs data model</a></li>
+        </ul>
 
         
 <hr class="footer-rule"/>

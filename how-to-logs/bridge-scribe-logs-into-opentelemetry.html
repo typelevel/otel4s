@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Bridge Scribe logs into OpenTelemetry</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.1.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.1.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">How-to | JVM setup</li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+    <li class="level1 nav-header">How-to | Tracing</li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/work-with-baggage.html">Work with baggage</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-tracing/use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+    <li class="level1 nav-header">How-to | Metrics</li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">How-to | Logs</li>
+    <li class="level2 nav-leaf"><a href="index.html">Logs</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Bridge Scribe logs into OpenTelemetry</a></li>
+    <li class="level1 nav-header">How-to | Testkit</li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
+    <li class="level1 nav-header">Explanations</li>
+    <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Cats Effect IO runtime metrics reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Traces testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Logs testkit reference</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/dash0/">Dash0 - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Bridge Scribe logs into OpenTelemetry</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-bridge-dependencies">1. Add the bridge dependencies</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-translate-scribe-records">2. Translate Scribe records</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-install-the-bridge">3. Install the bridge</a></li>
+    <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="bridge-scribe-logs-into-opentelemetry" class="title">Bridge Scribe logs into OpenTelemetry</h1>
+        <p>Use this guide to forward events from <a href="https://github.com/outr/scribe">Scribe</a> into an OpenTelemetry logs pipeline. The bridge keeps Scribe as
+        the application logging API and translates each <code>scribe.LogRecord</code> into an otel4s <code>LogRecordBuilder</code>.</p>
+        
+        <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <ul>
+          <li>A library or application that already uses Scribe.</li>
+          <li>A <code>LoggerProvider</code> supplied by an otel4s backend. For a JVM application, follow
+          <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</li>
+        </ul>
+        
+        <h2 id="_1-add-the-bridge-dependencies" class="section"><a class="anchor-link left" href="#_1-add-the-bridge-dependencies"><i class="icofont-laika link">&#xef71;</i></a>1. Add the bridge dependencies</h2>
+        <p>Depend on the backend-neutral logs API so users of a library integration can choose their otel4s backend. This example
+        also uses stable semantic conventions for source-code attributes.</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-core-logs&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>,
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-semconv&quot;</span><span>   % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>,
+)</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-core-logs:1.1.0&quot;
+//&gt; using dep &quot;org.typelevel::otel4s-semconv:1.1.0&quot;</span></code></pre>
+          </div>
+        </div>
+        
+        <h2 id="_2-translate-scribe-records" class="section"><a class="anchor-link left" href="#_2-translate-scribe-records"><i class="icofont-laika link">&#xef71;</i></a>2. Translate Scribe records</h2>
+        <p>Implement Scribe&#39;s <code>LoggerSupport</code> and create an otel4s logger for each source logger. Check <code>meta.isEnabled</code> before
+        building the record so disabled OpenTelemetry pipelines avoid attribute and stack-trace work.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="type-name">Monad</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.{</span><span class="type-name">AnyValue</span><span>, </span><span class="type-name">Attribute</span><span>, </span><span class="type-name">Attributes</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">LogRecordBuilder</span><span>, </span><span class="type-name">LoggerProvider</span><span>, </span><span class="type-name">Severity</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">logs</span><span>.{</span><span class="type-name">Logger</span><span> =&gt; </span><span class="type-name">OtelLogger</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.</span><span class="type-name">CodeAttributes</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">concurrent</span><span>.</span><span class="identifier">duration</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">util</span><span>.</span><span class="identifier">chaining</span><span>.</span><span class="identifier">_</span><span>
+
+</span><span class="keyword">final</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">ScribeLoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Monad</span><span>, </span><span class="type-name">Ctx</span><span>](
+    </span><span class="identifier">provider</span><span>: </span><span class="type-name">LoggerProvider</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>]
+) </span><span class="keyword">extends</span><span> </span><span class="type-name">LoggerSupport</span><span>[</span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>]] {
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">log</span><span>(</span><span class="identifier">record</span><span>: =&gt; </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">sourceRecord</span><span> &lt;- </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">pure</span><span>(</span><span class="identifier">record</span><span>)
+      </span><span class="comment">// use the bridge library&#39;s version here
+</span><span>      </span><span class="identifier">logger</span><span> &lt;- </span><span class="identifier">provider</span><span>
+        .</span><span class="identifier">logger</span><span>(</span><span class="identifier">sourceRecord</span><span>.</span><span class="identifier">className</span><span>)
+        .</span><span class="identifier">withVersion</span><span>(</span><span class="string-literal">&quot;1.0.0&quot;</span><span>)
+        .</span><span class="identifier">get</span><span>
+      </span><span class="comment">// retrieve the current context
+</span><span>      </span><span class="identifier">context</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">currentContext</span><span>
+      </span><span class="identifier">severity</span><span> = </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">sourceRecord</span><span>.</span><span class="identifier">level</span><span>)
+      </span><span class="comment">// Check if logging instrumentation is enabled for the current context.
+</span><span>      </span><span class="comment">// NOTE: this does not check whether an individual logger is enabled.
+</span><span>      </span><span class="comment">// If the OpenTelemetry logs pipeline is active, `isEnabled` returns true
+</span><span>      </span><span class="comment">// regardless of the specific logger or severity.
+</span><span>      </span><span class="identifier">isEnabled</span><span> &lt;- </span><span class="identifier">logger</span><span>.</span><span class="identifier">meta</span><span>.</span><span class="identifier">isEnabled</span><span>(</span><span class="identifier">context</span><span>, </span><span class="identifier">severity</span><span>, </span><span class="type-name">None</span><span>)
+      </span><span class="comment">// if enabled, build and emit the log record
+</span><span>      </span><span class="identifier">_</span><span> &lt;-
+        </span><span class="keyword">if</span><span> (</span><span class="identifier">isEnabled</span><span>) </span><span class="identifier">buildLogRecord</span><span>(</span><span class="identifier">logger</span><span>, </span><span class="identifier">context</span><span>, </span><span class="identifier">sourceRecord</span><span>).</span><span class="identifier">emit</span><span>
+        </span><span class="keyword">else</span><span> </span><span class="type-name">Monad</span><span>[</span><span class="type-name">F</span><span>].</span><span class="identifier">unit</span><span>
+    } </span><span class="keyword">yield</span><span> ()
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">buildLogRecord</span><span>(
+      </span><span class="identifier">logger</span><span>: </span><span class="type-name">OtelLogger</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>],
+      </span><span class="identifier">context</span><span>: </span><span class="type-name">Ctx</span><span>,
+      </span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>
+  ): </span><span class="type-name">LogRecordBuilder</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Ctx</span><span>] =
+    </span><span class="identifier">logger</span><span>.</span><span class="identifier">logRecordBuilder</span><span>
+      </span><span class="comment">// severity
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">toSeverity</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>).</span><span class="identifier">fold</span><span>(</span><span class="identifier">builder</span><span>)(</span><span class="identifier">builder</span><span>.</span><span class="identifier">withSeverity</span><span>)
+      }
+      .</span><span class="identifier">withSeverityText</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">level</span><span>.</span><span class="identifier">name</span><span>)
+      </span><span class="comment">// event timestamp
+</span><span>      .</span><span class="identifier">withTimestamp</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">timeStamp</span><span>.</span><span class="identifier">millis</span><span>)
+      </span><span class="comment">// log message
+</span><span>      .</span><span class="identifier">withBody</span><span>(</span><span class="type-name">AnyValue</span><span>.</span><span class="identifier">string</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">logOutput</span><span>.</span><span class="identifier">plainText</span><span>))
+      </span><span class="comment">// thread info
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(
+          </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span> != -</span><span class="number-literal">1</span><span>) {
+            </span><span class="type-name">Attributes</span><span>(
+              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.id&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getId</span><span>),
+              </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>)
+            )
+          } </span><span class="keyword">else</span><span> {
+            </span><span class="type-name">Attributes</span><span>(</span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;thread.name&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">thread</span><span>.</span><span class="identifier">getName</span><span>))
+          }
+        )
+      }
+      </span><span class="comment">// source-code info
+</span><span>      .</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>))
+      </span><span class="comment">// exception info
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="identifier">record</span><span>.</span><span class="identifier">messages</span><span>
+          .</span><span class="identifier">collect</span><span> {
+            </span><span class="keyword">case</span><span> </span><span class="identifier">scribe</span><span>.</span><span class="identifier">throwable</span><span>.</span><span class="type-name">TraceLoggableMessage</span><span>(</span><span class="identifier">throwable</span><span>) =&gt; </span><span class="identifier">throwable</span><span>
+          }
+          .</span><span class="identifier">foldLeft</span><span>(</span><span class="identifier">builder</span><span>)((</span><span class="identifier">current</span><span>, </span><span class="identifier">throwable</span><span>) =&gt; </span><span class="identifier">current</span><span>.</span><span class="identifier">withException</span><span>(</span><span class="identifier">throwable</span><span>))
+      }
+      </span><span class="comment">// Scribe data and MDC
+</span><span>      .</span><span class="identifier">pipe</span><span> { </span><span class="identifier">builder</span><span> =&gt;
+        </span><span class="keyword">if</span><span> (</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>.</span><span class="identifier">nonEmpty</span><span>) </span><span class="identifier">builder</span><span>.</span><span class="identifier">addAttributes</span><span>(</span><span class="identifier">dataAttributes</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">data</span><span>))
+        </span><span class="keyword">else</span><span> </span><span class="identifier">builder</span><span>
+      }
+      </span><span class="comment">// trace and span context
+</span><span>      .</span><span class="identifier">withContext</span><span>(</span><span class="identifier">context</span><span>)
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">toSeverity</span><span>(</span><span class="identifier">level</span><span>: </span><span class="type-name">Level</span><span>): </span><span class="type-name">Option</span><span>[</span><span class="type-name">Severity</span><span>] =
+    </span><span class="identifier">level</span><span> </span><span class="keyword">match</span><span> {
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;TRACE&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">trace</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;DEBUG&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">debug</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;INFO&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">info</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;WARN&quot;</span><span>, </span><span class="identifier">_</span><span>)  =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">warn</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;ERROR&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">error</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="type-name">Level</span><span>(</span><span class="string-literal">&quot;FATAL&quot;</span><span>, </span><span class="identifier">_</span><span>) =&gt; </span><span class="type-name">Some</span><span>(</span><span class="type-name">Severity</span><span>.</span><span class="identifier">fatal</span><span>)
+      </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span>                 =&gt; </span><span class="type-name">None</span><span>
+    }
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">codePathAttributes</span><span>(</span><span class="identifier">record</span><span>: </span><span class="type-name">LogRecord</span><span>): </span><span class="type-name">Attributes</span><span> = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
+
+    </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="string-literal">&quot;code.namespace&quot;</span><span>, </span><span class="identifier">record</span><span>.</span><span class="identifier">className</span><span>)
+    </span><span class="identifier">builder</span><span> += </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFilePath</span><span>(</span><span class="identifier">record</span><span>.</span><span class="identifier">fileName</span><span>)
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">line</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">line</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeLineNumber</span><span>(</span><span class="identifier">line</span><span>.</span><span class="identifier">toLong</span><span>))
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">column</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">column</span><span> =&gt; </span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeColumnNumber</span><span>(</span><span class="identifier">column</span><span>.</span><span class="identifier">toLong</span><span>))
+    </span><span class="identifier">builder</span><span> ++= </span><span class="identifier">record</span><span>.</span><span class="identifier">methodName</span><span>.</span><span class="identifier">map</span><span>(</span><span class="type-name">CodeAttributes</span><span>.</span><span class="type-name">CodeFunctionName</span><span>(</span><span class="identifier">_</span><span>))
+
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
+  }
+
+  </span><span class="keyword">private</span><span> </span><span class="keyword">def</span><span> </span><span class="declaration-name">dataAttributes</span><span>(</span><span class="identifier">data</span><span>: </span><span class="type-name">Map</span><span>[</span><span class="type-name">String</span><span>, () =&gt; </span><span class="type-name">Any</span><span>]): </span><span class="type-name">Attributes</span><span> = {
+    </span><span class="keyword">val</span><span> </span><span class="identifier">builder</span><span> = </span><span class="type-name">Attributes</span><span>.</span><span class="identifier">newBuilder</span><span>
+
+    </span><span class="identifier">data</span><span>.</span><span class="identifier">foreach</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">key</span><span>, </span><span class="identifier">getValue</span><span>) =&gt;
+      </span><span class="identifier">getValue</span><span>() </span><span class="keyword">match</span><span> {
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">String</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Boolean</span><span> =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Byte</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Short</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Int</span><span>     =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>.</span><span class="identifier">toLong</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Long</span><span>    =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Double</span><span>  =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">value</span><span>: </span><span class="type-name">Float</span><span>   =&gt; </span><span class="identifier">builder</span><span> += </span><span class="type-name">Attribute</span><span>(</span><span class="identifier">key</span><span>, </span><span class="identifier">value</span><span>.</span><span class="identifier">toDouble</span><span>)
+        </span><span class="keyword">case</span><span> </span><span class="identifier">_</span><span> =&gt;
+          </span><span class="comment">// Ignore unsupported values.
+</span><span>          </span><span class="comment">// Alternatively, stringify them in a custom fallback branch.
+</span><span>          ()
+      }
+    }
+
+    </span><span class="identifier">builder</span><span>.</span><span class="identifier">result</span><span>()
+  }
+}</span></code></pre>
+        <p>Replace <code>1.0.0</code> with the bridge library&#39;s version. The logger name and version identify the instrumentation scope that
+        emitted the OpenTelemetry log record.</p>
+        <p>The bridge maps:</p>
+        <ul>
+          <li>Scribe levels to OpenTelemetry severity numbers and preserves the original level text</li>
+          <li>the source timestamp and formatted message</li>
+          <li>thread, source-code, and Scribe data attributes</li>
+          <li>exceptions from Scribe&#39;s structured messages</li>
+          <li>the current otel4s context for trace and span correlation</li>
+        </ul>
+        <p><code>meta.isEnabled</code> reports whether the OpenTelemetry logs pipeline is active. It does not apply per-logger severity
+        filtering. Scribe remains responsible for deciding whether a record&#39;s level is enabled.</p>
+        
+        <h2 id="_3-install-the-bridge" class="section"><a class="anchor-link left" href="#_3-install-the-bridge"><i class="icofont-laika link">&#xef71;</i></a>3. Install the bridge</h2>
+        <p>Create the bridge from the backend&#39;s <code>LoggerProvider</code> and install it through the Scribe configuration used by your
+        application. This example invokes the support directly to show that a log emitted inside a span carries that span&#39;s
+        context.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">TelemetryApp</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="keyword">val</span><span> </span><span class="identifier">logging</span><span> = </span><span class="keyword">new</span><span> </span><span class="type-name">ScribeLoggerSupport</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>](</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">loggerProvider</span><span>)
+
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;example&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
+        </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;example-operation&quot;</span><span>).</span><span class="identifier">surround</span><span> {
+          </span><span class="identifier">logging</span><span>.</span><span class="identifier">error</span><span>(
+            </span><span class="string-literal">&quot;something went wrong&quot;</span><span>,
+            </span><span class="keyword">new</span><span> </span><span class="type-name">RuntimeException</span><span>(</span><span class="string-literal">&quot;example failure&quot;</span><span>)
+          )
+        }
+      }
+    }
+}</span></code></pre>
+        <p>The exported record contains the active trace and span identifiers:</p>
+        <div class="default-image-block">
+          <img src="grafana-logs-example.png" alt="A log record in Grafana correlated with its trace and span">
+        </div>
+        
+        <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
+        <ul>
+          <li>Verify the bridge with an in-memory backend:
+          <a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+          <li>Look up record fields, severity values, and no-op implementations:
+          <a href="../instrumentation/logs.html">Logs API reference</a></li>
+          <li>Learn how otel4s carries context through effects:
+          <a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+        </ul>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

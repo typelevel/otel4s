@@ -100,5 +100,7 @@ def test: IO[Unit] =
 
 ## What's next
 
-For point attributes, histograms, collection-wide constraints, and custom numeric comparison, see
-[Metrics testkit reference](../oteljava/testkit-metrics.md).
+- Verify metric metadata and required attributes against a generated semantic convention:
+  [Test metrics against semantic conventions](test-metrics-against-semantic-conventions.md)
+- For point attributes, histograms, collection-wide constraints, and custom numeric comparison, see the
+  [Metrics testkit reference](../oteljava/testkit-metrics.md).

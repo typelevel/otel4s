@@ -85,8 +85,8 @@ The generated `Stability` values are `stable`, `development`, `releaseCandidate`
 
 ## Generation
 
-The source files under `semconv` are generated. Run `sbt semanticConventionsGenerate` to regenerate them from the
-configured OpenTelemetry semantic-convention source.
+The semantic attribute files and domain-specific metric files under `semconv` are generated from the configured
+OpenTelemetry semantic-convention source. Run `sbt semanticConventionsGenerate` to regenerate them.
 
 ## Related material
 

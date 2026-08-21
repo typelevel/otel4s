@@ -78,7 +78,7 @@ If you are unsure, a useful rule of thumb is:
 
 Some module families are usually added after you have chosen a backend:
 
-- Use [Semantic conventions](../instrumentation/semantic-conventions.md) when you want generated attribute keys or
+- Use [Semantic conventions](../how-to-semantic-conventions/index.md) when you want generated attribute keys or
   metric specs from the OpenTelemetry semantic conventions
 - Use [Testkit](../oteljava/testkit.md) when you want to assert exported telemetry in tests
 - Use [The JVM backend](oteljava-jvm-backend.md) when you need JVM-specific backend details

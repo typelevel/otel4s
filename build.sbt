@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "1.0"
+ThisBuild / tlBaseVersion := "1.1"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -70,19 +70,19 @@ val CatsVersion = "2.13.0"
 val CatsEffectVersion = "3.7.0"
 val CatsMtlVersion = "1.7.0"
 val FS2Version = "3.13.0"
-val MUnitVersion = "1.3.4"
+val MUnitVersion = "1.3.5"
 val MUnitScalaCheckVersion = "1.3.0"
 val MUnitCatsEffectVersion = "2.2.0"
 val MUnitDisciplineVersion = "2.0.0"
 val MUnitScalaCheckEffectVersion = "2.1.0"
 val OpenTelemetryVersion = "1.65.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.30.0"
+val OpenTelemetryInstrumentationVersion = "2.31.0"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.43.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val Otel4sAgentVersion = "2.22.0"
-val PekkoStreamVersion = "1.6.0"
+val PekkoStreamVersion = "1.7.0"
 val PekkoHttpVersion = "1.4.0"
 val PlatformVersion = "1.0.3"
 val ScodecVersion = "1.2.5"
@@ -538,6 +538,7 @@ lazy val docs = project
   )
   .settings(
     libraryDependencies ++= Seq(
+      "org.apache.pekko" %% "pekko-stream" % PekkoStreamVersion,
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
       "org.http4s" %% "http4s-client" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
@@ -550,8 +551,11 @@ lazy val docs = project
     ),
     mdocVariables ++= Map(
       "OPEN_TELEMETRY_VERSION" -> OpenTelemetryVersion,
+      "OPEN_TELEMETRY_INSTRUMENTATION_VERSION" -> OpenTelemetryInstrumentationVersion,
       "OPEN_TELEMETRY_INSTRUMENTATION_ALPHA_VERSION" -> OpenTelemetryInstrumentationAlphaVersion,
       "OTEL4S_AGENT_VERSION" -> Otel4sAgentVersion,
+      "PEKKO_HTTP_VERSION" -> PekkoHttpVersion,
+      "PEKKO_STREAM_VERSION" -> PekkoStreamVersion,
     ),
     tlSiteApiPackage := Some("org.typelevel.otel4s"),
     run / fork := true,

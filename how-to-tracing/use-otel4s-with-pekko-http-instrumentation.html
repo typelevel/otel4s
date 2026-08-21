@@ -197,11 +197,11 @@
   .</span><span class="identifier">settings</span><span>(
     </span><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
       </span><span class="string-literal">&quot;org.typelevel&quot;</span><span>    %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span>                          % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>,
-      </span><span class="string-literal">&quot;org.apache.pekko&quot;</span><span> %% </span><span class="string-literal">&quot;pekko-stream&quot;</span><span>                             % </span><span class="string-literal">&quot;1.6.0&quot;</span><span>,
+      </span><span class="string-literal">&quot;org.apache.pekko&quot;</span><span> %% </span><span class="string-literal">&quot;pekko-stream&quot;</span><span>                             % </span><span class="string-literal">&quot;1.7.0&quot;</span><span>,
       </span><span class="string-literal">&quot;org.apache.pekko&quot;</span><span> %% </span><span class="string-literal">&quot;pekko-http&quot;</span><span>                               % </span><span class="string-literal">&quot;1.4.0&quot;</span><span>,
       </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span>               % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
       </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
-      </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-instrumentation-annotations&quot;</span><span> % </span><span class="string-literal">&quot;2.30.0&quot;</span><span>
+      </span><span class="string-literal">&quot;io.opentelemetry.instrumentation&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-instrumentation-annotations&quot;</span><span> % </span><span class="string-literal">&quot;2.31.0&quot;</span><span>
     ),
     </span><span class="identifier">run</span><span> / </span><span class="identifier">fork</span><span> := </span><span class="boolean-literal">true</span><span>,
     </span><span class="identifier">javaOptions</span><span> ++= </span><span class="type-name">Seq</span><span>(
@@ -209,7 +209,7 @@
       </span><span class="string-literal">&quot;-Dotel.service.name=pekko-otel4s&quot;</span><span>
     ),
     </span><span class="identifier">javaAgents</span><span> ++= </span><span class="type-name">Seq</span><span>(
-      </span><span class="string-literal">&quot;io.opentelemetry.javaagent&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-javaagent&quot;</span><span> % </span><span class="string-literal">&quot;2.30.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
+      </span><span class="string-literal">&quot;io.opentelemetry.javaagent&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-javaagent&quot;</span><span> % </span><span class="string-literal">&quot;2.31.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
     )
   )</span></code></pre>
         <p>This guide uses the standard OpenTelemetry Java agent and explicit context bridging.

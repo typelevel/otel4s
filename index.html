@@ -108,6 +108,7 @@
     <li class="level1 nav-header">How-to | Tracing</li>
     <li class="level2 nav-leaf"><a href="how-to-tracing/">Tracing</a></li>
     <li class="level2 nav-leaf"><a href="how-to-tracing/create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="how-to-tracing/provide-a-no-op-tracer.html">Provide a no-op tracer</a></li>
     <li class="level2 nav-leaf"><a href="how-to-tracing/trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
     <li class="level2 nav-leaf"><a href="how-to-tracing/work-with-baggage.html">Work with baggage</a></li>
     <li class="level2 nav-leaf"><a href="how-to-tracing/propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
@@ -117,6 +118,7 @@
     <li class="level1 nav-header">How-to | Metrics</li>
     <li class="level2 nav-leaf"><a href="how-to-metrics/">Metrics</a></li>
     <li class="level2 nav-leaf"><a href="how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="how-to-metrics/provide-a-no-op-meter.html">Provide a no-op meter</a></li>
     <li class="level2 nav-leaf"><a href="how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
     <li class="level2 nav-leaf"><a href="how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
@@ -173,14 +175,14 @@
   <p class="header"><a href="#">otel4s</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#telemetry-meets-higher-kinded-types">Telemetry meets higher-kinded types</a></li>
-    <li class="level1 nav-leaf"><a href="#features">Features</a></li>
-    <li class="level1 nav-leaf"><a href="#status">Status</a></li>
-    <li class="level1 nav-leaf"><a href="#published-modules-in-this-repo">Published modules in this repo</a></li>
-    <li class="level1 nav-leaf"><a href="#how-to-choose-a-backend">How to choose a backend</a></li>
-    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
-    <li class="level1 nav-leaf"><a href="#examples">Examples</a></li>
-    <li class="level1 nav-leaf"><a href="#the-noop-tracer-and-meter">The noop Tracer and Meter</a></li>
+    <li class="level1 nav-leaf"><a href="#why-otel4s">Why otel4s?</a></li>
+    <li class="level1 nav-leaf"><a href="#quick-start">Quick start</a></li>
+    <li class="level1 nav-leaf"><a href="#start-here">Start here</a></li>
+    <li class="level1 nav-leaf"><a href="#guides">Guides</a></li>
+    <li class="level1 nav-leaf"><a href="#understand-otel4s">Understand otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="#api-reference">API reference</a></li>
+    <li class="level1 nav-leaf"><a href="#published-modules">Published modules</a></li>
+    <li class="level1 nav-leaf"><a href="#examples-and-integrations">Examples and integrations</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -190,74 +192,145 @@
       <main class="content">
 
         <h1 id="otel4s" class="title">otel4s</h1>
+        <p>otel4s provides <a href="https://opentelemetry.io/">OpenTelemetry</a> APIs and integrations for Scala, built on <a href="https://typelevel.org/cats-effect/">Cats Effect</a>. Use it to
+        instrument applications and libraries with traces, metrics, and logs while keeping the telemetry backend explicit.</p>
+        <p>The core APIs support Scala 2.13 and Scala 3 on the JVM, Scala.js, and Scala Native. This repository also provides the
+        JVM-only <code>otel4s-oteljava</code> backend, which implements those APIs with OpenTelemetry Java.</p>
         
-        <h2 id="telemetry-meets-higher-kinded-types" class="section"><a class="anchor-link left" href="#telemetry-meets-higher-kinded-types"><i class="icofont-laika link">&#xef71;</i></a>Telemetry meets higher-kinded types</h2>
-        <p><em>otel4s</em> is an <a href="https://opentelemetry.io/">OpenTelemetry</a> implementation for Scala.  The
-        design goal is to fully and faithfully implement the <a href="https://opentelemetry.io/docs/reference/specification/">OpenTelemetry
-        Specification</a> atop <a href="https://typelevel.org/cats-effect/">Cats Effect</a>.</p>
-        
-        <h2 id="features" class="section"><a class="anchor-link left" href="#features"><i class="icofont-laika link">&#xef71;</i></a>Features</h2>
+        <h2 id="why-otel4s" class="section"><a class="anchor-link left" href="#why-otel4s"><i class="icofont-laika link">&#xef71;</i></a>Why otel4s?</h2>
         <ul>
-          <li>
-            <p><strong>Simple and idiomatic metrics and tracing API</strong></p>
-            <p>Provides a user-friendly and idiomatic API for telemetry, designed with Typelevel ecosystem best practices.
-            Intuitive interfaces for <a href="instrumentation/metrics.html">metrics</a>, <a href="instrumentation/tracing.html">tracing</a>, 
-            and context propagation.</p>
-          </li>
-          <li>
-            <p><strong>Minimal overhead</strong></p>
-            <p>The library utilizes metaprogramming techniques to reduce runtime costs and allocations.
-            <strong>Near-zero</strong> overhead when telemetry is disabled,
-            ensuring production performance is unaffected when tracing or metrics collection is not required.</p>
-          </li>
-          <li>
-            <p><strong>Modularity</strong></p>
-            <p>A modular architecture allows to include only the required components:</p>
-            <ol class="arabic">
-              <li>Core modules: designed for library instrumentation, offering a lightweight dependency footprint</li>
-              <li>Selective integration: use only the metrics or tracing functionality without requiring the other</li>
-            </ol>
-          </li>
-          <li>
-            <p><strong>Cross-platform</strong></p>
-            <p>All modules are available for Scala 2.13 and Scala 3.
-            Core modules are available on all platforms: JVM, Scala.js, and Scala Native.</p>
-          </li>
-          <li>
-            <p><strong>OpenTelemetry Java SDK backend</strong></p>
-            <p>The <a href="explanations/oteljava-jvm-backend.html">backend</a> utilizes <a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java SDK</a> under the hood, 
-            offering production-ready telemetry:</p>
-            <ol class="arabic">
-              <li>Low memory overhead</li>
-              <li>Extensive <a href="https://opentelemetry.io/docs/languages/java/instrumentation/">instrumentation ecosystem</a></li>
-              <li>Well-tested implementation</li>
-            </ol>
-          </li>
-          <li>
-            <p><strong>Pure Scala SDK</strong></p>
-            <p>A pure Scala SDK backend is available in the separate
-            <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html">otel4s-sdk</a> project for JVM, Scala.js, and Scala Native.</p>
-          </li>
-          <li>
-            <p><strong>Testkit</strong></p>
-            <p>A testkit simplifies the validation of telemetry behavior in the applications and libraries:</p>
-            <ol class="arabic">
-              <li>Framework-agnostic, works with any test framework, for example weaver, munit, scalatest</li>
-              <li>Ideal for testing of the instrumented applications in end-to-end or unit tests</li>
-              <li>Included for the <a href="oteljava/testkit.html">OpenTelemetry Java backend</a> in this repo</li>
-            </ol>
-          </li>
+          <li><strong>Designed for low overhead.</strong> Compile-time techniques reduce runtime allocations, while no-op providers let
+          instrumented code run without an SDK or exporter.</li>
+          <li><strong>Modular.</strong> Applications and libraries can depend only on the signals they use and choose a telemetry backend
+          separately. See <a href="explanations/modules-and-module-families.html">Modules and module families</a>.</li>
+          <li><strong>Cross-platform.</strong> The core APIs support Scala 2.13 and Scala 3 on the JVM, Scala.js, and Scala Native.</li>
+          <li><strong>Built for testing.</strong> In-memory testkits collect traces, metrics, and logs and provide structured expectation APIs
+          without requiring an external collector. See <a href="oteljava/testkit.html">Testkit</a>.</li>
         </ul>
         
-        <h2 id="status" class="section"><a class="anchor-link left" href="#status"><i class="icofont-laika link">&#xef71;</i></a>Status</h2>
-        <p><code>otel4s</code> 1.0 establishes the compatibility baseline for the modules published
-        from this repository, primarily <code>otel4s-core*</code>, <code>otel4s-oteljava*</code>, and the
-        semantic-convention and instrumentation modules.</p>
-        <p>Artifacts that remain unstable are explicitly marked, such as
-        <code>*-experimental</code> semantic-convention modules. The pure Scala SDK backend lives
-        in the separate <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html">otel4s-sdk</a> project.</p>
+        <h2 id="quick-start" class="section"><a class="anchor-link left" href="#quick-start"><i class="icofont-laika link">&#xef71;</i></a>Quick start</h2>
+        <p>For a JVM application, add the OpenTelemetry Java backend, OTLP exporter, and autoconfiguration extension.</p>
+        <div class="tab-container" data-tab-group="build-tool">
+          <ul class="tab-group">
+            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
+            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
+          </ul>
+          <div class="tab-content active" data-choice-name="sbt">
+            <p>Add these settings to <code>build.sbt</code>:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>,
+  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
+  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
+)
+</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span></code></pre>
+          </div>
+          <div class="tab-content" data-choice-name="scala-cli">
+            <p>Add these directives to the <code>*.scala</code> file:</p>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.1.0&quot;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot;
+//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span></code></pre>
+          </div>
+        </div>
+        <p>Create a tracer and meter, then record a span and counter measurement:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="keyword">for</span><span> {
+        </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.example.app&quot;</span><span>)
+        </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;com.example.app&quot;</span><span>)
+        </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;hello.count&quot;</span><span>).</span><span class="identifier">create</span><span>
+        </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>).</span><span class="identifier">surround</span><span> {
+          </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>().</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span> =&gt; </span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">&quot;hello&quot;</span><span>))
+        }
+      } </span><span class="keyword">yield</span><span> ()
+    }
+}</span></code></pre>
+        <p>For instrument types and recording patterns, see
+        <a href="how-to-metrics/record-application-metrics.html">Record application metrics</a>.</p>
+        <div class="callout info">
+          <i class="icofont-laika info">&#xef4e;</i>
+          <p><code>OtelJava.autoConfigured</code> creates an isolated, non-global SDK instance and uses OpenTelemetry Java&#39;s OTLP defaults
+          unless you configure them. Follow <a href="how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a> to set the service name and exporter
+          endpoint and verify the exported span.</p>
+        </div>
         
-        <h2 id="published-modules-in-this-repo" class="section"><a class="anchor-link left" href="#published-modules-in-this-repo"><i class="icofont-laika link">&#xef71;</i></a>Published modules in this repo</h2>
+        <h2 id="start-here" class="section"><a class="anchor-link left" href="#start-here"><i class="icofont-laika link">&#xef71;</i></a>Start here</h2>
+        <ul>
+          <li>To configure a JVM application and export telemetry, follow
+          <a href="how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</li>
+          <li>To instrument a library without choosing a backend for its users, see
+          <a href="explanations/modules-and-module-families.html#which-module-do-i-need">Modules and module families</a>.</li>
+          <li>To use a backend on Scala.js or Scala Native, see the separate <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html">otel4s SDK</a> project.</li>
+        </ul>
+        
+        <h2 id="guides" class="section"><a class="anchor-link left" href="#guides"><i class="icofont-laika link">&#xef71;</i></a>Guides</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Guide</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Configure the OpenTelemetry Java backend</td>
+              <td><a href="how-to-jvm-setup/">JVM setup</a></td>
+            </tr>
+            <tr>
+              <td>Create spans and propagate trace context</td>
+              <td><a href="how-to-tracing/">Tracing</a></td>
+            </tr>
+            <tr>
+              <td>Record application and runtime metrics</td>
+              <td><a href="how-to-metrics/">Metrics</a></td>
+            </tr>
+            <tr>
+              <td>Bridge application logs into OpenTelemetry</td>
+              <td><a href="how-to-logs/">Logs</a></td>
+            </tr>
+            <tr>
+              <td>Use generated OpenTelemetry attributes and metric specs</td>
+              <td><a href="how-to-semantic-conventions/">Semantic conventions</a></td>
+            </tr>
+            <tr>
+              <td>Assert exported telemetry in tests</td>
+              <td><a href="how-to-testkit/">Testkit</a></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="understand-otel4s" class="section"><a class="anchor-link left" href="#understand-otel4s"><i class="icofont-laika link">&#xef71;</i></a>Understand otel4s</h2>
+        <ul>
+          <li><a href="explanations/modules-and-module-families.html">Modules and module families</a> explains how the API, backend,
+          instrumentation, semantic convention, and testkit artifacts fit together.</li>
+          <li><a href="explanations/oteljava-jvm-backend.html">The JVM backend</a> explains when to use <code>OtelJava.autoConfigured</code> or
+          <code>OtelJava.global</code>.</li>
+          <li><a href="explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a> describes the tracing
+          context model used by the core APIs.</li>
+          <li><a href="explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a> describes the stable and
+          experimental semantic convention modules.</li>
+        </ul>
+        
+        <h2 id="api-reference" class="section"><a class="anchor-link left" href="#api-reference"><i class="icofont-laika link">&#xef71;</i></a>API reference</h2>
+        <ul>
+          <li><a href="instrumentation/tracing.html">Tracing API</a></li>
+          <li><a href="instrumentation/metrics.html">Metrics API</a></li>
+          <li><a href="instrumentation/logs.html">Logs API</a></li>
+          <li><a href="instrumentation/tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
+          <li><a href="instrumentation/semantic-conventions.html">Semantic conventions</a></li>
+          <li><a href="oteljava/testkit.html">OpenTelemetry Java testkit</a></li>
+        </ul>
+        <p>To run instrumented code without an SDK or exporter, provide a
+        <a href="how-to-tracing/provide-a-no-op-tracer.html">no-op tracer</a> or
+        <a href="how-to-metrics/provide-a-no-op-meter.html">no-op meter</a>.</p>
+        
+        <h2 id="published-modules" class="section"><a class="anchor-link left" href="#published-modules"><i class="icofont-laika link">&#xef71;</i></a>Published modules</h2>
+        <p><code>otel4s</code> 1.0 establishes the compatibility baseline for the modules published from this repository. Artifacts that
+        remain unstable are explicitly marked, including the <code>*-experimental</code> semantic convention modules.</p>
         <table>
           <thead>
             <tr>
@@ -295,134 +368,13 @@
           </tbody>
         </table>
         
-        <h2 id="how-to-choose-a-backend" class="section"><a class="anchor-link left" href="#how-to-choose-a-backend"><i class="icofont-laika link">&#xef71;</i></a>How to choose a backend</h2>
-        <p>For most cases, <code>otel4s-oteljava</code> is the recommended backend, 
-        that utilizes <a href="https://opentelemetry.io/docs/languages/java/">OpenTelemetry Java</a> library under the hood.
-        You can benefit from various integrations and low memory overhead.</p>
-        <p>If you need a pure Scala backend across JVM, Scala.js, and Scala Native, use
-        the separate <a href="https://typelevel.org/otel4s-sdk/sdk/overview.html">otel4s-sdk</a> project.</p>
-        
-        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <p>If you develop an application and want to export the telemetry, use <code>otel4s-oteljava</code> module. 
-        If you develop a library, check out this <a href="explanations/modules-and-module-families.html#which-module-do-i-need">recommendation</a>.</p>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <p>Add settings to the <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>, </span><span class="comment">// &lt;1&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>, </span><span class="comment">// &lt;2&gt;
-</span><span>  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span> </span><span class="comment">// &lt;3&gt;
-</span><span>)
-</span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span><span> </span><span class="comment">// &lt;4&gt;</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add directives to the <code>*.scala</code> file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.1.0&quot; // &lt;1&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot; // &lt;2&gt;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot; // &lt;3&gt;
-//&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot; // &lt;4&gt;</span></code></pre>
-          </div>
-        </div>
-        <ol class="arabic">
-          <li>Add the <code>otel4s-oteljava</code> library<br></li>
-          <li>Add an OpenTelemetry exporter. Without the exporter, the application will crash<br></li>
-          <li>Add an OpenTelemetry autoconfigure extension<br></li>
-          <li>Enable OpenTelemetry SDK <a href="https://opentelemetry.io/docs/languages/java/configuration/">autoconfigure mode</a><br></li>
-        </ol>
-        <p>Then, the instance can be materialized:</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MeterProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracerProvider</span><span>
-
-</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
-      </span><span class="identifier">program</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">meterProvider</span><span>, </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>)
-    }
-
-  </span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>(
-      </span><span class="identifier">meterProvider</span><span>: </span><span class="type-name">MeterProvider</span><span>[</span><span class="type-name">IO</span><span>],
-      </span><span class="identifier">tracerProvider</span><span>: </span><span class="type-name">TracerProvider</span><span>[</span><span class="type-name">IO</span><span>]
-  ): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
-    </span><span class="keyword">for</span><span> {
-      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
-      </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>)
-
-      </span><span class="comment">// create a counter and increment its value
-</span><span>      </span><span class="identifier">counter</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">counter</span><span>[</span><span class="type-name">Long</span><span>](</span><span class="string-literal">&quot;counter&quot;</span><span>).</span><span class="identifier">create</span><span>
-      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">counter</span><span>.</span><span class="identifier">inc</span><span>()
-
-      </span><span class="comment">// create and materialize a span
-</span><span>      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;span&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
-    } </span><span class="keyword">yield</span><span> ()
-}</span></code></pre>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p><code>OtelJava.autoConfigured</code> creates an <strong>isolated</strong> <strong>non-global</strong> instance.
-          If you create multiple instances, those instances won&#39;t interoperate (i.e. be able to see each others spans).</p>
-        </div>
-        
-        <h2 id="examples" class="section"><a class="anchor-link left" href="#examples"><i class="icofont-laika link">&#xef71;</i></a>Examples</h2>
+        <h2 id="examples-and-integrations" class="section"><a class="anchor-link left" href="#examples-and-integrations"><i class="icofont-laika link">&#xef71;</i></a>Examples and integrations</h2>
         <ul>
-          <li>Start tracing your application with <a href="examples/jaeger-docker/">Jaeger and Docker</a></li>
-          <li>Implement tracing and metrics with <a href="examples/honeycomb/">Honeycomb</a></li>
+          <li>Run otel4s locally with <a href="examples/jaeger-docker/">Jaeger and Docker</a> or
+          <a href="examples/grafana/">Grafana</a>.</li>
+          <li>Export traces and metrics to <a href="examples/honeycomb/">Honeycomb</a> or <a href="examples/dash0/">Dash0</a>.</li>
+          <li>Find integrations for other Typelevel libraries on the <a href="ecosystem.html">Ecosystem</a> page.</li>
         </ul>
-        
-        <h2 id="the-noop-tracer-and-meter" class="section"><a class="anchor-link left" href="#the-noop-tracer-and-meter"><i class="icofont-laika link">&#xef71;</i></a>The noop Tracer and Meter</h2>
-        <p>If you use a library that supports otel4s (eg <a href="https://github.com/typelevel/skunk">Skunk</a>) but do not want to use Open Telemetry, 
-        then you can place the <a href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html">No-op Tracer</a> into implicit scope.</p>
-        <p>The no-op <code>Tracer</code> or <code>Meter</code> can be provided in the following ways:</p>
-        <div class="tab-container" data-tab-group="scala-version">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="scala-2"><a href="#">Scala 2</a></li>
-            <li class="tab" data-choice-name="scala-3"><a href="#">Scala 3</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="scala-2">
-            <p>By using the <code>import Tracer.Implicits.noop</code> and <code>import Meter.Implicits.noop</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
-
-</span><span class="keyword">import</span><span> </span><span class="type-name">Tracer</span><span>.</span><span class="type-name">Implicits</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
-            <p>By defining an <code>implicit val</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Meter</span><span>: </span><span class="type-name">Tracer</span><span>]: </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
-
-</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Meter</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-3">
-            <p>By using the <code>import Tracer.Implicits.noop</code> and <code>import Meter.Implicits.noop</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
-
-</span><span class="keyword">import</span><span> </span><span class="type-name">Tracer</span><span>.</span><span class="type-name">Implicits</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
-            <p>By defining a <code>given</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">program</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]](</span><span class="keyword">using</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>], </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">F</span><span>]): </span><span class="type-name">F</span><span>[</span><span class="type-name">Unit</span><span>] = ???
-
-</span><span class="keyword">given</span><span> </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Meter</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">given</span><span> </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">Tracer</span><span>.</span><span class="identifier">noop</span><span>
-</span><span class="keyword">val</span><span> </span><span class="identifier">io</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = </span><span class="identifier">program</span><span>[</span><span class="type-name">IO</span><span>]</span></code></pre>
-          </div>
-        </div>
 
         
 <hr class="footer-rule"/>

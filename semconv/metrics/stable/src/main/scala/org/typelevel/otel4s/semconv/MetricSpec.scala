@@ -17,6 +17,10 @@
 package org.typelevel.otel4s.semconv
 
 /** The metric specification.
+  *
+  * @see
+  *   How-to guide
+  *   [[https://typelevel.org/otel4s/how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html Create metrics from semantic metric specs]]
   */
 sealed trait MetricSpec {
 

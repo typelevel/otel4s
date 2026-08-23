@@ -1,166 +1,98 @@
-# Semantic conventions
+# Semantic conventions reference
 
-Semantic conventions standardize attribute and metric names across instrumentation so telemetry is comparable across
-libraries and services. The `semconv` modules provide generated, typesafe attribute keys and metric specs that match the
-[OpenTelemetry semantic conventions][opentelemetry-semconv] specification.
+The semantic-convention modules contain generated attribute keys and metric specs based on the
+[OpenTelemetry semantic conventions][opentelemetry-semconv].
 
-## Modules overview
+For the stable and experimental module model, including binary compatibility guarantees, see
+[Semantic conventions and stability](../explanations/semantic-conventions-and-stability.md).
 
-| Module                                | Stability  | Package prefix                                         |
-|:--------------------------------------|:-----------|:-------------------------------------------------------|
-| `otel4s-semconv`                      | Stable     | `org.typelevel.otel4s.semconv.attributes`              |
-| `otel4s-semconv-metrics`              | Stable     | `org.typelevel.otel4s.semconv.metrics`                 |
-| `otel4s-semconv-experimental`         | Incubating | `org.typelevel.otel4s.semconv.experimental.attributes` |
-| `otel4s-semconv-metrics-experimental` | Incubating | `org.typelevel.otel4s.semconv.experimental.metrics`    |
+## Artifacts
 
-Stable modules track the stable spec, while experimental modules track incubating conventions. 
-Use stable modules by default. The experimental modules track incubating semantic conventions and can change between
-versions. 
+| Artifact | Stability | Package prefix | Contents |
+|:--|:--|:--|:--|
+| `otel4s-semconv` | Stable | `org.typelevel.otel4s.semconv.attributes` | Generated stable attribute keys and values |
+| `otel4s-semconv-metrics` | Stable | `org.typelevel.otel4s.semconv.metrics` | Generated stable metric specs and constructors |
+| `otel4s-semconv-experimental` | Experimental | `org.typelevel.otel4s.semconv.experimental.attributes` | Generated incubating attribute keys and values |
+| `otel4s-semconv-metrics-experimental` | Experimental | `org.typelevel.otel4s.semconv.experimental.metrics` | Generated incubating metric specs and constructors |
 
-@:callout(warning)
+All four artifacts are available for JVM, Scala.js, and Scala Native.
 
-The `*-experimental` modules have no binary-compatibility guarantees between releases and may introduce binary breaking
-changes at any time.
+The two stable artifacts are covered by the otel4s binary compatibility policy. The two `*-experimental` artifacts
+provide no binary compatibility guarantee between releases.
 
-@:@
+## Generated attributes
 
-## Getting started
+Attribute modules group `AttributeKey[A]` values by semantic domain. For example,
+`org.typelevel.otel4s.semconv.attributes.HttpAttributes.HttpRequestMethod` is an `AttributeKey[String]` with the name
+`http.request.method`.
 
-@:select(build-tool)
+Some modules also contain generated value types for attributes with a defined set of values.
 
-@:choice(sbt)
+For task guidance, see [Use semantic attributes](../how-to-semantic-conventions/use-semantic-attributes.md).
 
-```scala
-libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-semconv"         % "@VERSION@", // stable attributes
-  "org.typelevel" %% "otel4s-semconv-metrics" % "@VERSION@", // stable metric specs
-)
-```
+## `MetricSpec`
 
-@:choice(scala-cli)
+Each generated metric object implements `MetricSpec` and exposes:
 
-```scala
-//> using dep "org.typelevel::otel4s-semconv:@VERSION@"         // stable attributes
-//> using dep "org.typelevel::otel4s-semconv-metrics:@VERSION@" // stable metric specs
-```
+| Member | Type | Description |
+|:--|:--|:--|
+| `name` | `String` | Canonical metric name |
+| `description` | `String` | Canonical metric description |
+| `unit` | `String` | UCUM metric unit |
+| `stability` | `Stability` | Stability recorded in the source convention |
+| `attributeSpecs` | `List[AttributeSpec[_]]` | Attributes defined for the metric |
 
-@:@
+Each enclosing domain object also exposes `specs`, which contains all metric specs generated for that domain.
 
-If you need incubating conventions, add the `-experimental` variants instead of the stable ones.
+## Generated metric constructors
 
-## Use semantic attribute keys
+Each generated metric object has a `create` method that uses the implicit `Meter[F]` to create the corresponding
+instrument with the spec's name, description, and unit.
 
-The generated attribute keys are typesafe and can be used to build an attribute.
+Counter, gauge, and up-down-counter constructors take the effect and measurement types. Histogram constructors also
+take `BucketBoundaries`.
 
-```scala mdoc:compile-only
-import org.typelevel.otel4s.Attributes
-import org.typelevel.otel4s.semconv.attributes.{ExceptionAttributes, HttpAttributes}
+For task guidance, see
+[Create metrics from semantic metric specs](../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.md).
 
-val attrs = Attributes(
-  HttpAttributes.HttpRequestMethod("GET"),
-  HttpAttributes.HttpResponseStatusCode(200),
-  ExceptionAttributes.ExceptionType("java.lang.RuntimeException")
-)
-```
+## `AttributeSpec`
 
-The same keys work for spans, log records, or metric attributes because they are plain `AttributeKey[A]` values.
+Each entry in `MetricSpec.attributeSpecs` exposes:
 
-## Use semantic metric specs
+| Member | Type | Description |
+|:--|:--|:--|
+| `key` | `AttributeKey[A]` | Generated semantic attribute key |
+| `examples` | `List[A]` | Example values from the source convention |
+| `requirement` | `Requirement` | Requirement level and optional note |
+| `stability` | `Stability` | Attribute stability recorded in the source convention |
 
-Semantic metric specs provide the canonical metric name, unit, description, and attribute expectations.
+## `Requirement`
 
-```scala mdoc:compile-only
-import org.typelevel.otel4s.metrics.{BucketBoundaries, Histogram, Meter}
-import org.typelevel.otel4s.semconv.metrics.HttpMetrics
+`Requirement.level` is one of:
 
-def createHttpClientDuration[F[_]: Meter](
-  boundaries: BucketBoundaries
-): F[Histogram[F, Double]] =
-  Meter[F]
-    .histogram[Double](HttpMetrics.ClientRequestDuration.name)
-    .withUnit(HttpMetrics.ClientRequestDuration.unit)
-    .withDescription(HttpMetrics.ClientRequestDuration.description)
-    .withExplicitBucketBoundaries(boundaries)
-    .create
-```
+| Level | Meaning |
+|:--|:--|
+| `Required` | The metric implementation must record the attribute |
+| `ConditionalRequired` | The implementation must record the attribute when the accompanying condition applies |
+| `Recommended` | The implementation should record the attribute when applicable |
+| `OptIn` | The attribute is available when users explicitly enable or request it |
 
-For convenience, every metric also has the generated `create` method, that creates an instrument with the
-spec's name, unit, and description. The example below is equivalent to the previous one:
+`Requirement.note` contains the condition or additional guidance when the source convention provides one.
 
-```scala mdoc:compile-only
-import org.typelevel.otel4s.metrics.{BucketBoundaries, Histogram, Meter}
-import org.typelevel.otel4s.semconv.metrics.HttpMetrics
+## `Stability`
 
-def createHttpClientDuration[F[_]: Meter](
-  boundaries: BucketBoundaries
-): F[Histogram[F, Double]] =
-  HttpMetrics.ClientRequestDuration.create[F, Double](boundaries)
-```
+The generated `Stability` values are `stable`, `development`, `releaseCandidate`, `alpha`, and `beta`.
 
-## Use metric specs in tests
+## Generation
 
-Metric specs are also useful for validating exported metrics. The example below checks that expected server metrics
-exist and that each exported metric matches the semantic name, unit, description, and required attributes.
+The semantic attribute files and domain-specific metric files under `semconv` are generated from the configured
+OpenTelemetry semantic-convention source. Run `sbt semanticConventionsGenerate` to regenerate them.
 
-```scala mdoc:compile-only
-import cats.effect.IO
-import io.opentelemetry.sdk.metrics.data.{MetricData, PointData}
-import org.typelevel.otel4s.metrics.Meter
-import org.typelevel.otel4s.semconv.MetricSpec
-import org.typelevel.otel4s.semconv.Requirement
-import org.typelevel.otel4s.semconv.metrics.HttpMetrics
-import org.typelevel.otel4s.oteljava.testkit.metrics._
+## Related material
 
-def semanticTest(scenario: Meter[IO] => IO[Unit]): IO[Unit] = {
-  // the set of metrics to check
-  val specs = List(
-    HttpMetrics.ServerRequestDuration
-  )
-
-  MetricsTestkit.inMemory[IO]().use { testkit =>
-    testkit.meterProvider.get("meter").flatMap { meter =>
-      for {
-        // run a scenario to generate metrics 
-        _       <- scenario(meter)
-        // collect metrics
-        metrics <- testkit.collectMetrics
-        // ensure the expected metrics exist and match the spec
-      } yield assertExpected(metrics, specs.map(specExpectation))
-    }
-  }
-}
-
-def assertExpected(metrics: List[MetricData], expected: List[MetricExpectation]): Unit =
-  MetricExpectations.checkAll(metrics, expected) match {
-    case Right(_) =>
-      ()
-    case Left(mismatches) =>
-      // or use an assert function from the testing framework here
-      sys.error(MetricExpectations.format(mismatches))
-  }
-
-def specExpectation(spec: MetricSpec): MetricExpectation = {
-  val required = spec.attributeSpecs
-    .filter(_.requirement.level == Requirement.Level.Required)
-    .map(_.key)
-    .toSet
-
-  MetricExpectation
-    .name(spec.name)
-    .description(spec.description)
-    .unit(spec.unit)
-    .where(s"[${spec.name}] is missing required semantic attributes") { metric =>
-      import scala.jdk.CollectionConverters._
-      import org.typelevel.otel4s.oteljava.AttributeConverters._
-
-      val current = metric.getData.getPoints.asScala
-        .flatMap(_.asInstanceOf[PointData].getAttributes.asMap().keySet().asScala)
-        .map(_.toScala)
-        .toSet
-
-      current == required
-    }
-}
-```
+- [Semantic conventions and stability](../explanations/semantic-conventions-and-stability.md)
+- [Use semantic attributes](../how-to-semantic-conventions/use-semantic-attributes.md)
+- [Create metrics from semantic metric specs](../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.md)
+- [Test metrics against semantic conventions](../how-to-testkit/test-metrics-against-semantic-conventions.md)
 
 [opentelemetry-semconv]: https://opentelemetry.io/docs/specs/semconv/

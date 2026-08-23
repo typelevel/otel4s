@@ -119,6 +119,8 @@ def registerStorageSize(
 
 ## What's next
 
+- Create an instrument with metadata from an OpenTelemetry semantic convention:
+  [Create metrics from semantic metric specs](../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.md)
 - Export runtime metrics from Cats Effect:
   [Register Cats Effect runtime metrics](register-cats-effect-runtime-metrics.md)
 - Customize histogram buckets for a specific metric:

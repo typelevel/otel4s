@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Use IOLocalContextStorage with the testkit</title>
+  <title>Test metrics against semantic conventions</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -130,10 +130,10 @@
     <li class="level1 nav-header">How-to | Testkit</li>
     <li class="level2 nav-leaf"><a href="index.html">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
-    <li class="level2 nav-leaf"><a href="test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Test metrics against semantic conventions</a></li>
     <li class="level2 nav-leaf"><a href="test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
     <li class="level2 nav-leaf"><a href="test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Use IOLocalContextStorage with the testkit</a></li>
+    <li class="level2 nav-leaf"><a href="use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
     <li class="level1 nav-header">Explanations</li>
     <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
@@ -170,11 +170,14 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Use IOLocalContextStorage with the testkit</a></p>
+  <p class="header"><a href="#">Test metrics against semantic conventions</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#_1-add-the-context-storage-testkit">1. Add the context-storage testkit</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-provide-the-test-local-context">2. Provide the test local context</a></li>
+    <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-test-dependencies">1. Add the test dependencies</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-run-the-metric-implementation-with-the-testkit-meter">2. Run the metric implementation with the testkit meter</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-define-the-expectation-and-assertion-helpers">3. Define the expectation and assertion helpers</a></li>
+    <li class="level1 nav-leaf"><a href="#_4-collect-and-check-the-metric">4. Collect and check the metric</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -184,59 +187,127 @@
 
       <main class="content">
 
-        <h1 id="use-iolocalcontextstorage-with-the-testkit" class="title">Use IOLocalContextStorage with the testkit</h1>
-        <p>Use <code>IOLocalTestContextStorage</code> when application code uses <code>IOLocalContextStorage</code> and a test runs that code with an
-        OpenTelemetry Java testkit.</p>
-        <p>The testkit depends on the OpenTelemetry Java SDK testing module, which installs a test-specific <code>ContextStorageProvider</code>.
-        Using <code>IOLocalContextStorage.localProvider</code> directly with that provider produces an error like:</p>
-        <pre class="keep-together pdf epub"><code class="text">java.lang.IllegalStateException: IOLocalContextStorage is not configured for use as the ContextStorageProvider.
-The current ContextStorage is: io.opentelemetry.sdk.testing.context.SettableContextStorageProvider$SettableContextStorage</code></pre>
+        <h1 id="test-metrics-against-semantic-conventions" class="title">Test metrics against semantic conventions</h1>
+        <p>Use generated metric specs with <code>MetricsTestkit</code> to verify that an instrumentation emits the canonical metric name,
+        type, description, unit, and required attributes.</p>
         
-        <h2 id="_1-add-the-context-storage-testkit" class="section"><a class="anchor-link left" href="#_1-add-the-context-storage-testkit"><i class="icofont-laika link">&#xef71;</i></a>1. Add the context-storage testkit</h2>
-        <p>This page assumes the test already depends on <code>otel4s-oteljava-testkit</code> and the application is configured to use
-        <code>IOLocalContextStorage</code>. See
-        <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a>
-        for the application setup.</p>
+        <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <ul>
+          <li><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+          <li>A metric implementation that can run with a supplied <code>Meter</code></li>
+        </ul>
+        
+        <h2 id="_1-add-the-test-dependencies" class="section"><a class="anchor-link left" href="#_1-add-the-test-dependencies"><i class="icofont-laika link">&#xef71;</i></a>1. Add the test dependencies</h2>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <p>Add the context-storage testkit to the test scope in <code>build.sbt</code>:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> +=
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span> % </span><span class="type-name">Test</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span> % </span><span class="type-name">Test</span><span>,
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-semconv-metrics&quot;</span><span>  % </span><span class="string-literal">&quot;1.1.0&quot;</span><span> % </span><span class="type-name">Test</span><span>,
+)</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add the test dependency to the test source file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-context-storage-testkit:1.1.0&quot;</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-testkit:1.1.0&quot;
+//&gt; using test.dep &quot;org.typelevel::otel4s-semconv-metrics:1.1.0&quot;</span></code></pre>
           </div>
         </div>
         
-        <h2 id="_2-provide-the-test-local-context" class="section"><a class="anchor-link left" href="#_2-provide-the-test-local-context"><i class="icofont-laika link">&#xef71;</i></a>2. Provide the test local context</h2>
-        <p>Define <code>IOLocalTestContextStorage.localProvider[IO]</code> as the <code>LocalContextProvider</code> used to create the testkit.</p>
+        <h2 id="_2-run-the-metric-implementation-with-the-testkit-meter" class="section"><a class="anchor-link left" href="#_2-run-the-metric-implementation-with-the-testkit-meter"><i class="icofont-laika link">&#xef71;</i></a>2. Run the metric implementation with the testkit meter</h2>
+        <p>This example records the stable HTTP client request duration metric. In a project test, call the instrumentation entry
+        point you want to verify instead.</p>
         <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">BucketBoundaries</span><span>, </span><span class="type-name">Meter</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.{</span><span class="type-name">HttpAttributes</span><span>, </span><span class="type-name">ServerAttributes</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">localContextProvider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] =
-    </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">emitClientRequestDuration</span><span>(</span><span class="identifier">meter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
+  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">currentMeter</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="identifier">meter</span><span>
 
-  </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="identifier">testkit</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
-      </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;test&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+  </span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>
+    .</span><span class="identifier">create</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Double</span><span>](</span><span class="type-name">BucketBoundaries</span><span>(</span><span class="number-literal">0.01</span><span>, </span><span class="number-literal">0.05</span><span>, </span><span class="number-literal">0.1</span><span>, </span><span class="number-literal">0.5</span><span>, </span><span class="number-literal">1.0</span><span>))
+    .</span><span class="identifier">flatMap</span><span> {
+      </span><span class="identifier">_</span><span>.</span><span class="identifier">record</span><span>(
+        </span><span class="number-literal">0.125</span><span>,
+        </span><span class="type-name">HttpAttributes</span><span>.</span><span class="type-name">HttpRequestMethod</span><span>(</span><span class="string-literal">&quot;GET&quot;</span><span>),
+        </span><span class="type-name">ServerAttributes</span><span>.</span><span class="type-name">ServerAddress</span><span>(</span><span class="string-literal">&quot;example.com&quot;</span><span>),
+        </span><span class="type-name">ServerAttributes</span><span>.</span><span class="type-name">ServerPort</span><span>(</span><span class="number-literal">443L</span><span>),
+      )
     }
-  }
 }</span></code></pre>
-        <p>The same provider works with <code>MetricsTestkit</code>, <code>TracesTestkit</code>, and <code>LogsTestkit</code>.</p>
+        
+        <h2 id="_3-define-the-expectation-and-assertion-helpers" class="section"><a class="anchor-link left" href="#_3-define-the-expectation-and-assertion-helpers"><i class="icofont-laika link">&#xef71;</i></a>3. Define the expectation and assertion helpers</h2>
+        <p>Select the <code>MetricExpectation</code> builder that matches the metric instrument. <code>histogramExpectation</code> checks the generated
+        metadata and verifies that every exported point contains the attributes marked as required by the spec. <code>assertMetrics</code>
+        converts structured mismatches into the failure type used by the test.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.</span><span class="type-name">MetricData</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.{</span><span class="type-name">MetricSpec</span><span>, </span><span class="type-name">Requirement</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">AttributesExpectation</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">MetricExpectation</span><span>, </span><span class="type-name">MetricExpectations</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">PointExpectation</span><span>, </span><span class="type-name">PointSetExpectation</span><span>}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">histogramExpectation</span><span>(</span><span class="identifier">spec</span><span>: </span><span class="type-name">MetricSpec</span><span>): </span><span class="type-name">MetricExpectation</span><span>.</span><span class="type-name">Histogram</span><span> = {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">requiredKeys</span><span> = </span><span class="identifier">spec</span><span>.</span><span class="identifier">attributeSpecs</span><span>.</span><span class="identifier">collect</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="identifier">attribute</span><span> </span><span class="keyword">if</span><span> </span><span class="identifier">attribute</span><span>.</span><span class="identifier">requirement</span><span>.</span><span class="identifier">level</span><span> == </span><span class="type-name">Requirement</span><span>.</span><span class="type-name">Level</span><span>.</span><span class="type-name">Required</span><span> =&gt;
+      </span><span class="identifier">attribute</span><span>.</span><span class="identifier">key</span><span>
+  }
+
+  </span><span class="keyword">val</span><span> </span><span class="identifier">requiredAttributes</span><span> =
+    </span><span class="type-name">AttributesExpectation</span><span>.</span><span class="identifier">where</span><span>(
+      </span><span class="string-literal">s&quot;required attributes: </span><span class="substitution">${requiredKeys.map(_.name).sorted.mkString(&quot;, &quot;)}</span><span class="string-literal">&quot;</span><span>
+    ) { </span><span class="identifier">attributes</span><span> =&gt;
+      </span><span class="identifier">requiredKeys</span><span>.</span><span class="identifier">forall</span><span> { </span><span class="identifier">key</span><span> =&gt;
+        </span><span class="identifier">attributes</span><span>.</span><span class="identifier">exists</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">key</span><span> == </span><span class="identifier">key</span><span>)
+      }
+    }
+
+  </span><span class="type-name">MetricExpectation</span><span>
+    .</span><span class="identifier">histogram</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">name</span><span>)
+    .</span><span class="identifier">description</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">description</span><span>)
+    .</span><span class="identifier">unit</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">unit</span><span>)
+    .</span><span class="identifier">points</span><span>(
+      </span><span class="type-name">PointSetExpectation</span><span>.</span><span class="identifier">forall</span><span>(
+        </span><span class="type-name">PointExpectation</span><span>.</span><span class="identifier">histogram</span><span>.</span><span class="identifier">attributes</span><span>(</span><span class="identifier">requiredAttributes</span><span>)
+      )
+    )
+}
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertMetrics</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">MetricExpectation</span><span>*): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>: </span><span class="identifier">_</span><span>*) </span><span class="keyword">match</span><span> {
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>
+    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
+      </span><span class="type-name">IO</span><span>.</span><span class="identifier">raiseError</span><span>(</span><span class="keyword">new</span><span> </span><span class="type-name">AssertionError</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>)))
+  }</span></code></pre>
+        <p><code>MetricSpec</code> does not expose the instrument type, so the helper chooses <code>MetricExpectation.histogram</code> explicitly. Use
+        the corresponding gauge or sum expectation for other metric instruments.</p>
+        
+        <h2 id="_4-collect-and-check-the-metric" class="section"><a class="anchor-link left" href="#_4-collect-and-check-the-metric"><i class="icofont-laika link">&#xef71;</i></a>4. Collect and check the metric</h2>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MetricsTestkit</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">testSemanticMetric</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">MetricsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
+    </span><span class="keyword">for</span><span> {
+      </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http-client&quot;</span><span>)
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">emitClientRequestDuration</span><span>(</span><span class="identifier">meter</span><span>)
+      </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
+      </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">assertMetrics</span><span>(
+        </span><span class="identifier">metrics</span><span>,
+        </span><span class="identifier">histogramExpectation</span><span>(</span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>),
+      )
+    } </span><span class="keyword">yield</span><span> ()
+  }</span></code></pre>
+        <p>Add implementation-specific expectations for measurement values, optional attributes, and bucket boundaries when they
+        are part of the behavior under test.</p>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
-          <li><a href="test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
-          <li><a href="test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+          <li>Create metrics with generated constructors:
+          <a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
+          <li>Look up the complete metrics expectation API:
+          <a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
         </ul>
 
         

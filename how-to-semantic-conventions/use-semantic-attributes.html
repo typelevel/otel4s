@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Use IOLocalContextStorage with the testkit</title>
+  <title>Use semantic attributes</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -121,19 +121,19 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
     <li class="level1 nav-header">How-to | Semantic conventions</li>
-    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/">Semantic conventions</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/use-semantic-attributes.html">Use semantic attributes</a></li>
-    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
+    <li class="level2 nav-leaf"><a href="index.html">Semantic conventions</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Use semantic attributes</a></li>
+    <li class="level2 nav-leaf"><a href="create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
     <li class="level1 nav-header">How-to | Logs</li>
     <li class="level2 nav-leaf"><a href="../how-to-logs/">Logs</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
     <li class="level1 nav-header">How-to | Testkit</li>
-    <li class="level2 nav-leaf"><a href="index.html">Testkit</a></li>
-    <li class="level2 nav-leaf"><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
-    <li class="level2 nav-leaf"><a href="test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
-    <li class="level2 nav-leaf"><a href="test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
-    <li class="level2 nav-leaf"><a href="test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Use IOLocalContextStorage with the testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
     <li class="level1 nav-header">Explanations</li>
     <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
@@ -170,11 +170,13 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Use IOLocalContextStorage with the testkit</a></p>
+  <p class="header"><a href="#">Use semantic attributes</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#_1-add-the-context-storage-testkit">1. Add the context-storage testkit</a></li>
-    <li class="level1 nav-leaf"><a href="#_2-provide-the-test-local-context">2. Provide the test local context</a></li>
+    <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
+    <li class="level1 nav-leaf"><a href="#_1-add-the-stable-attributes-module">1. Add the stable attributes module</a></li>
+    <li class="level1 nav-leaf"><a href="#_2-add-generated-attributes-to-telemetry">2. Add generated attributes to telemetry</a></li>
+    <li class="level1 nav-leaf"><a href="#_3-follow-the-semantic-requirements-for-each-attribute">3. Follow the semantic requirements for each attribute</a></li>
     <li class="level1 nav-leaf"><a href="#what-s-next">What&#39;s next</a></li>
   </ul>
 
@@ -184,59 +186,74 @@
 
       <main class="content">
 
-        <h1 id="use-iolocalcontextstorage-with-the-testkit" class="title">Use IOLocalContextStorage with the testkit</h1>
-        <p>Use <code>IOLocalTestContextStorage</code> when application code uses <code>IOLocalContextStorage</code> and a test runs that code with an
-        OpenTelemetry Java testkit.</p>
-        <p>The testkit depends on the OpenTelemetry Java SDK testing module, which installs a test-specific <code>ContextStorageProvider</code>.
-        Using <code>IOLocalContextStorage.localProvider</code> directly with that provider produces an error like:</p>
-        <pre class="keep-together pdf epub"><code class="text">java.lang.IllegalStateException: IOLocalContextStorage is not configured for use as the ContextStorageProvider.
-The current ContextStorage is: io.opentelemetry.sdk.testing.context.SettableContextStorageProvider$SettableContextStorage</code></pre>
+        <h1 id="use-semantic-attributes" class="title">Use semantic attributes</h1>
+        <p>Use generated semantic attributes when a span, metric, or log record represents a concept covered by the OpenTelemetry
+        semantic conventions.</p>
+        <p>This guide adds HTTP semantic attributes to a span. The same generated <code>AttributeKey</code> values work with metrics and log
+        records.</p>
         
-        <h2 id="_1-add-the-context-storage-testkit" class="section"><a class="anchor-link left" href="#_1-add-the-context-storage-testkit"><i class="icofont-laika link">&#xef71;</i></a>1. Add the context-storage testkit</h2>
-        <p>This page assumes the test already depends on <code>otel4s-oteljava-testkit</code> and the application is configured to use
-        <code>IOLocalContextStorage</code>. See
-        <a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a>
-        for the application setup.</p>
+        <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <ul>
+          <li><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+        </ul>
+        
+        <h2 id="_1-add-the-stable-attributes-module" class="section"><a class="anchor-link left" href="#_1-add-the-stable-attributes-module"><i class="icofont-laika link">&#xef71;</i></a>1. Add the stable attributes module</h2>
         <div class="tab-container" data-tab-group="build-tool">
           <ul class="tab-group">
             <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
             <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
           </ul>
           <div class="tab-content active" data-choice-name="sbt">
-            <p>Add the context-storage testkit to the test scope in <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> +=
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava-context-storage-testkit&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span> % </span><span class="type-name">Test</span></code></pre>
+  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-semconv&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
-            <p>Add the test dependency to the test source file:</p>
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using test.dep &quot;org.typelevel::otel4s-oteljava-context-storage-testkit:1.1.0&quot;</span></code></pre>
+            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-semconv:1.1.0&quot;</span></code></pre>
           </div>
         </div>
+        <p>The stable attributes are available under <code>org.typelevel.otel4s.semconv.attributes</code>.</p>
         
-        <h2 id="_2-provide-the-test-local-context" class="section"><a class="anchor-link left" href="#_2-provide-the-test-local-context"><i class="icofont-laika link">&#xef71;</i></a>2. Provide the test local context</h2>
-        <p>Define <code>IOLocalTestContextStorage.localProvider[IO]</code> as the <code>LocalContextProvider</code> used to create the testkit.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="type-name">OtelJavaTestkit</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">IOLocalTestContextStorage</span><span>
+        <h2 id="_2-add-generated-attributes-to-telemetry" class="section"><a class="anchor-link left" href="#_2-add-generated-attributes-to-telemetry"><i class="icofont-laika link">&#xef71;</i></a>2. Add generated attributes to telemetry</h2>
+        <p>Import the generated object for the convention you are implementing. Each member is an <code>AttributeKey[A]</code>, so applying
+        it to a value creates a typed <code>Attribute[A]</code>.</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.{</span><span class="type-name">IO</span><span>, </span><span class="type-name">IOApp</span><span>}
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.</span><span class="type-name">HttpAttributes</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">Tracer</span><span>
 
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">test</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">localContextProvider</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] =
-    </span><span class="type-name">IOLocalTestContextStorage</span><span>.</span><span class="identifier">localProvider</span><span>[</span><span class="type-name">IO</span><span>]
-
-  </span><span class="type-name">OtelJavaTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="identifier">testkit</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;service&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">tracer</span><span> =&gt;
-      </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;test&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">unit</span><span>)
+</span><span class="keyword">object</span><span> </span><span class="type-name">Main</span><span> </span><span class="keyword">extends</span><span> </span><span class="type-name">IOApp</span><span>.</span><span class="type-name">Simple</span><span> {
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">run</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+      </span><span class="identifier">otel4s</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;http-server&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span> =&gt;
+        </span><span class="identifier">handleRequest</span><span>
+      }
     }
-  }
+
+  </span><span class="keyword">def</span><span> </span><span class="declaration-name">handleRequest</span><span>(</span><span class="keyword">implicit</span><span> </span><span class="identifier">tracer</span><span>: </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+    </span><span class="type-name">Tracer</span><span>[</span><span class="type-name">IO</span><span>]
+      .</span><span class="identifier">span</span><span>(
+        </span><span class="string-literal">&quot;GET /users/{id}&quot;</span><span>,
+        </span><span class="type-name">HttpAttributes</span><span>.</span><span class="type-name">HttpRequestMethod</span><span>(</span><span class="string-literal">&quot;GET&quot;</span><span>),
+        </span><span class="type-name">HttpAttributes</span><span>.</span><span class="type-name">HttpResponseStatusCode</span><span>(</span><span class="number-literal">200L</span><span>),
+      )
+      .</span><span class="identifier">surround</span><span>(</span><span class="type-name">IO</span><span>.</span><span class="identifier">println</span><span>(</span><span class="string-literal">&quot;request handled&quot;</span><span>))
 }</span></code></pre>
-        <p>The same provider works with <code>MetricsTestkit</code>, <code>TracesTestkit</code>, and <code>LogsTestkit</code>.</p>
+        <p>The generated key fixes the attribute name and value type. The compiler rejects values of the wrong type.</p>
+        
+        <h2 id="_3-follow-the-semantic-requirements-for-each-attribute" class="section"><a class="anchor-link left" href="#_3-follow-the-semantic-requirements-for-each-attribute"><i class="icofont-laika link">&#xef71;</i></a>3. Follow the semantic requirements for each attribute</h2>
+        <p>Generated keys do not decide whether an attribute is required, recommended, conditionally required, or opt-in. They
+        also do not validate requirements such as cardinality limits or allowed values.</p>
+        <p>Read the Scaladoc on the generated key and the corresponding
+        <a href="https://opentelemetry.io/docs/specs/semconv/">OpenTelemetry semantic convention</a> before adding it to instrumentation.</p>
         
         <h2 id="what-s-next" class="section"><a class="anchor-link left" href="#what-s-next"><i class="icofont-laika link">&#xef71;</i></a>What&#39;s next</h2>
         <ul>
-          <li><a href="test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
-          <li><a href="test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
-          <li><a href="test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+          <li>Create an instrument from a generated metric definition:
+          <a href="create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
+          <li>Choose between stable and experimental modules:
+          <a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
+          <li>Look up generated packages and types:
+          <a href="../instrumentation/semantic-conventions.html">Semantic conventions reference</a></li>
         </ul>
 
         

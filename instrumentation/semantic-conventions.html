@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="Typelevel Laika + Helium Theme" />
-  <title>Semantic conventions</title>
+  <title>Semantic conventions reference</title>
   
   <meta name="author" content="Ross A. Baker"/>
   
@@ -120,17 +120,23 @@
     <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">How-to | Semantic conventions</li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/">Semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/use-semantic-attributes.html">Use semantic attributes</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
     <li class="level1 nav-header">How-to | Logs</li>
     <li class="level2 nav-leaf"><a href="../how-to-logs/">Logs</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
     <li class="level1 nav-header">How-to | Testkit</li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
     <li class="level2 nav-leaf"><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
     <li class="level1 nav-header">Explanations</li>
     <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
     <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
@@ -143,7 +149,7 @@
     <li class="level2 nav-leaf"><a href="tracing.html">Tracing API reference</a></li>
     <li class="level2 nav-leaf"><a href="tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
     <li class="level2 nav-leaf"><a href="logs.html">Logs API reference</a></li>
-    <li class="level2 active nav-leaf"><a href="#">Semantic conventions</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Semantic conventions reference</a></li>
     <li class="level1 nav-header">OtelJava</li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
     <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
@@ -164,14 +170,18 @@
 
       
 <nav id="page-nav">
-  <p class="header"><a href="#">Semantic conventions</a></p>
+  <p class="header"><a href="#">Semantic conventions reference</a></p>
 
   <ul class="nav-list">
-    <li class="level1 nav-leaf"><a href="#modules-overview">Modules overview</a></li>
-    <li class="level1 nav-leaf"><a href="#getting-started">Getting started</a></li>
-    <li class="level1 nav-leaf"><a href="#use-semantic-attribute-keys">Use semantic attribute keys</a></li>
-    <li class="level1 nav-leaf"><a href="#use-semantic-metric-specs">Use semantic metric specs</a></li>
-    <li class="level1 nav-leaf"><a href="#use-metric-specs-in-tests">Use metric specs in tests</a></li>
+    <li class="level1 nav-leaf"><a href="#artifacts">Artifacts</a></li>
+    <li class="level1 nav-leaf"><a href="#generated-attributes">Generated attributes</a></li>
+    <li class="level1 nav-leaf"><a href="#metricspec"><code>MetricSpec</code></a></li>
+    <li class="level1 nav-leaf"><a href="#generated-metric-constructors">Generated metric constructors</a></li>
+    <li class="level1 nav-leaf"><a href="#attributespec"><code>AttributeSpec</code></a></li>
+    <li class="level1 nav-leaf"><a href="#requirement"><code>Requirement</code></a></li>
+    <li class="level1 nav-leaf"><a href="#stability"><code>Stability</code></a></li>
+    <li class="level1 nav-leaf"><a href="#generation">Generation</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
   </ul>
 
   <p class="footer"></p>
@@ -180,18 +190,20 @@
 
       <main class="content">
 
-        <h1 id="semantic-conventions" class="title">Semantic conventions</h1>
-        <p>Semantic conventions standardize attribute and metric names across instrumentation so telemetry is comparable across
-        libraries and services. The <code>semconv</code> modules provide generated, typesafe attribute keys and metric specs that match the
-        <a href="https://opentelemetry.io/docs/specs/semconv/">OpenTelemetry semantic conventions</a> specification.</p>
+        <h1 id="semantic-conventions-reference" class="title">Semantic conventions reference</h1>
+        <p>The semantic-convention modules contain generated attribute keys and metric specs based on the
+        <a href="https://opentelemetry.io/docs/specs/semconv/">OpenTelemetry semantic conventions</a>.</p>
+        <p>For the stable and experimental module model, including binary compatibility guarantees, see
+        <a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a>.</p>
         
-        <h2 id="modules-overview" class="section"><a class="anchor-link left" href="#modules-overview"><i class="icofont-laika link">&#xef71;</i></a>Modules overview</h2>
+        <h2 id="artifacts" class="section"><a class="anchor-link left" href="#artifacts"><i class="icofont-laika link">&#xef71;</i></a>Artifacts</h2>
         <table>
           <thead>
             <tr>
-              <th>Module</th>
+              <th>Artifact</th>
               <th>Stability</th>
               <th>Package prefix</th>
+              <th>Contents</th>
             </tr>
           </thead>
           <tbody>
@@ -199,149 +211,165 @@
               <td><code>otel4s-semconv</code></td>
               <td>Stable</td>
               <td><code>org.typelevel.otel4s.semconv.attributes</code></td>
+              <td>Generated stable attribute keys and values</td>
             </tr>
             <tr>
               <td><code>otel4s-semconv-metrics</code></td>
               <td>Stable</td>
               <td><code>org.typelevel.otel4s.semconv.metrics</code></td>
+              <td>Generated stable metric specs and constructors</td>
             </tr>
             <tr>
               <td><code>otel4s-semconv-experimental</code></td>
-              <td>Incubating</td>
+              <td>Experimental</td>
               <td><code>org.typelevel.otel4s.semconv.experimental.attributes</code></td>
+              <td>Generated incubating attribute keys and values</td>
             </tr>
             <tr>
               <td><code>otel4s-semconv-metrics-experimental</code></td>
-              <td>Incubating</td>
+              <td>Experimental</td>
               <td><code>org.typelevel.otel4s.semconv.experimental.metrics</code></td>
+              <td>Generated incubating metric specs and constructors</td>
             </tr>
           </tbody>
         </table>
-        <p>Stable modules track the stable spec, while experimental modules track incubating conventions. 
-        Use stable modules by default. The experimental modules track incubating semantic conventions and can change between
-        versions. </p>
-        <div class="callout warning">
-          <i class="icofont-laika warning">&#xf026;</i>
-          <p>The <code>*-experimental</code> modules have no binary-compatibility guarantees between releases and may introduce binary breaking
-          changes at any time.</p>
-        </div>
+        <p>All four artifacts are available for JVM, Scala.js, and Scala Native.</p>
+        <p>The two stable artifacts are covered by the otel4s binary compatibility policy. The two <code>*-experimental</code> artifacts
+        provide no binary compatibility guarantee between releases.</p>
         
-        <h2 id="getting-started" class="section"><a class="anchor-link left" href="#getting-started"><i class="icofont-laika link">&#xef71;</i></a>Getting started</h2>
-        <div class="tab-container" data-tab-group="build-tool">
-          <ul class="tab-group">
-            <li class="tab active" data-choice-name="sbt"><a href="#">sbt</a></li>
-            <li class="tab" data-choice-name="scala-cli"><a href="#">Scala CLI</a></li>
-          </ul>
-          <div class="tab-content active" data-choice-name="sbt">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-semconv&quot;</span><span>         % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>, </span><span class="comment">// stable attributes
-</span><span>  </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-semconv-metrics&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>, </span><span class="comment">// stable metric specs
-</span><span>)</span></code></pre>
-          </div>
-          <div class="tab-content" data-choice-name="scala-cli">
-            <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-semconv:1.1.0&quot;         // stable attributes
-//&gt; using dep &quot;org.typelevel::otel4s-semconv-metrics:1.1.0&quot; // stable metric specs</span></code></pre>
-          </div>
-        </div>
-        <p>If you need incubating conventions, add the <code>-experimental</code> variants instead of the stable ones.</p>
+        <h2 id="generated-attributes" class="section"><a class="anchor-link left" href="#generated-attributes"><i class="icofont-laika link">&#xef71;</i></a>Generated attributes</h2>
+        <p>Attribute modules group <code>AttributeKey[A]</code> values by semantic domain. For example,
+        <code>org.typelevel.otel4s.semconv.attributes.HttpAttributes.HttpRequestMethod</code> is an <code>AttributeKey[String]</code> with the name
+        <code>http.request.method</code>.</p>
+        <p>Some modules also contain generated value types for attributes with a defined set of values.</p>
+        <p>For task guidance, see <a href="../how-to-semantic-conventions/use-semantic-attributes.html">Use semantic attributes</a>.</p>
         
-        <h2 id="use-semantic-attribute-keys" class="section"><a class="anchor-link left" href="#use-semantic-attribute-keys"><i class="icofont-laika link">&#xef71;</i></a>Use semantic attribute keys</h2>
-        <p>The generated attribute keys are typesafe and can be used to build an attribute.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="type-name">Attributes</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">attributes</span><span>.{</span><span class="type-name">ExceptionAttributes</span><span>, </span><span class="type-name">HttpAttributes</span><span>}
-
-</span><span class="keyword">val</span><span> </span><span class="identifier">attrs</span><span> = </span><span class="type-name">Attributes</span><span>(
-  </span><span class="type-name">HttpAttributes</span><span>.</span><span class="type-name">HttpRequestMethod</span><span>(</span><span class="string-literal">&quot;GET&quot;</span><span>),
-  </span><span class="type-name">HttpAttributes</span><span>.</span><span class="type-name">HttpResponseStatusCode</span><span>(</span><span class="number-literal">200</span><span>),
-  </span><span class="type-name">ExceptionAttributes</span><span>.</span><span class="type-name">ExceptionType</span><span>(</span><span class="string-literal">&quot;java.lang.RuntimeException&quot;</span><span>)
-)</span></code></pre>
-        <p>The same keys work for spans, log records, or metric attributes because they are plain <code>AttributeKey[A]</code> values.</p>
+        <h2 id="metricspec" class="section"><a class="anchor-link left" href="#metricspec"><i class="icofont-laika link">&#xef71;</i></a><code>MetricSpec</code></h2>
+        <p>Each generated metric object implements <code>MetricSpec</code> and exposes:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td><code>String</code></td>
+              <td>Canonical metric name</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td><code>String</code></td>
+              <td>Canonical metric description</td>
+            </tr>
+            <tr>
+              <td><code>unit</code></td>
+              <td><code>String</code></td>
+              <td>UCUM metric unit</td>
+            </tr>
+            <tr>
+              <td><code>stability</code></td>
+              <td><code>Stability</code></td>
+              <td>Stability recorded in the source convention</td>
+            </tr>
+            <tr>
+              <td><code>attributeSpecs</code></td>
+              <td><code>List[AttributeSpec[_]]</code></td>
+              <td>Attributes defined for the metric</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Each enclosing domain object also exposes <code>specs</code>, which contains all metric specs generated for that domain.</p>
         
-        <h2 id="use-semantic-metric-specs" class="section"><a class="anchor-link left" href="#use-semantic-metric-specs"><i class="icofont-laika link">&#xef71;</i></a>Use semantic metric specs</h2>
-        <p>Semantic metric specs provide the canonical metric name, unit, description, and attribute expectations.</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">BucketBoundaries</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">Meter</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">createHttpClientDuration</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Meter</span><span>](
-  </span><span class="identifier">boundaries</span><span>: </span><span class="type-name">BucketBoundaries</span><span>
-): </span><span class="type-name">F</span><span>[</span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>]] =
-  </span><span class="type-name">Meter</span><span>[</span><span class="type-name">F</span><span>]
-    .</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>.</span><span class="identifier">name</span><span>)
-    .</span><span class="identifier">withUnit</span><span>(</span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>.</span><span class="identifier">unit</span><span>)
-    .</span><span class="identifier">withDescription</span><span>(</span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>.</span><span class="identifier">description</span><span>)
-    .</span><span class="identifier">withExplicitBucketBoundaries</span><span>(</span><span class="identifier">boundaries</span><span>)
-    .</span><span class="identifier">create</span></code></pre>
-        <p>For convenience, every metric also has the generated <code>create</code> method, that creates an instrument with the
-        spec&#39;s name, unit, and description. The example below is equivalent to the previous one:</p>
-        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.{</span><span class="type-name">BucketBoundaries</span><span>, </span><span class="type-name">Histogram</span><span>, </span><span class="type-name">Meter</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">createHttpClientDuration</span><span>[</span><span class="type-name">F</span><span>[</span><span class="identifier">_</span><span>]: </span><span class="type-name">Meter</span><span>](
-  </span><span class="identifier">boundaries</span><span>: </span><span class="type-name">BucketBoundaries</span><span>
-): </span><span class="type-name">F</span><span>[</span><span class="type-name">Histogram</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>]] =
-  </span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ClientRequestDuration</span><span>.</span><span class="identifier">create</span><span>[</span><span class="type-name">F</span><span>, </span><span class="type-name">Double</span><span>](</span><span class="identifier">boundaries</span><span>)</span></code></pre>
+        <h2 id="generated-metric-constructors" class="section"><a class="anchor-link left" href="#generated-metric-constructors"><i class="icofont-laika link">&#xef71;</i></a>Generated metric constructors</h2>
+        <p>Each generated metric object has a <code>create</code> method that uses the implicit <code>Meter[F]</code> to create the corresponding
+        instrument with the spec&#39;s name, description, and unit.</p>
+        <p>Counter, gauge, and up-down-counter constructors take the effect and measurement types. Histogram constructors also
+        take <code>BucketBoundaries</code>.</p>
+        <p>For task guidance, see
+        <a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a>.</p>
         
-        <h2 id="use-metric-specs-in-tests" class="section"><a class="anchor-link left" href="#use-metric-specs-in-tests"><i class="icofont-laika link">&#xef71;</i></a>Use metric specs in tests</h2>
-        <p>Metric specs are also useful for validating exported metrics. The example below checks that expected server metrics
-        exist and that each exported metric matches the semantic name, unit, description, and required attributes.</p>
-        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">io</span><span>.</span><span class="identifier">opentelemetry</span><span>.</span><span class="identifier">sdk</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">data</span><span>.{</span><span class="type-name">MetricData</span><span>, </span><span class="type-name">PointData</span><span>}
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">Meter</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="type-name">MetricSpec</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="type-name">Requirement</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">semconv</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">HttpMetrics</span><span>
-</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="identifier">_</span><span>
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">semanticTest</span><span>(</span><span class="identifier">scenario</span><span>: </span><span class="type-name">Meter</span><span>[</span><span class="type-name">IO</span><span>] =&gt; </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] = {
-  </span><span class="comment">// the set of metrics to check
-</span><span>  </span><span class="keyword">val</span><span> </span><span class="identifier">specs</span><span> = </span><span class="type-name">List</span><span>(
-    </span><span class="type-name">HttpMetrics</span><span>.</span><span class="type-name">ServerRequestDuration</span><span>
-  )
-
-  </span><span class="type-name">MetricsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">testkit</span><span> =&gt;
-    </span><span class="identifier">testkit</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;meter&quot;</span><span>).</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">meter</span><span> =&gt;
-      </span><span class="keyword">for</span><span> {
-        </span><span class="comment">// run a scenario to generate metrics 
-</span><span>        </span><span class="identifier">_</span><span>       &lt;- </span><span class="identifier">scenario</span><span>(</span><span class="identifier">meter</span><span>)
-        </span><span class="comment">// collect metrics
-</span><span>        </span><span class="identifier">metrics</span><span> &lt;- </span><span class="identifier">testkit</span><span>.</span><span class="identifier">collectMetrics</span><span>
-        </span><span class="comment">// ensure the expected metrics exist and match the spec
-</span><span>      } </span><span class="keyword">yield</span><span> </span><span class="identifier">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">specs</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">specExpectation</span><span>))
-    }
-  }
-}
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">assertExpected</span><span>(</span><span class="identifier">metrics</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricData</span><span>], </span><span class="identifier">expected</span><span>: </span><span class="type-name">List</span><span>[</span><span class="type-name">MetricExpectation</span><span>]): </span><span class="type-name">Unit</span><span> =
-  </span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">checkAll</span><span>(</span><span class="identifier">metrics</span><span>, </span><span class="identifier">expected</span><span>) </span><span class="keyword">match</span><span> {
-    </span><span class="keyword">case</span><span> </span><span class="type-name">Right</span><span>(</span><span class="identifier">_</span><span>) =&gt;
-      ()
-    </span><span class="keyword">case</span><span> </span><span class="type-name">Left</span><span>(</span><span class="identifier">mismatches</span><span>) =&gt;
-      </span><span class="comment">// or use an assert function from the testing framework here
-</span><span>      </span><span class="identifier">sys</span><span>.</span><span class="identifier">error</span><span>(</span><span class="type-name">MetricExpectations</span><span>.</span><span class="identifier">format</span><span>(</span><span class="identifier">mismatches</span><span>))
-  }
-
-</span><span class="keyword">def</span><span> </span><span class="declaration-name">specExpectation</span><span>(</span><span class="identifier">spec</span><span>: </span><span class="type-name">MetricSpec</span><span>): </span><span class="type-name">MetricExpectation</span><span> = {
-  </span><span class="keyword">val</span><span> </span><span class="identifier">required</span><span> = </span><span class="identifier">spec</span><span>.</span><span class="identifier">attributeSpecs</span><span>
-    .</span><span class="identifier">filter</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">requirement</span><span>.</span><span class="identifier">level</span><span> == </span><span class="type-name">Requirement</span><span>.</span><span class="type-name">Level</span><span>.</span><span class="type-name">Required</span><span>)
-    .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">key</span><span>)
-    .</span><span class="identifier">toSet</span><span>
-
-  </span><span class="type-name">MetricExpectation</span><span>
-    .</span><span class="identifier">name</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">name</span><span>)
-    .</span><span class="identifier">description</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">description</span><span>)
-    .</span><span class="identifier">unit</span><span>(</span><span class="identifier">spec</span><span>.</span><span class="identifier">unit</span><span>)
-    .</span><span class="identifier">where</span><span>(</span><span class="string-literal">s&quot;[</span><span class="substitution">${spec.name}</span><span class="string-literal">] is missing required semantic attributes&quot;</span><span>) { </span><span class="identifier">metric</span><span> =&gt;
-      </span><span class="keyword">import</span><span> </span><span class="identifier">scala</span><span>.</span><span class="identifier">jdk</span><span>.</span><span class="type-name">CollectionConverters</span><span>.</span><span class="identifier">_</span><span>
-      </span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">AttributeConverters</span><span>.</span><span class="identifier">_</span><span>
-
-      </span><span class="keyword">val</span><span> </span><span class="identifier">current</span><span> = </span><span class="identifier">metric</span><span>.</span><span class="identifier">getData</span><span>.</span><span class="identifier">getPoints</span><span>.</span><span class="identifier">asScala</span><span>
-        .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">asInstanceOf</span><span>[</span><span class="type-name">PointData</span><span>].</span><span class="identifier">getAttributes</span><span>.</span><span class="identifier">asMap</span><span>().</span><span class="identifier">keySet</span><span>().</span><span class="identifier">asScala</span><span>)
-        .</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span>.</span><span class="identifier">toScala</span><span>)
-        .</span><span class="identifier">toSet</span><span>
-
-      </span><span class="identifier">current</span><span> == </span><span class="identifier">required</span><span>
-    }
-}</span></code></pre>
+        <h2 id="attributespec" class="section"><a class="anchor-link left" href="#attributespec"><i class="icofont-laika link">&#xef71;</i></a><code>AttributeSpec</code></h2>
+        <p>Each entry in <code>MetricSpec.attributeSpecs</code> exposes:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>key</code></td>
+              <td><code>AttributeKey[A]</code></td>
+              <td>Generated semantic attribute key</td>
+            </tr>
+            <tr>
+              <td><code>examples</code></td>
+              <td><code>List[A]</code></td>
+              <td>Example values from the source convention</td>
+            </tr>
+            <tr>
+              <td><code>requirement</code></td>
+              <td><code>Requirement</code></td>
+              <td>Requirement level and optional note</td>
+            </tr>
+            <tr>
+              <td><code>stability</code></td>
+              <td><code>Stability</code></td>
+              <td>Attribute stability recorded in the source convention</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h2 id="requirement" class="section"><a class="anchor-link left" href="#requirement"><i class="icofont-laika link">&#xef71;</i></a><code>Requirement</code></h2>
+        <p><code>Requirement.level</code> is one of:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Required</code></td>
+              <td>The metric implementation must record the attribute</td>
+            </tr>
+            <tr>
+              <td><code>ConditionalRequired</code></td>
+              <td>The implementation must record the attribute when the accompanying condition applies</td>
+            </tr>
+            <tr>
+              <td><code>Recommended</code></td>
+              <td>The implementation should record the attribute when applicable</td>
+            </tr>
+            <tr>
+              <td><code>OptIn</code></td>
+              <td>The attribute is available when users explicitly enable or request it</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><code>Requirement.note</code> contains the condition or additional guidance when the source convention provides one.</p>
+        
+        <h2 id="stability" class="section"><a class="anchor-link left" href="#stability"><i class="icofont-laika link">&#xef71;</i></a><code>Stability</code></h2>
+        <p>The generated <code>Stability</code> values are <code>stable</code>, <code>development</code>, <code>releaseCandidate</code>, <code>alpha</code>, and <code>beta</code>.</p>
+        
+        <h2 id="generation" class="section"><a class="anchor-link left" href="#generation"><i class="icofont-laika link">&#xef71;</i></a>Generation</h2>
+        <p>The semantic attribute files and domain-specific metric files under <code>semconv</code> are generated from the configured
+        OpenTelemetry semantic-convention source. Run <code>sbt semanticConventionsGenerate</code> to regenerate them.</p>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li><a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
+          <li><a href="../how-to-semantic-conventions/use-semantic-attributes.html">Use semantic attributes</a></li>
+          <li><a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
+          <li><a href="../how-to-testkit/test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
+        </ul>
 
         
 <hr class="footer-rule"/>

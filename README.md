@@ -9,6 +9,11 @@ _otel4s_ is an [OpenTelemetry][otel] implementation for Scala.  The
 design goal is to fully and faithfully implement the [OpenTelemetry
 Specification][otel spec] atop [Cats Effect][cats-effect].
 
+## Quick start
+
+The [Quick start](https://typelevel.org/otel4s/#quick-start) shows how to add the JVM backend and record your first span
+and counter measurement.
+
 ## Features
 
 * **Simple and idiomatic metrics and tracing API**

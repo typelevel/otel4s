@@ -219,16 +219,16 @@
             <p>Add these settings to <code>build.sbt</code>:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
   </span><span class="string-literal">&quot;org.typelevel&quot;</span><span> %% </span><span class="string-literal">&quot;otel4s-oteljava&quot;</span><span> % </span><span class="string-literal">&quot;1.1.0&quot;</span><span>,
-  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
-  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.64.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
+  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-exporter-otlp&quot;</span><span> % </span><span class="string-literal">&quot;1.65.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>,
+  </span><span class="string-literal">&quot;io.opentelemetry&quot;</span><span> % </span><span class="string-literal">&quot;opentelemetry-sdk-extension-autoconfigure&quot;</span><span> % </span><span class="string-literal">&quot;1.65.0&quot;</span><span> % </span><span class="type-name">Runtime</span><span>
 )
 </span><span class="identifier">javaOptions</span><span> += </span><span class="string-literal">&quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span></code></pre>
           </div>
           <div class="tab-content" data-choice-name="scala-cli">
             <p>Add these directives to the <code>*.scala</code> file:</p>
             <pre class="keep-together pdf epub"><code class="nohighlight"><span class="comment">//&gt; using dep &quot;org.typelevel::otel4s-oteljava:1.1.0&quot;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.64.0&quot;
-//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.64.0&quot;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-exporter-otlp:1.65.0&quot;
+//&gt; using dep &quot;io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:1.65.0&quot;
 //&gt; using javaOpt &quot;-Dotel.java.global-autoconfigure.enabled=true&quot;</span></code></pre>
           </div>
         </div>

@@ -67,7 +67,7 @@ ThisBuild / mergifyPrRules ++= Seq(
 )
 
 val CatsVersion = "2.13.0"
-val CatsEffectVersion = "3.7.0"
+val CatsEffectVersion = "3.7.1"
 val CatsMtlVersion = "1.7.0"
 val FS2Version = "3.13.0"
 val MUnitVersion = "1.3.5"
@@ -77,7 +77,7 @@ val MUnitDisciplineVersion = "2.0.0"
 val MUnitScalaCheckEffectVersion = "2.1.0"
 val OpenTelemetryVersion = "1.65.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.31.0"
+val OpenTelemetryInstrumentationVersion = "2.31.1"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.43.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"

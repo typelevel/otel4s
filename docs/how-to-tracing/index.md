@@ -6,6 +6,7 @@ that depend on OpenTelemetry context.
 ## Start here
 
 - [Create spans around effectful code](create-spans-around-effectful-code.md)
+- [Provide a no-op tracer](provide-a-no-op-tracer.md)
 - [Use unmanaged spans when a span must end outside its scope](use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
 - [Trace Resource and fs2.Stream code](trace-resource-and-fs2-stream-code.md)
 - [Work with baggage](work-with-baggage.md)

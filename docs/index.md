@@ -1,235 +1,148 @@
 # otel4s
 
-## Telemetry meets higher-kinded types
+otel4s provides [OpenTelemetry][otel] APIs and integrations for Scala, built on [Cats Effect][cats-effect]. Use it to
+instrument applications and libraries with traces, metrics, and logs while keeping the telemetry backend explicit.
 
-_otel4s_ is an [OpenTelemetry][otel] implementation for Scala.  The
-design goal is to fully and faithfully implement the [OpenTelemetry
-Specification][otel spec] atop [Cats Effect][cats-effect].
+The core APIs support Scala 2.13 and Scala 3 on the JVM, Scala.js, and Scala Native. This repository also provides the
+JVM-only `otel4s-oteljava` backend, which implements those APIs with OpenTelemetry Java.
 
-## Features
+## Why otel4s?
 
-* **Simple and idiomatic metrics and tracing API**
+- **Designed for low overhead.** Compile-time techniques reduce runtime allocations, while no-op providers let
+  instrumented code run without an SDK or exporter.
+- **Modular.** Applications and libraries can depend only on the signals they use and choose a telemetry backend
+  separately. See [Modules and module families](explanations/modules-and-module-families.md).
+- **Cross-platform.** The core APIs support Scala 2.13 and Scala 3 on the JVM, Scala.js, and Scala Native.
+- **Built for testing.** In-memory testkits collect traces, metrics, and logs and provide structured expectation APIs
+  without requiring an external collector. See [Testkit](oteljava/testkit.md).
 
-  Provides a user-friendly and idiomatic API for telemetry, designed with Typelevel ecosystem best practices.
-  Intuitive interfaces for [metrics](instrumentation/metrics.md), [tracing](instrumentation/tracing.md), 
-  and context propagation.
+## Quick start
 
-* **Minimal overhead**
-
-  The library utilizes metaprogramming techniques to reduce runtime costs and allocations.
-  **Near-zero** overhead when telemetry is disabled,
-  ensuring production performance is unaffected when tracing or metrics collection is not required.
-
-* **Modularity**
-
-  A modular architecture allows to include only the required components:
-  1. Core modules: designed for library instrumentation, offering a lightweight dependency footprint
-  2. Selective integration: use only the metrics or tracing functionality without requiring the other
-
-* **Cross-platform**
-
-  All modules are available for Scala 2.13 and Scala 3.
-  Core modules are available on all platforms: JVM, Scala.js, and Scala Native.
-
-* **OpenTelemetry Java SDK backend**
-
-  The [backend](explanations/oteljava-jvm-backend.md) utilizes [OpenTelemetry Java SDK][opentelemetry-java] under the hood, 
-  offering production-ready telemetry:
-  1. Low memory overhead
-  2. Extensive [instrumentation ecosystem][opentelemetry-java-instrumentation]
-  3. Well-tested implementation
-
-* **Pure Scala SDK**
-
-  A pure Scala SDK backend is available in the separate
-  [otel4s-sdk][otel4s-sdk] project for JVM, Scala.js, and Scala Native.
-
-* **Testkit**
-
-  A testkit simplifies the validation of telemetry behavior in the applications and libraries:
-  1. Framework-agnostic, works with any test framework, for example weaver, munit, scalatest
-  2. Ideal for testing of the instrumented applications in end-to-end or unit tests
-  3. Included for the [OpenTelemetry Java backend](oteljava/testkit.md) in this repo
-
-## Status
-
-`otel4s` 1.0 establishes the compatibility baseline for the modules published
-from this repository, primarily `otel4s-core*`, `otel4s-oteljava*`, and the
-semantic-convention and instrumentation modules.
-
-Artifacts that remain unstable are explicitly marked, such as
-`*-experimental` semantic-convention modules. The pure Scala SDK backend lives
-in the separate [otel4s-sdk][otel4s-sdk] project.
-
-## Published modules in this repo
-
-| Module family                | JVM | Scala Native | Scala.js |
-|:----------------------------:|:---:|:------------:|:--------:|
-|        `otel4s-core*`        |  ✅  |      ✅       |    ✅     |
-|      `otel4s-semconv*`       |  ✅  |      ✅       |    ✅     |
-| `otel4s-instrumentation-*`   |  ✅  |      ✅       |    ✅     |
-|      `otel4s-oteljava*`      |  ✅  |      ❌       |    ❌     |
-
-## How to choose a backend
-
-For most cases, `otel4s-oteljava` is the recommended backend, 
-that utilizes [OpenTelemetry Java][opentelemetry-java] library under the hood.
-You can benefit from various integrations and low memory overhead.
-
-If you need a pure Scala backend across JVM, Scala.js, and Scala Native, use
-the separate [otel4s-sdk][otel4s-sdk] project.
-
-## Getting started
-
-If you develop an application and want to export the telemetry, use `otel4s-oteljava` module. 
-If you develop a library, check out this [recommendation](explanations/modules-and-module-families.md#which-module-do-i-need).
+For a JVM application, add the OpenTelemetry Java backend, OTLP exporter, and autoconfiguration extension.
 
 @:select(build-tool)
 
 @:choice(sbt)
 
-Add settings to the `build.sbt`:
+Add these settings to `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@", // <1>
-  "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime, // <2>
-  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime // <3>
+  "org.typelevel" %% "otel4s-oteljava" % "@VERSION@",
+  "io.opentelemetry" % "opentelemetry-exporter-otlp" % "@OPEN_TELEMETRY_VERSION@" % Runtime,
+  "io.opentelemetry" % "opentelemetry-sdk-extension-autoconfigure" % "@OPEN_TELEMETRY_VERSION@" % Runtime
 )
-javaOptions += "-Dotel.java.global-autoconfigure.enabled=true" // <4>
+javaOptions += "-Dotel.java.global-autoconfigure.enabled=true"
 ```
 
 @:choice(scala-cli)
 
-Add directives to the `*.scala` file:
+Add these directives to the `*.scala` file:
 
 ```scala
-//> using dep "org.typelevel::otel4s-oteljava:@VERSION@" // <1>
-//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@" // <2>
-//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@" // <3>
-//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true" // <4>
+//> using dep "org.typelevel::otel4s-oteljava:@VERSION@"
+//> using dep "io.opentelemetry:opentelemetry-exporter-otlp:@OPEN_TELEMETRY_VERSION@"
+//> using dep "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:@OPEN_TELEMETRY_VERSION@"
+//> using javaOpt "-Dotel.java.global-autoconfigure.enabled=true"
 ```
 
 @:@
 
-1. Add the `otel4s-oteljava` library  
-2. Add an OpenTelemetry exporter. Without the exporter, the application will crash  
-3. Add an OpenTelemetry autoconfigure extension  
-4. Enable OpenTelemetry SDK [autoconfigure mode][opentelemetry-java-autoconfigure]  
+Create a tracer and meter, then record a span and counter measurement:
 
-Then, the instance can be materialized:
 ```scala mdoc:reset:silent
 import cats.effect.{IO, IOApp}
-import org.typelevel.otel4s.metrics.MeterProvider
 import org.typelevel.otel4s.oteljava.OtelJava
-import org.typelevel.otel4s.trace.TracerProvider
 
 object Main extends IOApp.Simple {
   def run: IO[Unit] =
     OtelJava.autoConfigured[IO]().use { otel4s =>
-      program(otel4s.meterProvider, otel4s.tracerProvider)
+      for {
+        tracer <- otel4s.tracerProvider.get("com.example.app")
+        meter <- otel4s.meterProvider.get("com.example.app")
+        counter <- meter.counter[Long]("hello.count").create
+        _ <- tracer.span("hello").surround {
+          counter.inc().flatMap(_ => IO.println("hello"))
+        }
+      } yield ()
     }
-
-  def program(
-      meterProvider: MeterProvider[IO],
-      tracerProvider: TracerProvider[IO]
-  ): IO[Unit] =
-    for {
-      meter <- meterProvider.get("service")
-      tracer <- tracerProvider.get("service")
-
-      // create a counter and increment its value
-      counter <- meter.counter[Long]("counter").create
-      _ <- counter.inc()
-
-      // create and materialize a span
-      _ <- tracer.span("span").surround(IO.unit)
-    } yield ()
 }
 ```
 
-@:callout(warning)
+For instrument types and recording patterns, see
+[Record application metrics](how-to-metrics/record-application-metrics.md).
 
-`OtelJava.autoConfigured` creates an **isolated** **non-global** instance.
-If you create multiple instances, those instances won't interoperate (i.e. be able to see each others spans).
+@:callout(info)
 
-@:@
-
-## Examples
-
-* Start tracing your application with [Jaeger and Docker](examples/jaeger-docker/README.md)
-* Implement tracing and metrics with [Honeycomb](examples/honeycomb/README.md)
-
-## The noop Tracer and Meter  
-
-If you use a library that supports otel4s (eg [Skunk](https://github.com/typelevel/skunk)) but do not want to use Open Telemetry, 
-then you can place the [No-op Tracer](https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/latest/org/typelevel/otel4s/trace/Tracer$.html) into implicit scope.
-
-The no-op `Tracer` or `Meter` can be provided in the following ways:
-
-@:select(scala-version)
-
-@:choice(scala-2)
-
-By using the `import Tracer.Implicits.noop` and `import Meter.Implicits.noop`:
-```scala mdoc:compile-only
-import cats.effect.IO
-import org.typelevel.otel4s.trace.Tracer
-
-def program[F[_]: Tracer]: F[Unit] = ???
-
-import Tracer.Implicits.noop
-val io: IO[Unit] = program[IO]
-```
-
-By defining an `implicit val`:
-
-```scala mdoc:compile-only
-import cats.effect.IO
-import org.typelevel.otel4s.metrics.Meter
-import org.typelevel.otel4s.trace.Tracer
-
-def program[F[_]: Meter: Tracer]: F[Unit] = ???
-
-implicit val meter: Meter[IO] = Meter.noop
-implicit val tracer: Tracer[IO] = Tracer.noop
-val io: IO[Unit] = program[IO]
-```
-
-@:choice(scala-3)
-
-By using the `import Tracer.Implicits.noop` and `import Meter.Implicits.noop`:
-```dotty
-import cats.effect.IO
-import org.typelevel.otel4s.trace.Tracer
-
-def program[F[_]](using Meter[F], Tracer[F]): F[Unit] = ???
-
-import Tracer.Implicits.noop
-val io: IO[Unit] = program[IO]
-```
-
-By defining a `given`:
-
-```dotty
-import cats.effect.IO
-import org.typelevel.otel4s.metrics.Meter
-import org.typelevel.otel4s.trace.Tracer
-
-def program[F[_]](using Meter[F], Tracer[F]): F[Unit] = ???
-
-given Meter[IO] = Meter.noop
-given Tracer[IO] = Tracer.noop
-val io: IO[Unit] = program[IO]
-```
+`OtelJava.autoConfigured` creates an isolated, non-global SDK instance and uses OpenTelemetry Java's OTLP defaults
+unless you configure them. Follow [Set up otel4s in a JVM application][jvm-setup] to set the service name and exporter
+endpoint and verify the exported span.
 
 @:@
+
+## Start here
+
+- To configure a JVM application and export telemetry, follow
+  [Set up otel4s in a JVM application][jvm-setup].
+- To instrument a library without choosing a backend for its users, see
+  [Modules and module families](explanations/modules-and-module-families.md#which-module-do-i-need).
+- To use a backend on Scala.js or Scala Native, see the separate [otel4s SDK][otel4s-sdk] project.
+
+## Guides
+
+| Task | Guide |
+|---|---|
+| Configure the OpenTelemetry Java backend | [JVM setup](how-to-jvm-setup/index.md) |
+| Create spans and propagate trace context | [Tracing](how-to-tracing/index.md) |
+| Record application and runtime metrics | [Metrics](how-to-metrics/index.md) |
+| Bridge application logs into OpenTelemetry | [Logs](how-to-logs/index.md) |
+| Use generated OpenTelemetry attributes and metric specs | [Semantic conventions](how-to-semantic-conventions/index.md) |
+| Assert exported telemetry in tests | [Testkit](how-to-testkit/index.md) |
+
+## Understand otel4s
+
+- [Modules and module families](explanations/modules-and-module-families.md) explains how the API, backend,
+  instrumentation, semantic convention, and testkit artifacts fit together.
+- [The JVM backend](explanations/oteljava-jvm-backend.md) explains when to use `OtelJava.autoConfigured` or
+  `OtelJava.global`.
+- [How otel4s context propagation works](explanations/how-otel4s-context-propagation-works.md) describes the tracing
+  context model used by the core APIs.
+- [Semantic conventions and stability](explanations/semantic-conventions-and-stability.md) describes the stable and
+  experimental semantic convention modules.
+
+## API reference
+
+- [Tracing API](instrumentation/tracing.md)
+- [Metrics API](instrumentation/metrics.md)
+- [Logs API](instrumentation/logs.md)
+- [Cross-service trace propagation](instrumentation/tracing-cross-service-propagation.md)
+- [Semantic conventions](instrumentation/semantic-conventions.md)
+- [OpenTelemetry Java testkit](oteljava/testkit.md)
+
+To run instrumented code without an SDK or exporter, provide a
+[no-op tracer](how-to-tracing/provide-a-no-op-tracer.md) or
+[no-op meter](how-to-metrics/provide-a-no-op-meter.md).
+
+## Published modules
+
+`otel4s` 1.0 establishes the compatibility baseline for the modules published from this repository. Artifacts that
+remain unstable are explicitly marked, including the `*-experimental` semantic convention modules.
+
+| Module family | JVM | Scala Native | Scala.js |
+|---|:---:|:---:|:---:|
+| `otel4s-core*` | ✅ | ✅ | ✅ |
+| `otel4s-semconv*` | ✅ | ✅ | ✅ |
+| `otel4s-instrumentation-*` | ✅ | ✅ | ✅ |
+| `otel4s-oteljava*` | ✅ | ❌ | ❌ |
+
+## Examples and integrations
+
+- Run otel4s locally with [Jaeger and Docker](examples/jaeger-docker/README.md) or
+  [Grafana](examples/grafana/README.md).
+- Export traces and metrics to [Honeycomb](examples/honeycomb/README.md) or [Dash0](examples/dash0/README.md).
+- Find integrations for other Typelevel libraries on the [Ecosystem](ecosystem.md) page.
 
 [cats-effect]: https://typelevel.org/cats-effect/
-[opentelemetry-java]: https://opentelemetry.io/docs/languages/java/
-[opentelemetry-java-instrumentation]: https://opentelemetry.io/docs/languages/java/instrumentation/
-[opentelemetry-java-autoconfigure]: https://opentelemetry.io/docs/languages/java/configuration/
+[jvm-setup]: how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.md
 [otel]: https://opentelemetry.io/
-[otel spec]: https://opentelemetry.io/docs/reference/specification/
 [otel4s-sdk]: https://typelevel.org/otel4s-sdk/sdk/overview.html
-[otel4s-sdk-testkit]: https://typelevel.org/otel4s-sdk/sdk/testkit.html

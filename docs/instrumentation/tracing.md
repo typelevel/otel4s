@@ -305,6 +305,7 @@ Custom strategies can return finalizers created with `SpanFinalizer.recordExcept
 
 ## Related material
 
+- [Provide a no-op tracer](../how-to-tracing/provide-a-no-op-tracer.md)
 - [Choosing parent spans and tracing scopes](../explanations/choosing-parent-spans-and-tracing-scopes.md)
 - [Tracing Resource and fs2.Stream scopes](../explanations/tracing-resource-and-fs2-stream-scopes.md)
 - [How otel4s context propagation works](../explanations/how-otel4s-context-propagation-works.md)

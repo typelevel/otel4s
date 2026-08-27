@@ -390,6 +390,7 @@ For task-oriented bucket configuration, see
 
 ## Related material
 
+- [Provide a no-op meter](../how-to-metrics/provide-a-no-op-meter.md)
 - [Record application metrics](../how-to-metrics/record-application-metrics.md)
 - [Customize histogram buckets](../how-to-metrics/customize-histogram-buckets.md)
 - [Histogram bucket customization with views](../explanations/histogram-bucket-customization-with-views.md)

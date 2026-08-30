@@ -558,6 +558,7 @@ lazy val docs = project
       "PEKKO_STREAM_VERSION" -> PekkoStreamVersion,
     ),
     tlSiteApiPackage := Some("org.typelevel.otel4s"),
+    tlSiteHelium ~= (_.site.internalCSS(laika.ast.Path.Root / "site.css")),
     run / fork := true,
     javaOptions += "-Dcats.effect.trackFiberContext=true",
     laikaConfig := {

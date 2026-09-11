@@ -131,19 +131,19 @@ object OtelExperimentalAttributes {
   object OtelComponentTypeValue {
     implicit val attributeFromOtelComponentTypeValue: Attribute.From[OtelComponentTypeValue, String] = _.value
 
-    /** The builtin SDK batching span processor
+    /** The built-in SDK batching span processor
       */
     case object BatchingSpanProcessor extends OtelComponentTypeValue("batching_span_processor")
 
-    /** The builtin SDK simple span processor
+    /** The built-in SDK simple span processor
       */
     case object SimpleSpanProcessor extends OtelComponentTypeValue("simple_span_processor")
 
-    /** The builtin SDK batching log record processor
+    /** The built-in SDK batching log record processor
       */
     case object BatchingLogProcessor extends OtelComponentTypeValue("batching_log_processor")
 
-    /** The builtin SDK simple log record processor
+    /** The built-in SDK simple log record processor
       */
     case object SimpleLogProcessor extends OtelComponentTypeValue("simple_log_processor")
 
@@ -175,7 +175,7 @@ object OtelExperimentalAttributes {
       */
     case object OtlpHttpJsonLogExporter extends OtelComponentTypeValue("otlp_http_json_log_exporter")
 
-    /** The builtin SDK periodically exporting metric reader
+    /** The built-in SDK periodically exporting metric reader
       */
     case object PeriodicMetricReader extends OtelComponentTypeValue("periodic_metric_reader")
 

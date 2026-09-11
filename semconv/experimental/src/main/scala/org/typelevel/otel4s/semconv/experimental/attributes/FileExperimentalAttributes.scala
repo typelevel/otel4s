@@ -64,7 +64,7 @@ object FileExperimentalAttributes {
   /** File extension, excluding the leading dot.
     *
     * @note
-    *   <p> When the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not
+    *   <p> When the filename has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not
     *   "tar.gz").
     */
   val FileExtension: AttributeKey[String] =
@@ -76,7 +76,7 @@ object FileExperimentalAttributes {
     *   <p> On Linux, a resource fork is used to store additional data with a filesystem object. A file always has at
     *   least one fork for the data portion, and additional forks may exist. On NTFS, this is analogous to an Alternate
     *   Data Stream (ADS), and the default data stream for a file is just called $$DATA. Zone.Identifier is commonly
-    *   used by Windows to track contents downloaded from the Internet. An ADS is typically of the form:
+    *   used by Windows to track contents downloaded from the internet. An ADS is typically of the form:
     *   C:\path\to\filename.extension:some_fork_name, and some_fork_name is the value that should populate `fork_name`.
     *   `filename.extension` should populate `file.name`, and `extension` should populate `file.extension`. The full
     *   path, `file.path`, will include the fork name.
@@ -142,7 +142,7 @@ object FileExperimentalAttributes {
   val FileOwnerName: AttributeKey[String] =
     AttributeKey("file.owner.name")
 
-  /** Full path to the file, including the file name. It should include the drive letter, when appropriate.
+  /** Full path to the file, including the filename. It should include the drive letter, when appropriate.
     */
   val FilePath: AttributeKey[String] =
     AttributeKey("file.path")

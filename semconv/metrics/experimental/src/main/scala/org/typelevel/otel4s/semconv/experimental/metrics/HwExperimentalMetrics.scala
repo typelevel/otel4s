@@ -979,23 +979,6 @@ object HwExperimentalMetrics {
           Stability.development
         )
 
-      /** Direction of network traffic for network errors.
-        *
-        * @note
-        *   <p> This attribute SHOULD only be used when `hw.type` is set to `"network"` to indicate the direction of the
-        *   error.
-        */
-      val networkIoDirection: AttributeSpec[String] =
-        AttributeSpec(
-          NetworkExperimentalAttributes.NetworkIoDirection,
-          List(
-            "receive",
-            "transmit",
-          ),
-          Requirement.recommended,
-          Stability.releaseCandidate
-        )
-
       val specs: List[AttributeSpec[_]] =
         List(
           errorType,
@@ -1003,7 +986,6 @@ object HwExperimentalMetrics {
           hwName,
           hwParent,
           hwType,
-          networkIoDirection,
         )
     }
 

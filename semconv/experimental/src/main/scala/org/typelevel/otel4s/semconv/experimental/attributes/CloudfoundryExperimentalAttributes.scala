@@ -124,7 +124,7 @@ object CloudfoundryExperimentalAttributes {
     * @note
     *   <p> CloudFoundry defines the `instance_id` in the <a
     *   href="https://github.com/cloudfoundry/loggregator-api#v2-envelope">Loggregator v2 envelope</a>. It is used for
-    *   logs and metrics emitted by CloudFoundry. It is supposed to contain the vm id for CloudFoundry components. <p>
+    *   logs and metrics emitted by CloudFoundry. It is supposed to contain the vm ID for CloudFoundry components. <p>
     *   When system components are instrumented, values from the <a
     *   href="https://bosh.io/docs/jobs/#properties-spec">Bosh spec</a> should be used. The `system.instance.id` should
     *   be set to `spec.id`.

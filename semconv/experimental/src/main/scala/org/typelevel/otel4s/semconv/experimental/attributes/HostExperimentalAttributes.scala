@@ -103,7 +103,7 @@ object HostExperimentalAttributes {
   val HostMac: AttributeKey[Seq[String]] =
     AttributeKey("host.mac")
 
-  /** Name of the host. On Unix systems, it may contain what the hostname command returns, or the fully qualified
+  /** Name of the host. On UNIX systems, it may contain what the hostname command returns, or the fully qualified
     * hostname, or another name specified by the user.
     */
   val HostName: AttributeKey[String] =

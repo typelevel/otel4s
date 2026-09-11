@@ -195,11 +195,11 @@ object TlsExperimentalAttributes {
   object TlsProtocolNameValue {
     implicit val attributeFromTlsProtocolNameValue: Attribute.From[TlsProtocolNameValue, String] = _.value
 
-    /** ssl.
+    /** SSL
       */
     case object Ssl extends TlsProtocolNameValue("ssl")
 
-    /** tls.
+    /** TLS
       */
     case object Tls extends TlsProtocolNameValue("tls")
   }

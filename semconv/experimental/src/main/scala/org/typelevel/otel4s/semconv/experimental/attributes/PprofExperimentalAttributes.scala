@@ -62,13 +62,14 @@ object PprofExperimentalAttributes {
   val PprofProfileDocUrl: AttributeKey[String] =
     AttributeKey("pprof.profile.doc_url")
 
-  /** Frames with Function.function_name fully matching the regexp will be dropped from the samples, along with their
-    * successors.
+  /** Frames with Function.function_name fully matching the regular expression will be dropped from the samples, along
+    * with their successors.
     */
   val PprofProfileDropFrames: AttributeKey[String] =
     AttributeKey("pprof.profile.drop_frames")
 
-  /** Frames with Function.function_name fully matching the regexp will be kept, even if it matches drop_frames.
+  /** Frames with Function.function_name fully matching the regular expression will be kept, even if it matches
+    * drop_frames.
     */
   val PprofProfileKeepFrames: AttributeKey[String] =
     AttributeKey("pprof.profile.keep_frames")

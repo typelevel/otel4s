@@ -82,7 +82,7 @@ object OsExperimentalAttributes {
       */
     case object Dragonflybsd extends OsTypeValue("dragonflybsd")
 
-    /** HP-UX (Hewlett Packard Unix)
+    /** HP-UX (Hewlett Packard UNIX)
       */
     case object Hpux extends OsTypeValue("hpux")
 

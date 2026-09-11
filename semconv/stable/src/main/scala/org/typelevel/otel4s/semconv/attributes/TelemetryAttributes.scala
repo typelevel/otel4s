@@ -63,55 +63,55 @@ object TelemetryAttributes {
   object TelemetrySdkLanguageValue {
     implicit val attributeFromTelemetrySdkLanguageValue: Attribute.From[TelemetrySdkLanguageValue, String] = _.value
 
-    /** cpp.
+    /** <a href="https://opentelemetry.io/docs/languages/cpp/">C++</a>
       */
     case object Cpp extends TelemetrySdkLanguageValue("cpp")
 
-    /** dotnet.
+    /** <a href="https://opentelemetry.io/docs/languages/dotnet/">.NET</a>
       */
     case object Dotnet extends TelemetrySdkLanguageValue("dotnet")
 
-    /** erlang.
+    /** <a href="https://opentelemetry.io/docs/languages/erlang/">Erlang/Elixir</a>
       */
     case object Erlang extends TelemetrySdkLanguageValue("erlang")
 
-    /** go.
+    /** <a href="https://opentelemetry.io/docs/languages/go/">Go</a>
       */
     case object Go extends TelemetrySdkLanguageValue("go")
 
-    /** java.
+    /** <a href="https://opentelemetry.io/docs/languages/java/">Java</a>
       */
     case object Java extends TelemetrySdkLanguageValue("java")
 
-    /** kotlin.
+    /** <a href="https://opentelemetry.io/docs/languages/kotlin/">Kotlin</a>
       */
     case object Kotlin extends TelemetrySdkLanguageValue("kotlin")
 
-    /** nodejs.
+    /** <a href="https://opentelemetry.io/docs/languages/js/">Node.js</a>
       */
     case object Nodejs extends TelemetrySdkLanguageValue("nodejs")
 
-    /** php.
+    /** <a href="https://opentelemetry.io/docs/languages/php/">PHP</a>
       */
     case object Php extends TelemetrySdkLanguageValue("php")
 
-    /** python.
+    /** <a href="https://opentelemetry.io/docs/languages/python/">Python</a>
       */
     case object Python extends TelemetrySdkLanguageValue("python")
 
-    /** ruby.
+    /** <a href="https://opentelemetry.io/docs/languages/ruby/">Ruby</a>
       */
     case object Ruby extends TelemetrySdkLanguageValue("ruby")
 
-    /** rust.
+    /** <a href="https://opentelemetry.io/docs/languages/rust/">Rust</a>
       */
     case object Rust extends TelemetrySdkLanguageValue("rust")
 
-    /** swift.
+    /** <a href="https://opentelemetry.io/docs/languages/swift/">Swift</a>
       */
     case object Swift extends TelemetrySdkLanguageValue("swift")
 
-    /** webjs.
+    /** <a href="https://opentelemetry.io/docs/languages/js/">Browser</a>
       */
     case object Webjs extends TelemetrySdkLanguageValue("webjs")
 

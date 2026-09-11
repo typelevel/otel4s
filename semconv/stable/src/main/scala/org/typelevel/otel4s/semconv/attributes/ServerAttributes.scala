@@ -21,7 +21,7 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ServerAttributes {
 
-  /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+  /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
     *
     * @note
     *   <p> When observed from the client side, and when communicating through an intermediary, `server.address` SHOULD

@@ -68,4 +68,120 @@ object BrowserExperimentalAttributes {
   val BrowserPlatform: AttributeKey[String] =
     AttributeKey("browser.platform")
 
+  /** The delta between the current value and the last-reported value. See <a
+    * href="https://github.com/GoogleChrome/web-vitals?tab=readme-ov-file#report-only-the-delta-of-changes">delta</a>.
+    */
+  val BrowserWebVitalDelta: AttributeKey[Double] =
+    AttributeKey("browser.web_vital.delta")
+
+  /** A unique ID representing this particular metric instance.
+    */
+  val BrowserWebVitalId: AttributeKey[String] =
+    AttributeKey("browser.web_vital.id")
+
+  /** Name of the web vital.
+    */
+  val BrowserWebVitalName: AttributeKey[String] =
+    AttributeKey("browser.web_vital.name")
+
+  /** The type of navigation, as reported by the <a
+    * href="https://developer.mozilla.org/docs/Web/API/PerformanceNavigationTiming/type">Navigation Timing API</a>, with
+    * additional values reported by the web-vitals library.
+    */
+  val BrowserWebVitalNavigationType: AttributeKey[String] =
+    AttributeKey("browser.web_vital.navigation_type")
+
+  /** The rating of the web vital value against the "good", "needs improvement", and "poor" thresholds defined for the
+    * metric.
+    */
+  val BrowserWebVitalRating: AttributeKey[String] =
+    AttributeKey("browser.web_vital.rating")
+
+  /** Value of the web vital.
+    */
+  val BrowserWebVitalValue: AttributeKey[Double] =
+    AttributeKey("browser.web_vital.value")
+
+  /** Values for [[BrowserWebVitalName]].
+    */
+  abstract class BrowserWebVitalNameValue(val value: String)
+  object BrowserWebVitalNameValue {
+    implicit val attributeFromBrowserWebVitalNameValue: Attribute.From[BrowserWebVitalNameValue, String] = _.value
+
+    /** Cumulative Layout Shift. See <a href="https://web.dev/articles/cls">cls</a>.
+      */
+    case object Cls extends BrowserWebVitalNameValue("cls")
+
+    /** Largest Contentful Paint. See <a href="https://web.dev/articles/lcp">lcp</a>.
+      */
+    case object Lcp extends BrowserWebVitalNameValue("lcp")
+
+    /** First Contentful Paint. See <a href="https://web.dev/articles/fcp">fcp</a>.
+      */
+    case object Fcp extends BrowserWebVitalNameValue("fcp")
+
+    /** Interaction to Next Paint. See <a href="https://web.dev/articles/inp">inp</a>.
+      */
+    case object Inp extends BrowserWebVitalNameValue("inp")
+
+    /** Time to First Byte. See <a href="https://web.dev/articles/ttfb">ttfb</a>.
+      */
+    case object Ttfb extends BrowserWebVitalNameValue("ttfb")
+
+    /** First Input Delay. See <a href="https://web.dev/articles/fid">fid</a>.
+      */
+    case object Fid extends BrowserWebVitalNameValue("fid")
+  }
+
+  /** Values for [[BrowserWebVitalNavigationType]].
+    */
+  abstract class BrowserWebVitalNavigationTypeValue(val value: String)
+  object BrowserWebVitalNavigationTypeValue {
+    implicit val attributeFromBrowserWebVitalNavigationTypeValue
+        : Attribute.From[BrowserWebVitalNavigationTypeValue, String] = _.value
+
+    /** Navigation started by clicking a link, entering a URL, form submission, or a script operation.
+      */
+    case object Navigate extends BrowserWebVitalNavigationTypeValue("navigate")
+
+    /** Navigation through a reload operation or a `Location.reload()` call.
+      */
+    case object Reload extends BrowserWebVitalNavigationTypeValue("reload")
+
+    /** Navigation through the browser's history traversal (e.g. back/forward buttons).
+      */
+    case object BackForward extends BrowserWebVitalNavigationTypeValue("back-forward")
+
+    /** Navigation restoring a page from the back/forward cache (bfcache).
+      */
+    case object BackForwardCache extends BrowserWebVitalNavigationTypeValue("back-forward-cache")
+
+    /** Navigation to a page that was prerendered.
+      */
+    case object Prerender extends BrowserWebVitalNavigationTypeValue("prerender")
+
+    /** Navigation restoring a page that was previously discarded by the browser.
+      */
+    case object Restore extends BrowserWebVitalNavigationTypeValue("restore")
+  }
+
+  /** Values for [[BrowserWebVitalRating]].
+    */
+  abstract class BrowserWebVitalRatingValue(val value: String)
+  object BrowserWebVitalRatingValue {
+    implicit val attributeFromBrowserWebVitalRatingValue: Attribute.From[BrowserWebVitalRatingValue, String] = _.value
+
+    /** The metric value is within the "good" threshold.
+      */
+    case object Good extends BrowserWebVitalRatingValue("good")
+
+    /** The metric value is within the "needs improvement" threshold.
+      */
+    case object NeedsImprovement extends BrowserWebVitalRatingValue("needs-improvement")
+
+    /** The metric value is within the "poor" threshold.
+      */
+    case object Poor extends BrowserWebVitalRatingValue("poor")
+  }
+
 }

@@ -173,7 +173,7 @@ object McpExperimentalMetrics {
           Stability.development
         )
 
-      /** The value of the resource uri.
+      /** The value of the resource URI.
         *
         * @note
         *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,
@@ -261,7 +261,7 @@ object McpExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
@@ -449,7 +449,7 @@ object McpExperimentalMetrics {
           Stability.stable
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
         *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
@@ -647,7 +647,7 @@ object McpExperimentalMetrics {
           Stability.development
         )
 
-      /** The value of the resource uri.
+      /** The value of the resource URI.
         *
         * @note
         *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,

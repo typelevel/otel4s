@@ -127,7 +127,7 @@ object NetExperimentalAttributes {
       */
     case object Inet6 extends NetSockFamilyValue("inet6")
 
-    /** Unix domain socket path
+    /** UNIX domain socket path
       */
     case object Unix extends NetSockFamilyValue("unix")
   }

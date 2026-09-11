@@ -35,7 +35,7 @@ object UrlExperimentalAttributes {
   /** The file extension extracted from the `url.full`, excluding the leading dot.
     *
     * @note
-    *   <p> The file extension is only set if it exists, as not every url has a file extension. When the file name has
+    *   <p> The file extension is only set if it exists, as not every URL has a file extension. When the filename has
     *   multiple extensions `example.tar.gz`, only the last one should be captured `gz`, not `tar.gz`.
     */
   val UrlExtension: AttributeKey[String] =
@@ -144,7 +144,7 @@ object UrlExperimentalAttributes {
   val UrlQuery: AttributeKey[String] =
     AttributeKey("url.query")
 
-  /** The highest registered url domain, stripped of the subdomain.
+  /** The highest registered URL domain, stripped of the subdomain.
     *
     * @note
     *   <p> This value can be determined precisely with the <a href="https://publicsuffix.org/">public suffix list</a>.
@@ -164,7 +164,7 @@ object UrlExperimentalAttributes {
   val UrlScheme: AttributeKey[String] =
     AttributeKey("url.scheme")
 
-  /** The subdomain portion of a fully qualified domain name includes all of the names except the host name under the
+  /** The subdomain portion of a fully qualified domain name includes all of the names except the hostname under the
     * registered_domain. In a partially qualified domain, or if the qualification level of the full name cannot be
     * determined, subdomain contains all of the names below the registered domain.
     *

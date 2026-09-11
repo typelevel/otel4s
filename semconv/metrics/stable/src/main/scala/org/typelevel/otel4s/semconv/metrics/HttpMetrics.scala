@@ -153,7 +153,7 @@ object HttpMetrics {
           Stability.stable
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
         *   <p> In HTTP/1.1, when the <a href="https://www.rfc-editor.org/rfc/rfc9112.html#name-request-target">request

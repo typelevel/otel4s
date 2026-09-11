@@ -302,9 +302,11 @@ object DbExperimentalAttributes {
     *   <p> If a query parameter has no name and instead is referenced only by index, then `<key>` SHOULD be the 0-based
     *   index. <p> `db.query.parameter.<key>` SHOULD match up with the parameterized placeholders present in
     *   `db.query.text`. <p> It is RECOMMENDED to capture the value as provided by the application without attempting to
-    *   do any case normalization. <p> `db.query.parameter.<key>` SHOULD NOT be captured on batch operations. <p>
-    *   Examples: <ul> <li>For a query `SELECT * FROM users where username =  %s` with the parameter `"jdoe"`, the
-    *   attribute `db.query.parameter.0` SHOULD be set to `"jdoe"`. <li>For a query
+    *   do any case normalization or sanitization. <p> Instrumentations SHOULD NOT capture `db.query.parameter.<key>` by
+    *   default since values may contain PII or sensitive details. Application operators are expected to enable specific
+    *   keys depending on their privacy and security considerations. <p> `db.query.parameter.<key>` SHOULD NOT be
+    *   captured on batch operations. <p> Examples: <ul> <li>For a query `SELECT * FROM users where username =  %s` with
+    *   the parameter `"jdoe"`, the attribute `db.query.parameter.0` SHOULD be set to `"jdoe"`. <li>For a query
     *   `"SELECT * FROM users WHERE username = %(userName)s;` with parameter `userName = "jdoe"`, the attribute
     *   `db.query.parameter.userName` SHOULD be set to `"jdoe"`. </ul>
     */
@@ -351,7 +353,7 @@ object DbExperimentalAttributes {
 
   /** Deprecated, use `db.namespace` instead.
     */
-  @deprecated("Uncategorized.", "")
+  @deprecated("Replaced by `db.namespace` (string).", "")
   val DbRedisDatabaseIndex: AttributeKey[Long] =
     AttributeKey("db.redis.database_index")
 

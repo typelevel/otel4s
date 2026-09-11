@@ -26,7 +26,7 @@ object AppExperimentalAttributes {
   val AppBuildId: AttributeKey[String] =
     AttributeKey("app.build_id")
 
-  /** A unique identifier representing an instance of an end-user facing app crash.
+  /** A unique identifier representing an instance of an end user facing app crash.
     *
     * @note
     *   <p> Its value MAY be meaningful and be used as a reference for telemetry and metadata recorded by the same

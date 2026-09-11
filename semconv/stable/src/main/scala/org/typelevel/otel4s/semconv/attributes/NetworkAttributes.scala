@@ -21,7 +21,7 @@ package attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object NetworkAttributes {
 
-  /** Local address of the network connection - IP address or Unix domain socket name.
+  /** Local address of the network connection - IP address or UNIX domain socket name.
     */
   val NetworkLocalAddress: AttributeKey[String] =
     AttributeKey("network.local.address")
@@ -31,7 +31,7 @@ object NetworkAttributes {
   val NetworkLocalPort: AttributeKey[Long] =
     AttributeKey("network.local.port")
 
-  /** Peer address of the network connection - IP address or Unix domain socket name.
+  /** Peer address of the network connection - IP address or UNIX domain socket name.
     */
   val NetworkPeerAddress: AttributeKey[String] =
     AttributeKey("network.peer.address")
@@ -96,7 +96,7 @@ object NetworkAttributes {
       */
     case object Pipe extends NetworkTransportValue("pipe")
 
-    /** Unix domain socket
+    /** UNIX domain socket
       */
     case object Unix extends NetworkTransportValue("unix")
 

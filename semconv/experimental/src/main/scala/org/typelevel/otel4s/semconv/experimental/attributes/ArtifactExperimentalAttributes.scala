@@ -37,16 +37,16 @@ object ArtifactExperimentalAttributes {
   val ArtifactAttestationHash: AttributeKey[String] =
     AttributeKey("artifact.attestation.hash")
 
-  /** The id of the build <a href="https://slsa.dev/attestation-model">software attestation</a>.
+  /** The ID of the build <a href="https://slsa.dev/attestation-model">software attestation</a>.
     */
   val ArtifactAttestationId: AttributeKey[String] =
     AttributeKey("artifact.attestation.id")
 
-  /** The human readable file name of the artifact, typically generated during build and release processes. Often
-    * includes the package name and version in the file name.
+  /** The human readable filename of the artifact, typically generated during build and release processes. Often
+    * includes the package name and version in the filename.
     *
     * @note
-    *   <p> This file name can also act as the <a href="https://slsa.dev/spec/v1.0/terminology#package-model">Package
+    *   <p> This filename can also act as the <a href="https://slsa.dev/spec/v1.0/terminology#package-model">Package
     *   Name</a> in cases where the package ecosystem maps accordingly. Additionally, the artifact <a
     *   href="https://slsa.dev/spec/v1.0/terminology#software-supply-chain">can be published</a> for others, but that is
     *   not a guarantee.

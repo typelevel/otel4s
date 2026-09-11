@@ -21,7 +21,7 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object SessionExperimentalAttributes {
 
-  /** A unique id to identify a session.
+  /** A unique ID to identify a session.
     */
   val SessionId: AttributeKey[String] =
     AttributeKey("session.id")

@@ -32,11 +32,14 @@ object ProcessExperimentalMetrics {
     CpuTime,
     CpuUtilization,
     DiskIo,
+    DiskOperations,
     MemoryUsage,
+    MemoryUtilization,
     MemoryVirtual,
     NetworkIo,
     OpenFileDescriptorCount,
     PagingFaults,
+    SignalsPending,
     ThreadCount,
     UnixFileDescriptorCount,
     Uptime,
@@ -274,6 +277,61 @@ object ProcessExperimentalMetrics {
 
   }
 
+  /** Number of disk operations performed by the process.
+    */
+  object DiskOperations extends MetricSpec.Unsealed {
+
+    val name: String = "process.disk.operations"
+    val description: String = "Number of disk operations performed by the process."
+    val unit: String = "{operation}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The disk IO operation direction.
+        */
+      val diskIoDirection: AttributeSpec[String] =
+        AttributeSpec(
+          DiskExperimentalAttributes.DiskIoDirection,
+          List(
+            "read",
+          ),
+          Requirement.required,
+          Stability.releaseCandidate
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          diskIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** The amount of physical memory in use.
     */
   object MemoryUsage extends MetricSpec.Unsealed {
@@ -303,6 +361,41 @@ object ProcessExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Percentage of total physical memory that is used by the process.
+    */
+  object MemoryUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "process.memory.utilization"
+    val description: String = "Percentage of total physical memory that is used by the process."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -492,6 +585,41 @@ object ProcessExperimentalMetrics {
 
   }
 
+  /** Number of pending signals for the process.
+    */
+  object SignalsPending extends MetricSpec.Unsealed {
+
+    val name: String = "process.signals_pending"
+    val description: String = "Number of pending signals for the process."
+    val unit: String = "{signal}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Process threads count.
     */
   object ThreadCount extends MetricSpec.Unsealed {
@@ -527,12 +655,12 @@ object ProcessExperimentalMetrics {
 
   }
 
-  /** Number of unix file descriptors in use by the process.
+  /** Number of UNIX file descriptors in use by the process.
     */
   object UnixFileDescriptorCount extends MetricSpec.Unsealed {
 
     val name: String = "process.unix.file_descriptor.count"
-    val description: String = "Number of unix file descriptors in use by the process."
+    val description: String = "Number of UNIX file descriptors in use by the process."
     val unit: String = "{file_descriptor}"
     val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil

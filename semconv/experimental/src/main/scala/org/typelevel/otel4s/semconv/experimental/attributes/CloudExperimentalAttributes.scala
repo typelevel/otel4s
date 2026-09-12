@@ -217,6 +217,10 @@ object CloudExperimentalAttributes {
       */
     case object OracleCloudOke extends CloudPlatformValue("oracle_cloud_oke")
 
+    /** Compute on Scaleway Cloud
+      */
+    case object ScalewayCloudCompute extends CloudPlatformValue("scaleway_cloud_compute")
+
     /** Tencent Cloud Cloud Virtual Machine (CVM)
       */
     case object TencentCloudCvm extends CloudPlatformValue("tencent_cloud_cvm")
@@ -275,6 +279,10 @@ object CloudExperimentalAttributes {
     /** Oracle Cloud Infrastructure (OCI)
       */
     case object OracleCloud extends CloudProviderValue("oracle_cloud")
+
+    /** Scaleway Cloud
+      */
+    case object ScalewayCloud extends CloudProviderValue("scaleway_cloud")
 
     /** Tencent Cloud
       */

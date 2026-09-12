@@ -80,7 +80,7 @@ object ContainerExperimentalAttributes {
   /** Runtime specific image identifier. Usually a hash algorithm followed by a UUID.
     *
     * @note
-    *   <p> Docker defines a sha256 of the image id; `container.image.id` corresponds to the `Image` field from the
+    *   <p> Docker defines a sha256 of the image ID; `container.image.id` corresponds to the `Image` field from the
     *   Docker container inspect <a
     *   href="https://docs.docker.com/reference/api/engine/version/v1.52/#tag/Container/operation/ContainerInspect">API</a>
     *   endpoint. K8s defines a link to the container registry repository with digest
@@ -100,7 +100,7 @@ object ContainerExperimentalAttributes {
   val ContainerImageName: AttributeKey[String] =
     AttributeKey("container.image.name")
 
-  /** Repo digests of the container image as provided by the container runtime.
+  /** Repository digests of the container image as provided by the container runtime.
     *
     * @note
     *   <p> <a
@@ -131,7 +131,7 @@ object ContainerExperimentalAttributes {
   /** Container labels, `<key>` being the label name, the value being the label value.
     *
     * @note
-    *   <p> For example, a docker container label `app` with value `nginx` SHOULD be recorded as the
+    *   <p> For example, a Docker container label `app` with value `nginx` SHOULD be recorded as the
     *   `container.label.app` attribute with value `"nginx"`.
     */
   val ContainerLabel: AttributeKey[String] =

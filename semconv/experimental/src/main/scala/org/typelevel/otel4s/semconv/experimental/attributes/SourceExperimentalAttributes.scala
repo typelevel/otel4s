@@ -21,7 +21,7 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object SourceExperimentalAttributes {
 
-  /** Source address - domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket
+  /** Source address - domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket
     * name.
     *
     * @note

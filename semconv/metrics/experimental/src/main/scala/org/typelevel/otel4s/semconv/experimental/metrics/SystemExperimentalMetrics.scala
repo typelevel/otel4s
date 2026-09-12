@@ -73,6 +73,7 @@ object SystemExperimentalMetrics {
     PagingUtilization,
     ProcessCount,
     ProcessCreated,
+    ProcessLimit,
     Uptime,
   )
 
@@ -1893,7 +1894,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
@@ -1987,7 +1988,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** <a href="https://wikipedia.org/wiki/Transport_layer">OSI transport layer</a> or <a
@@ -2073,7 +2074,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -2151,7 +2152,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -2221,7 +2222,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -2368,7 +2369,7 @@ object SystemExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -2609,12 +2610,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Unix swap or windows pagefile usage.
+  /** UNIX swap or windows pagefile usage.
     */
   object PagingUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.usage"
-    val description: String = "Unix swap or windows pagefile usage."
+    val description: String = "UNIX swap or windows pagefile usage."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -2677,12 +2678,12 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Swap (unix) or pagefile (windows) utilization.
+  /** Swap (UNIX) or pagefile (windows) utilization.
     */
   object PagingUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.paging.utilization"
-    val description: String = "Swap (unix) or pagefile (windows) utilization."
+    val description: String = "Swap (UNIX) or pagefile (windows) utilization."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -2830,6 +2831,46 @@ object SystemExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The maximum number of concurrent processes/tasks allowed by the operating system.
+    *
+    * @note
+    *   <p> On Linux, this corresponds to `/proc/sys/kernel/pid_max` or `/proc/sys/kernel/threads-max`. A per-user
+    *   process limit may also be retrieved via `getrlimit(RLIMIT_NPROC)`. On BSD-like systems, this corresponds to
+    *   `sysctl kern.maxproc`. This metric is unsupported on Windows systems.
+    */
+  object ProcessLimit extends MetricSpec.Unsealed {
+
+    val name: String = "system.process.limit"
+    val description: String = "The maximum number of concurrent processes/tasks allowed by the operating system."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)

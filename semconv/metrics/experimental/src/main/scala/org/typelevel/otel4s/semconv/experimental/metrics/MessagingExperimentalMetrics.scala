@@ -108,8 +108,8 @@ object MessagingExperimentalMetrics {
       /** The message destination name
         *
         * @note
-        *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
-        *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+        *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker
+        *   doesn't have such notion, it SHOULD uniquely identify the broker.
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
@@ -157,7 +157,7 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
-        *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
+        *   a username or product ID. Although the destination name in this case is of high cardinality, the underlying
         *   template is of low cardinality and can be effectively used for grouping and aggregation.
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
@@ -201,10 +201,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -342,8 +342,8 @@ object MessagingExperimentalMetrics {
       /** The message destination name
         *
         * @note
-        *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
-        *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+        *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker
+        *   doesn't have such notion, it SHOULD uniquely identify the broker.
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
@@ -391,7 +391,7 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
-        *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
+        *   a username or product ID. Although the destination name in this case is of high cardinality, the underlying
         *   template is of low cardinality and can be effectively used for grouping and aggregation.
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
@@ -448,10 +448,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -555,8 +555,8 @@ object MessagingExperimentalMetrics {
       /** The message destination name
         *
         * @note
-        *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
-        *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+        *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker
+        *   doesn't have such notion, it SHOULD uniquely identify the broker.
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
@@ -588,7 +588,7 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
-        *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
+        *   a username or product ID. Although the destination name in this case is of high cardinality, the underlying
         *   template is of low cardinality and can be effectively used for grouping and aggregation.
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
@@ -631,10 +631,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -752,8 +752,8 @@ object MessagingExperimentalMetrics {
       /** The message destination name
         *
         * @note
-        *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
-        *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+        *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker
+        *   doesn't have such notion, it SHOULD uniquely identify the broker.
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
@@ -785,7 +785,7 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
-        *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
+        *   a username or product ID. Although the destination name in this case is of high cardinality, the underlying
         *   template is of low cardinality and can be effectively used for grouping and aggregation.
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
@@ -828,10 +828,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -966,8 +966,8 @@ object MessagingExperimentalMetrics {
       /** The message destination name
         *
         * @note
-        *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If
-        *   the broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+        *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker
+        *   doesn't have such notion, it SHOULD uniquely identify the broker.
         */
       val messagingDestinationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1015,7 +1015,7 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> Destination names could be constructed from templates. An example would be a destination name involving
-        *   a user name or product id. Although the destination name in this case is of high cardinality, the underlying
+        *   a username or product ID. Although the destination name in this case is of high cardinality, the underlying
         *   template is of low cardinality and can be effectively used for grouping and aggregation.
         */
       val messagingDestinationTemplate: AttributeSpec[String] =
@@ -1058,10 +1058,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -1175,10 +1175,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -1301,10 +1301,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -1412,10 +1412,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -1538,10 +1538,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =
@@ -1649,10 +1649,10 @@ object MessagingExperimentalMetrics {
           Stability.development
         )
 
-      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or Unix domain socket name.
+      /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
         *
         * @note
-        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or Unix
+        *   <p> Server domain name of the broker if available without reverse DNS lookup; otherwise, IP address or UNIX
         *   domain socket name.
         */
       val serverAddress: AttributeSpec[String] =

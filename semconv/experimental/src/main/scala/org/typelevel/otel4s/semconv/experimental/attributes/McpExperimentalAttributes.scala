@@ -40,7 +40,7 @@ object McpExperimentalAttributes {
   val McpProtocolVersion: AttributeKey[String] =
     AttributeKey("mcp.protocol.version")
 
-  /** The value of the resource uri.
+  /** The value of the resource URI.
     *
     * @note
     *   <p> This is a URI of the resource provided in the following requests or notifications: `resources/read`,

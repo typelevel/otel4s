@@ -33,7 +33,7 @@ object ContainerAttributes {
   val ContainerImageName: AttributeKey[String] =
     AttributeKey("container.image.name")
 
-  /** Repo digests of the container image as provided by the container runtime.
+  /** Repository digests of the container image as provided by the container runtime.
     *
     * @note
     *   <p> <a

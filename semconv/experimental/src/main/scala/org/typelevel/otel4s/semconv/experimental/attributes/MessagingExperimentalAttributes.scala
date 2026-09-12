@@ -54,8 +54,8 @@ object MessagingExperimentalAttributes {
   /** The message destination name
     *
     * @note
-    *   <p> Destination name SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the
-    *   broker doesn't have such notion, the destination name SHOULD uniquely identify the broker.
+    *   <p> SHOULD uniquely identify a specific queue, topic or other entity within the broker. If the broker doesn't
+    *   have such notion, it SHOULD uniquely identify the broker.
     */
   val MessagingDestinationName: AttributeKey[String] =
     AttributeKey("messaging.destination.name")
@@ -79,7 +79,7 @@ object MessagingExperimentalAttributes {
     *
     * @note
     *   <p> Destination names could be constructed from templates. An example would be a destination name involving a
-    *   user name or product id. Although the destination name in this case is of high cardinality, the underlying
+    *   username or product ID. Although the destination name in this case is of high cardinality, the underlying
     *   template is of low cardinality and can be effectively used for grouping and aggregation.
     */
   val MessagingDestinationTemplate: AttributeKey[String] =
@@ -119,7 +119,7 @@ object MessagingExperimentalAttributes {
   val MessagingGcpPubsubMessageAckDeadline: AttributeKey[Long] =
     AttributeKey("messaging.gcp_pubsub.message.ack_deadline")
 
-  /** The ack id for a given message.
+  /** The ack ID for a given message.
     */
   val MessagingGcpPubsubMessageAckId: AttributeKey[String] =
     AttributeKey("messaging.gcp_pubsub.message.ack_id")
@@ -134,6 +134,16 @@ object MessagingExperimentalAttributes {
   val MessagingGcpPubsubMessageOrderingKey: AttributeKey[String] =
     AttributeKey("messaging.gcp_pubsub.message.ordering_key")
 
+  /** The Kafka cluster ID, obtained from the broker metadata exposed through the Kafka client (or AdminClient) API.
+    *
+    * @note
+    *   <p> The cluster ID is a unique identifier reported by the Kafka broker. It identifies the cluster independently
+    *   of the individual brokers the client is configured to connect to, and remains stable even if broker hostnames,
+    *   IP addresses, or ports change.
+    */
+  val MessagingKafkaClusterId: AttributeKey[String] =
+    AttributeKey("messaging.kafka.cluster.id")
+
   /** Deprecated, use `messaging.consumer.group.name` instead.
     */
   @deprecated("Replaced by `messaging.consumer.group.name`.", "")
@@ -142,7 +152,7 @@ object MessagingExperimentalAttributes {
 
   /** Deprecated, use `messaging.destination.partition.id` instead.
     */
-  @deprecated("Record string representation of the partition id in `messaging.destination.partition.id` attribute.", "")
+  @deprecated("Record string representation of the partition ID in `messaging.destination.partition.id` attribute.", "")
   val MessagingKafkaDestinationPartition: AttributeKey[Long] =
     AttributeKey("messaging.kafka.destination.partition")
 
@@ -261,7 +271,7 @@ object MessagingExperimentalAttributes {
   val MessagingRocketmqMessageGroup: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.message.group")
 
-  /** Key(s) of message, another way to mark message besides message id.
+  /** Key(s) of message, another way to mark message besides message ID.
     */
   val MessagingRocketmqMessageKeys: AttributeKey[Seq[String]] =
     AttributeKey("messaging.rocketmq.message.keys")

@@ -26,6 +26,7 @@ import org.typelevel.otel4s.semconv.experimental.attributes._
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/metrics/SemanticMetrics.scala.j2
 object ContainerExperimentalMetrics {
 
+  @annotation.nowarn("cat=deprecation")
   val specs: List[MetricSpec] = List(
     CpuTime,
     CpuUsage,
@@ -39,10 +40,11 @@ object ContainerExperimentalMetrics {
     MemoryUsage,
     MemoryWorkingSet,
     NetworkIo,
+    PagingFaults,
     Uptime,
   )
 
-  /** CPU time consumed.
+  /** Total CPU time consumed.
     *
     * @note
     *   <p> CPU time consumed by the specific container on all available CPU cores
@@ -50,7 +52,7 @@ object ContainerExperimentalMetrics {
   object CpuTime extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.time"
-    val description: String = "CPU time consumed."
+    val description: String = "Total CPU time consumed."
     val unit: String = "s"
     val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -120,15 +122,17 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
+  /** Container's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs.
     *
     * @note
-    *   <p> CPU usage of the specific container on all available CPU cores, averaged over the sample window
+    *   <p> CPU usage of the specific container on all available CPU cores. It is calculated as the change in cumulative
+    *   CPU time (container.cpu.time) over a measurement interval, divided by the elapsed time: usageCores = (cpuTimeEnd -
+    *   cpuTimeStart) / elapsedSeconds
     */
   object CpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.cpu.usage"
-    val description: String = "Container's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs."
+    val description: String = "Container's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -392,15 +396,15 @@ object ContainerExperimentalMetrics {
     *   metric. In K8s, this metric is derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.AvailableBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
-    *   Kubelet's stats API.
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
+    *   of the Kubelet's stats API.
     */
   object MemoryAvailable extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.available"
     val description: String = "Container memory available."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -428,7 +432,7 @@ object ContainerExperimentalMetrics {
 
   }
 
-  /** Container memory paging faults.
+  /** Deprecated, use `container.paging.faults` instead.
     *
     * @note
     *   <p> In general, this metric can be derived from <a
@@ -443,10 +447,11 @@ object ContainerExperimentalMetrics {
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
     *   Kubelet's stats API.
     */
+  @deprecated("Replaced by `container.paging.faults`.", "")
   object MemoryPagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.paging.faults"
-    val description: String = "Container memory paging faults."
+    val description: String = "Deprecated, use `container.paging.faults` instead."
     val unit: String = "{fault}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -504,15 +509,15 @@ object ContainerExperimentalMetrics {
     *   and specifically the `container_memory_rss` metric. In K8s, this metric is derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.RSSBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
-    *   Kubelet's stats API.
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
+    *   of the Kubelet's stats API.
     */
   object MemoryRss extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.rss"
     val description: String = "Container memory RSS."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -543,35 +548,42 @@ object ContainerExperimentalMetrics {
   /** Memory usage of the container.
     *
     * @note
-    *   <p> Memory usage of the container.
+    *   <p> Current memory usage, including all memory regardless of when it was accessed. In general, this metric can
+    *   be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_memory_usage_bytes` metric. In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.UsageBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
+    *   of the Kubelet's stats API.
     */
   object MemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.usage"
     val description: String = "Memory usage of the container."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
-    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
-        .counter[A](name)
+        .upDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
 
     def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createObserver
 
     def createWithCallback[F[_]: Meter, A: MeasurementValue](
         callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableCounter] =
+    ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
-        .observableCounter[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -586,15 +598,15 @@ object ContainerExperimentalMetrics {
     *   and specifically the `container_memory_working_set_bytes` metric. In K8s, this metric is derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
-    *   Kubelet's stats API.
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
+    *   of the Kubelet's stats API.
     */
   object MemoryWorkingSet extends MetricSpec.Unsealed {
 
     val name: String = "container.memory.working_set"
     val description: String = "Container memory working set."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -647,7 +659,7 @@ object ContainerExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -667,6 +679,74 @@ object ContainerExperimentalMetrics {
         List(
           networkInterfaceName,
           networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Container memory paging faults.
+    *
+    * @note
+    *   <p> In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_memory_failures_total{failure_type=pgfault, scope=container}` and
+    *   `container_memory_failures_total{failure_type=pgmajfault, scope=container}`metric. In K8s, this metric is
+    *   derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
+    *   of the Kubelet's stats API.
+    */
+  object PagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "container.paging.faults"
+    val description: String = "Container memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.releaseCandidate
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
         )
     }
 

@@ -51,7 +51,7 @@ object NetworkExperimentalAttributes {
     AttributeKey("network.connection.state")
 
   /** This describes more details regarding the connection.type. It may be the type of cell technology connection, but
-    * it could be used for describing details about a wifi connection.
+    * it could be used for describing details about a Wi-Fi connection.
     */
   val NetworkConnectionSubtype: AttributeKey[String] =
     AttributeKey("network.connection.subtype")
@@ -72,7 +72,7 @@ object NetworkExperimentalAttributes {
   val NetworkIoDirection: AttributeKey[String] =
     AttributeKey("network.io.direction")
 
-  /** Local address of the network connection - IP address or Unix domain socket name.
+  /** Local address of the network connection - IP address or UNIX domain socket name.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkLocalAddress` instead.",
@@ -90,7 +90,7 @@ object NetworkExperimentalAttributes {
   val NetworkLocalPort: AttributeKey[Long] =
     AttributeKey("network.local.port")
 
-  /** Peer address of the network connection - IP address or Unix domain socket name.
+  /** Peer address of the network connection - IP address or UNIX domain socket name.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.NetworkAttributes.NetworkPeerAddress` instead.",
@@ -310,7 +310,7 @@ object NetworkExperimentalAttributes {
   object NetworkConnectionTypeValue {
     implicit val attributeFromNetworkConnectionTypeValue: Attribute.From[NetworkConnectionTypeValue, String] = _.value
 
-    /** wifi.
+    /** Wi-Fi
       */
     case object Wifi extends NetworkConnectionTypeValue("wifi")
 
@@ -369,7 +369,7 @@ object NetworkExperimentalAttributes {
       */
     case object Pipe extends NetworkTransportValue("pipe")
 
-    /** Unix domain socket
+    /** UNIX domain socket
       */
     case object Unix extends NetworkTransportValue("unix")
 

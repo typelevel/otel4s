@@ -38,9 +38,9 @@ object CodeExperimentalAttributes {
   val CodeColumnNumber: AttributeKey[Long] =
     AttributeKey("code.column.number")
 
-  /** The source code file name that identifies the code unit as uniquely as possible (preferably an absolute file
-    * path). This attribute MUST NOT be used on the Profile signal since the data is already captured in 'message
-    * Function'. This constraint is imposed to prevent redundancy and maintain data integrity.
+  /** The source code filename that identifies the code unit as uniquely as possible (preferably an absolute file path).
+    * This attribute MUST NOT be used on the Profile signal since the data is already captured in 'message Function'.
+    * This constraint is imposed to prevent redundancy and maintain data integrity.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.CodeAttributes.CodeFilePath` instead.",

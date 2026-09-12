@@ -31,7 +31,7 @@ object AndroidExperimentalAttributes {
   val AndroidAppState: AttributeKey[String] =
     AttributeKey("android.app.state")
 
-  /** Uniquely identifies the framework API revision offered by a version (`os.version`) of the android operating
+  /** Uniquely identifies the framework API revision offered by a version (`os.version`) of the Android operating
     * system. More information can be found in the <a
     * href="https://developer.android.com/guide/topics/manifest/uses-sdk-element#ApiLevels">Android API levels
     * documentation</a>.

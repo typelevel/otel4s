@@ -44,7 +44,7 @@ object DeploymentExperimentalAttributes {
   val DeploymentEnvironmentName: AttributeKey[String] =
     AttributeKey("deployment.environment.name")
 
-  /** The id of the deployment.
+  /** The ID of the deployment.
     */
   val DeploymentId: AttributeKey[String] =
     AttributeKey("deployment.id")

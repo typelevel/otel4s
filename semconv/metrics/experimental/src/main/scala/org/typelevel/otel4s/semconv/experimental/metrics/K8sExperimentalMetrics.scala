@@ -99,6 +99,8 @@ object K8sExperimentalMetrics {
     NodeEphemeralStorageAllocatable,
     NodeFilesystemAvailable,
     NodeFilesystemCapacity,
+    NodeFilesystemInodeCount,
+    NodeFilesystemInodeFree,
     NodeFilesystemUsage,
     NodeMemoryAllocatable,
     NodeMemoryAvailable,
@@ -108,6 +110,7 @@ object K8sExperimentalMetrics {
     NodeMemoryWorkingSet,
     NodeNetworkErrors,
     NodeNetworkIo,
+    NodePagingFaults,
     NodePodAllocatable,
     NodeSystemContainerCpuTime,
     NodeSystemContainerCpuUsage,
@@ -131,6 +134,7 @@ object K8sExperimentalMetrics {
     PodMemoryWorkingSet,
     PodNetworkErrors,
     PodNetworkIo,
+    PodPagingFaults,
     PodStatusPhase,
     PodStatusReason,
     PodUptime,
@@ -3031,12 +3035,12 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Amount of cpu allocatable on the node.
+  /** Amount of CPU allocatable on the node.
     */
   object NodeCpuAllocatable extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.cpu.allocatable"
-    val description: String = "Amount of cpu allocatable on the node."
+    val description: String = "Amount of CPU allocatable on the node."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -3104,15 +3108,17 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
+  /** Node's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs.
     *
     * @note
-    *   <p> CPU usage of the specific Node on all available CPU cores, averaged over the sample window
+    *   <p> CPU usage of the specific Node on all available CPU cores. It is calculated as the change in cumulative CPU
+    *   time (k8s.node.cpu.time) over a measurement interval, divided by the elapsed time: usageCores = (cpuTimeEnd -
+    *   cpuTimeStart) / elapsedSeconds
     */
   object NodeCpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.cpu.usage"
-    val description: String = "Node's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs."
+    val description: String = "Node's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -3260,6 +3266,88 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** The total inodes in the node's root filesystem.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.Inodes</a> field of the
+    *   <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodeFilesystemInodeCount extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.filesystem.inode.count"
+    val description: String = "The total inodes in the node's root filesystem."
+    val unit: String = "{inode}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The free inodes in the node's root filesystem.
+    *
+    * @note
+    *   <p> This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.InodesFree</a> field of
+    *   the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
+    *   the Kubelet's stats API.
+    */
+  object NodeFilesystemInodeFree extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.filesystem.inode.free"
+    val description: String = "The free inodes in the node's root filesystem."
+    val unit: String = "{inode}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Node filesystem usage.
     *
     * @note
@@ -3351,7 +3439,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.memory.available"
     val description: String = "Node memory available."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3379,7 +3467,7 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Node memory paging faults.
+  /** Deprecated, use `k8s.node.paging.faults` instead.
     *
     * @note
     *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
@@ -3390,10 +3478,11 @@ object K8sExperimentalMetrics {
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
     *   Kubelet's stats API.
     */
+  @deprecated("Replaced by `k8s.node.paging.faults`.", "")
   object NodeMemoryPagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.memory.paging.faults"
-    val description: String = "Node memory paging faults."
+    val description: String = "Deprecated, use `k8s.node.paging.faults` instead."
     val unit: String = "{fault}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -3458,7 +3547,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.memory.rss"
     val description: String = "Node memory RSS."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3489,35 +3578,40 @@ object K8sExperimentalMetrics {
   /** Memory usage of the Node.
     *
     * @note
-    *   <p> Total memory usage of the Node
+    *   <p> Total memory in use. This includes all memory regardless of when it was accessed. This metric is derived
+    *   from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.UsageBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
     */
   object NodeMemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.memory.usage"
     val description: String = "Memory usage of the Node."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
-    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
-        .gauge[A](name)
+        .upDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
 
     def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
       Meter[F]
-        .observableGauge[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createObserver
 
     def createWithCallback[F[_]: Meter, A: MeasurementValue](
         callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableGauge] =
+    ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
-        .observableGauge[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -3539,7 +3633,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.memory.working_set"
     val description: String = "Node memory working set."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3589,7 +3683,7 @@ object K8sExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -3659,7 +3753,7 @@ object K8sExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -3679,6 +3773,70 @@ object K8sExperimentalMetrics {
         List(
           networkInterfaceName,
           networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Node memory paging faults.
+    *
+    * @note
+    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   fields of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object NodePagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.paging.faults"
+    val description: String = "Node memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.releaseCandidate
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
         )
     }
 
@@ -3786,21 +3944,17 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Node's system container CPU usage, measured in cpus.
+  /** Node's system container CPU usage, measured in CPUs.
     *
     * @note
-    *   <p> This metric is derived from the <a
-    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L233">CPUStats.UsageNanoCores</a>
-    *   field of the <a
-    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L157C6-L157C20">ContainerStats</a>
-    *   of <a
-    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L40">Node.SystemContainers</a>
-    *   of the Kubelet's stats API.
+    *   <p> CPU usage of the specific System Container on all available CPU cores. It is calculated as the change in
+    *   cumulative CPU time (k8s.node.system_container.cpu.time) over a measurement interval, divided by the elapsed
+    *   time: usageCores = (cpuTimeEnd - cpuTimeStart) / elapsedSeconds
     */
   object NodeSystemContainerCpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.system_container.cpu.usage"
-    val description: String = "Node's system container CPU usage, measured in cpus."
+    val description: String = "Node's system container CPU usage, measured in CPUs."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -4255,15 +4409,17 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs.
+  /** Pod's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs.
     *
     * @note
-    *   <p> CPU usage of the specific Pod on all available CPU cores, averaged over the sample window
+    *   <p> CPU usage of the specific Pod on all available CPU cores. It is calculated as the change in cumulative CPU
+    *   time (k8s.pod.cpu.time) over a measurement interval, divided by the elapsed time: usageCores = (cpuTimeEnd -
+    *   cpuTimeStart) / elapsedSeconds
     */
   object PodCpuUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.cpu.usage"
-    val description: String = "Pod's CPU usage, measured in cpus. Range from 0 to the number of allocatable CPUs."
+    val description: String = "Pod's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -4434,7 +4590,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.memory.available"
     val description: String = "Pod memory available."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4462,7 +4618,7 @@ object K8sExperimentalMetrics {
 
   }
 
-  /** Pod memory paging faults.
+  /** Deprecated, use `k8s.pod.paging.faults` instead.
     *
     * @note
     *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
@@ -4473,10 +4629,11 @@ object K8sExperimentalMetrics {
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
     *   Kubelet's stats API.
     */
+  @deprecated("Replaced by `k8s.pod.paging.faults`.", "")
   object PodMemoryPagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.memory.paging.faults"
-    val description: String = "Pod memory paging faults."
+    val description: String = "Deprecated, use `k8s.pod.paging.faults` instead."
     val unit: String = "{fault}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -4541,7 +4698,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.memory.rss"
     val description: String = "Pod memory RSS."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4572,35 +4729,40 @@ object K8sExperimentalMetrics {
   /** Memory usage of the Pod.
     *
     * @note
-    *   <p> Total memory usage of the Pod
+    *   <p> Total memory in use. This includes all memory regardless of when it was accessed. This metric is derived
+    *   from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.UsageBytes</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
     */
   object PodMemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.memory.usage"
     val description: String = "Memory usage of the Pod."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
-    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
       Meter[F]
-        .gauge[A](name)
+        .upDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .create
 
     def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
       Meter[F]
-        .observableGauge[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createObserver
 
     def createWithCallback[F[_]: Meter, A: MeasurementValue](
         callback: ObservableMeasurement[F, A] => F[Unit]
-    ): Resource[F, ObservableGauge] =
+    ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
-        .observableGauge[A](name)
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -4622,7 +4784,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.memory.working_set"
     val description: String = "Pod memory working set."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4672,7 +4834,7 @@ object K8sExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -4742,7 +4904,7 @@ object K8sExperimentalMetrics {
             "eth0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The direction of traffic from the perspective of the observing host's physical or virtual network interface.
@@ -4762,6 +4924,70 @@ object K8sExperimentalMetrics {
         List(
           networkInterfaceName,
           networkIoDirection,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Pod memory paging faults.
+    *
+    * @note
+    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   and <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
+    *   Kubelet's stats API.
+    */
+  object PodPagingFaults extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.paging.faults"
+    val description: String = "Pod memory paging faults."
+    val unit: String = "{fault}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The paging fault type
+        */
+      val systemPagingFaultType: AttributeSpec[String] =
+        AttributeSpec(
+          SystemExperimentalAttributes.SystemPagingFaultType,
+          List(
+            "minor",
+          ),
+          Requirement.recommended,
+          Stability.releaseCandidate
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          systemPagingFaultType,
         )
     }
 

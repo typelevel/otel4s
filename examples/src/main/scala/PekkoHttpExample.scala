@@ -47,7 +47,7 @@ import scala.concurrent.duration._
   * add `sbt-javaagent` dependency to the `plugins.sbt`:
   *
   * {{{
-  * addSbtPlugin("com.github.sbt" % "sbt-javaagent" % "0.2.0")
+  * addSbtPlugin("com.github.sbt" % "sbt-javaagent" % "0.3.0")
   * }}}
   *
   * update definition of a project in the `build.sbt`:

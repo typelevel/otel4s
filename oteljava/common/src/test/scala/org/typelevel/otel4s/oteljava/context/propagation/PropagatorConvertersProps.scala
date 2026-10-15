@@ -34,12 +34,13 @@ import org.typelevel.otel4s.oteljava.context.propagation.PropagatorConverters._
 import java.{lang => jl}
 import scala.jdk.CollectionConverters._
 
+@annotation.nowarn("cat=deprecation")
 class PropagatorConvertersProps extends ScalaCheckSuite {
   private type Carrier = Map[String, String]
 
   private def mkJTMG: JTextMapGetter[Carrier] =
     new JTextMapGetter[Carrier] {
-      def keys(carrier: Carrier): jl.Iterable[String] =
+      override def keys(carrier: Carrier): jl.Iterable[String] =
         carrier.keys.asJava
 
       def get(carrier: Carrier, key: String): String =

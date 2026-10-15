@@ -31,7 +31,7 @@ import scala.jdk.CollectionConverters._
 
 private[propagation] object JavaPropagatorWrappers {
   class TextMapGetterWrapper[C](val underlying: TextMapGetter[C]) extends JTextMapGetter[C] {
-    def keys(carrier: C): jl.Iterable[String] =
+    override def keys(carrier: C): jl.Iterable[String] =
       underlying.keys(carrier).asJava
     def get(carrier: C /* may be `null` */, key: String): String =
       Option(carrier)
@@ -42,6 +42,7 @@ private[propagation] object JavaPropagatorWrappers {
   class JTextMapGetterWrapper[C](val underlying: JTextMapGetter[C]) extends TextMapGetter[C] {
     def get(carrier: C, key: String): Option[String] =
       Option(underlying.get(carrier, key) /* may return `null` */ )
+    @annotation.nowarn("cat=deprecation")
     def keys(carrier: C): Iterable[String] =
       underlying.keys(carrier).asScala
   }

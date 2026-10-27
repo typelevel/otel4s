@@ -59,7 +59,7 @@ import scala.concurrent.duration._
   *     "org.typelevel"                   %% "otel4s-oteljava"                           % "0.5.0",
   *     "org.apache.pekko"                %% "pekko-stream"                              % "1.7.1",
   *     "org.apache.pekko"                %% "pekko-http"                                % "1.4.2",
-  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.33.0",
+  *     "io.opentelemetry.instrumentation" % "opentelemetry-instrumentation-annotations" % "2.33.1",
   *     "io.opentelemetry"                 % "opentelemetry-exporter-otlp"               % "1.67.0" % Runtime,
   *     "io.opentelemetry"                 % "opentelemetry-sdk-extension-autoconfigure" % "1.67.0" % Runtime
   *   )

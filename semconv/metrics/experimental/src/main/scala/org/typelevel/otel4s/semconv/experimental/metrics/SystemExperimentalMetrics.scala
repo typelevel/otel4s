@@ -89,7 +89,12 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The logical CPU number [0..n-1]
+      /** The identifier of a logical execution target (CPU) as seen by the operating system, in the range [0..n-1].
+        *
+        * @note
+        *   <p> On systems with simultaneous multithreading (SMT) enabled — such as Intel Hyper-Threading or AMD SMT —
+        *   this value will usually differ from the physical core number, because each core presents multiple logical
+        *   CPUs for the system to use.
         */
       val cpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
@@ -98,7 +103,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -222,7 +227,12 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The logical CPU number [0..n-1]
+      /** The identifier of a logical execution target (CPU) as seen by the operating system, in the range [0..n-1].
+        *
+        * @note
+        *   <p> On systems with simultaneous multithreading (SMT) enabled — such as Intel Hyper-Threading or AMD SMT —
+        *   this value will usually differ from the physical core number, because each core presents multiple logical
+        *   CPUs for the system to use.
         */
       val cpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
@@ -231,7 +241,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The mode of the CPU
@@ -296,7 +306,12 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The logical CPU number [0..n-1]
+      /** The identifier of a logical execution target (CPU) as seen by the operating system, in the range [0..n-1].
+        *
+        * @note
+        *   <p> On systems with simultaneous multithreading (SMT) enabled — such as Intel Hyper-Threading or AMD SMT —
+        *   this value will usually differ from the physical core number, because each core presents multiple logical
+        *   CPUs for the system to use.
         */
       val cpuLogicalNumber: AttributeSpec[Long] =
         AttributeSpec(
@@ -305,7 +320,7 @@ object SystemExperimentalMetrics {
             1,
           ),
           Requirement.optIn,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The mode of the CPU
@@ -380,22 +395,24 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           diskIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -444,21 +461,23 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -499,21 +518,23 @@ object SystemExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -566,22 +587,24 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           diskIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -640,22 +663,24 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           diskIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -708,22 +733,24 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           diskIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -766,15 +793,15 @@ object SystemExperimentalMetrics {
 
       /** Identifier for the device where the filesystem resides.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "/dev/sda",
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mode
@@ -786,7 +813,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mount path
@@ -798,7 +825,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem type
@@ -810,12 +837,12 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
           systemFilesystemMode,
           systemFilesystemMountpoint,
           systemFilesystemType,
@@ -907,14 +934,14 @@ object SystemExperimentalMetrics {
 
       /** OS-specific identifier for the device where the file resides.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "08:01",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -922,7 +949,7 @@ object SystemExperimentalMetrics {
           fileLockMechanism,
           fileLockMode,
           fileLockType,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -969,15 +996,15 @@ object SystemExperimentalMetrics {
 
       /** Identifier for the device where the filesystem resides.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "/dev/sda",
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mode
@@ -989,7 +1016,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mount path
@@ -1001,7 +1028,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem state
@@ -1013,7 +1040,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem type
@@ -1025,12 +1052,12 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
           systemFilesystemMode,
           systemFilesystemMountpoint,
           systemFilesystemState,
@@ -1077,15 +1104,15 @@ object SystemExperimentalMetrics {
 
       /** Identifier for the device where the filesystem resides.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "/dev/sda",
             "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mode
@@ -1097,7 +1124,7 @@ object SystemExperimentalMetrics {
             "rw, ro",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem mount path
@@ -1109,7 +1136,7 @@ object SystemExperimentalMetrics {
             "/mnt/data",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem state
@@ -1121,7 +1148,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The filesystem type
@@ -1133,12 +1160,12 @@ object SystemExperimentalMetrics {
             "ext4",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
           systemFilesystemMode,
           systemFilesystemMountpoint,
           systemFilesystemState,
@@ -1303,9 +1330,9 @@ object SystemExperimentalMetrics {
   /** An estimate of how much memory is available for starting new applications, without causing swapping.
     *
     * @note
-    *   <p> This is an alternative to `system.memory.usage` metric with `state=free`. Linux starting from 3.14 exports
-    *   "available" memory. It takes "free" memory as a baseline, and then factors in kernel-specific values. This is
-    *   supposed to be more accurate than just "free" memory. For reference, see the calculations <a
+    *   <p> This is equivalent to the `system.memory.usage` metric with `state=available`. Linux starting from 3.14
+    *   exports "available" memory. It takes "free" memory as a baseline, and then factors in kernel-specific values.
+    *   This is supposed to be more accurate than just "free" memory. For reference, see the calculations <a
     *   href="https://superuser.com/a/980821">here</a>. See also `MemAvailable` in <a
     *   href="https://man7.org/linux/man-pages/man5/proc.5.html">/proc/meminfo</a>.
     */
@@ -1515,7 +1542,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1571,7 +1598,7 @@ object SystemExperimentalMetrics {
             "used",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1674,7 +1701,7 @@ object SystemExperimentalMetrics {
             "unreclaimable",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
@@ -1744,12 +1771,15 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Reports memory in use by state.
+  /** Reports memory by state.
+    *
+    * @note
+    *   <p> The sum of the `used` and `available` state values SHOULD be equal to `system.memory.limit`.
     */
   object MemoryUsage extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.usage"
-    val description: String = "Reports memory in use by state."
+    val description: String = "Reports memory by state."
     val unit: String = "By"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1762,8 +1792,8 @@ object SystemExperimentalMetrics {
         AttributeSpec(
           SystemExperimentalAttributes.SystemMemoryState,
           List(
-            "free",
-            "cached",
+            "used",
+            "available",
           ),
           Requirement.recommended,
           Stability.development
@@ -1800,12 +1830,15 @@ object SystemExperimentalMetrics {
 
   }
 
-  /** Percentage of memory bytes in use.
+  /** Fraction of memory bytes by state.
+    *
+    * @note
+    *   <p> The sum of the `used` and `available` state values SHOULD be equal to 1.
     */
   object MemoryUtilization extends MetricSpec.Unsealed {
 
     val name: String = "system.memory.utilization"
-    val description: String = "Percentage of memory bytes in use."
+    val description: String = "Fraction of memory bytes by state."
     val unit: String = "1"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1818,8 +1851,8 @@ object SystemExperimentalMetrics {
         AttributeSpec(
           SystemExperimentalAttributes.SystemMemoryState,
           List(
-            "free",
-            "cached",
+            "used",
+            "available",
           ),
           Requirement.recommended,
           Stability.development
@@ -1881,7 +1914,7 @@ object SystemExperimentalMetrics {
             "close_wait",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The network interface name.
@@ -1975,7 +2008,7 @@ object SystemExperimentalMetrics {
             "close_wait",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The network interface name.
@@ -2295,22 +2328,24 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           networkIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -2443,8 +2478,9 @@ object SystemExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** Deprecated, use `system.device.name` instead.
         */
+      @deprecated("Replaced by `system.device.name`.", "")
       val systemDevice: AttributeSpec[String] =
         AttributeSpec(
           SystemExperimentalAttributes.SystemDevice,
@@ -2563,7 +2599,7 @@ object SystemExperimentalMetrics {
             "in",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The paging fault type
@@ -2624,14 +2660,14 @@ object SystemExperimentalMetrics {
 
       /** Unique identifier for the device responsible for managing paging operations.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "/dev/dm-0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The memory paging state
@@ -2643,12 +2679,12 @@ object SystemExperimentalMetrics {
             "free",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
           systemPagingState,
         )
     }
@@ -2692,14 +2728,14 @@ object SystemExperimentalMetrics {
 
       /** Unique identifier for the device responsible for managing paging operations.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
             "/dev/dm-0",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       /** The memory paging state
@@ -2711,12 +2747,12 @@ object SystemExperimentalMetrics {
             "free",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
-          systemDevice,
+          systemDeviceName,
           systemPagingState,
         )
     }

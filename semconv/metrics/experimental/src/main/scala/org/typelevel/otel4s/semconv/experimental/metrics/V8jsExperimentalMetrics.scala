@@ -100,7 +100,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(
@@ -159,7 +160,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(
@@ -257,7 +259,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(
@@ -319,7 +322,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(
@@ -381,7 +385,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(
@@ -443,7 +448,8 @@ object V8jsExperimentalMetrics {
         *
         * @note
         *   <p> Value can be retrieved from value `space_name` of <a
-        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+        *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+        *   reported spaces depends on the V8 version the runtime embeds.
         */
       val v8jsHeapSpaceName: AttributeSpec[String] =
         AttributeSpec(

@@ -189,12 +189,12 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-        *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-        *   instrumentation's best knowledge.
+        *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based
+        *   on the instrumentation's best knowledge.
         */
-      val messagingSystem: AttributeSpec[String] =
+      val messagingSystemName: AttributeSpec[String] =
         AttributeSpec(
-          MessagingExperimentalAttributes.MessagingSystem,
+          MessagingExperimentalAttributes.MessagingSystemName,
           List(
           ),
           Requirement.required,
@@ -246,7 +246,7 @@ object MessagingExperimentalMetrics {
           messagingDestinationSubscriptionName,
           messagingDestinationTemplate,
           messagingOperationName,
-          messagingSystem,
+          messagingSystemName,
           serverAddress,
           serverPort,
         )
@@ -436,12 +436,12 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-        *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-        *   instrumentation's best knowledge.
+        *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based
+        *   on the instrumentation's best knowledge.
         */
-      val messagingSystem: AttributeSpec[String] =
+      val messagingSystemName: AttributeSpec[String] =
         AttributeSpec(
-          MessagingExperimentalAttributes.MessagingSystem,
+          MessagingExperimentalAttributes.MessagingSystemName,
           List(
           ),
           Requirement.required,
@@ -494,7 +494,7 @@ object MessagingExperimentalMetrics {
           messagingDestinationTemplate,
           messagingOperationName,
           messagingOperationType,
-          messagingSystem,
+          messagingSystemName,
           serverAddress,
           serverPort,
         )
@@ -619,12 +619,12 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-        *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-        *   instrumentation's best knowledge.
+        *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based
+        *   on the instrumentation's best knowledge.
         */
-      val messagingSystem: AttributeSpec[String] =
+      val messagingSystemName: AttributeSpec[String] =
         AttributeSpec(
-          MessagingExperimentalAttributes.MessagingSystem,
+          MessagingExperimentalAttributes.MessagingSystemName,
           List(
           ),
           Requirement.required,
@@ -674,7 +674,7 @@ object MessagingExperimentalMetrics {
           messagingDestinationPartitionId,
           messagingDestinationTemplate,
           messagingOperationName,
-          messagingSystem,
+          messagingSystemName,
           serverAddress,
           serverPort,
         )
@@ -816,12 +816,12 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-        *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-        *   instrumentation's best knowledge.
+        *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based
+        *   on the instrumentation's best knowledge.
         */
-      val messagingSystem: AttributeSpec[String] =
+      val messagingSystemName: AttributeSpec[String] =
         AttributeSpec(
-          MessagingExperimentalAttributes.MessagingSystem,
+          MessagingExperimentalAttributes.MessagingSystemName,
           List(
           ),
           Requirement.required,
@@ -871,7 +871,7 @@ object MessagingExperimentalMetrics {
           messagingDestinationPartitionId,
           messagingDestinationTemplate,
           messagingOperationName,
-          messagingSystem,
+          messagingSystemName,
           serverAddress,
           serverPort,
         )
@@ -1046,12 +1046,12 @@ object MessagingExperimentalMetrics {
         *
         * @note
         *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-        *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-        *   instrumentation's best knowledge.
+        *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based
+        *   on the instrumentation's best knowledge.
         */
-      val messagingSystem: AttributeSpec[String] =
+      val messagingSystemName: AttributeSpec[String] =
         AttributeSpec(
-          MessagingExperimentalAttributes.MessagingSystem,
+          MessagingExperimentalAttributes.MessagingSystemName,
           List(
           ),
           Requirement.required,
@@ -1103,7 +1103,7 @@ object MessagingExperimentalMetrics {
           messagingDestinationSubscriptionName,
           messagingDestinationTemplate,
           messagingOperationName,
-          messagingSystem,
+          messagingSystemName,
           serverAddress,
           serverPort,
         )

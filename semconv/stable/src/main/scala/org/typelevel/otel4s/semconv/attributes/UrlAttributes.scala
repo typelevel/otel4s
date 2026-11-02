@@ -45,10 +45,16 @@ object UrlAttributes {
     * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Credential`</a>
     * <li><a
     * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Security-Token`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/developerguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-creating-signed-url-canned-policy.html">`Signature`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
-    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
-    * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be
-    * case-sensitive. <p>
+    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> Several
+    * of these keys are used by more than one service or signing scheme. Each link points to one representative usage
+    * rather than an exhaustive list, and does not narrow the scope of the key to the linked service or signing scheme.
+    * <p> This list is subject to change over time. <p> Matching of query parameter keys against the sensitive list
+    * SHOULD be case-sensitive. <p>
     *
     * Instrumentation MAY provide a way to override this list via declarative configuration. If so, it SHOULD use the
     * `sensitive_query_parameters` property (an array of case-sensitive strings with minimum items 0) under
@@ -80,14 +86,21 @@ object UrlAttributes {
     * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Credential`</a>
     * <li><a
     * href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_sigv-authentication-methods.html">`X-Amz-Security-Token`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonS3/latest/developerguide/RESTAuthentication.html#RESTAuthenticationQueryStringAuth">`AWSAccessKeyId`</a>
+    * <li><a
+    * href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-creating-signed-url-canned-policy.html">`Signature`</a>
     * <li><a href="https://learn.microsoft.com/azure/storage/common/storage-sas-overview#sas-token">`sig`</a> <li><a
-    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> This list
-    * is subject to change over time. <p> Matching of query parameter keys against the sensitive list SHOULD be
-    * case-sensitive. <p> Instrumentation MAY provide a way to override this list via declarative configuration. If so,
-    * it SHOULD use the `sensitive_query_parameters` property (an array of case-sensitive strings with minimum items 0)
-    * under `.instrumentation/development.general.sanitization.url`. This list is a full override of the default
-    * sensitive query parameter keys, it is not a list of keys in addition to the defaults. <p> When a query string
-    * value is redacted, the query string key SHOULD still be preserved, e.g. `q=OpenTelemetry&sig=REDACTED`.
+    * href="https://cloud.google.com/storage/docs/access-control/signed-urls">`X-Goog-Signature`</a> </ul> <p> Several
+    * of these keys are used by more than one service or signing scheme. Each link points to one representative usage
+    * rather than an exhaustive list, and does not narrow the scope of the key to the linked service or signing scheme.
+    * <p> This list is subject to change over time. <p> Matching of query parameter keys against the sensitive list
+    * SHOULD be case-sensitive. <p> Instrumentation MAY provide a way to override this list via declarative
+    * configuration. If so, it SHOULD use the `sensitive_query_parameters` property (an array of case-sensitive strings
+    * with minimum items 0) under `.instrumentation/development.general.sanitization.url`. This list is a full override
+    * of the default sensitive query parameter keys, it is not a list of keys in addition to the defaults. <p> When a
+    * query string value is redacted, the query string key SHOULD still be preserved, e.g.
+    * `q=OpenTelemetry&sig=REDACTED`.
     */
   val UrlQuery: AttributeKey[String] =
     AttributeKey("url.query")

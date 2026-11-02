@@ -242,13 +242,8 @@ object McpExperimentalMetrics {
         )
 
       /** The error code from the JSON-RPC response.
-        *
-        * @note
-        *   <p> Usually it represents an error code, but may also represent partial success, warning, or differentiate
-        *   between various types of successful outcomes. Semantic conventions for individual RPC frameworks SHOULD
-        *   document what `rpc.response.status_code` means in the context of that system and which values are considered
-        *   to represent errors.
         */
+      @deprecated("Replaced by `rpc.status_code`.", "")
       val rpcResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
           RpcExperimentalAttributes.RpcResponseStatusCode,
@@ -716,13 +711,8 @@ object McpExperimentalMetrics {
         )
 
       /** The error code from the JSON-RPC response.
-        *
-        * @note
-        *   <p> Usually it represents an error code, but may also represent partial success, warning, or differentiate
-        *   between various types of successful outcomes. Semantic conventions for individual RPC frameworks SHOULD
-        *   document what `rpc.response.status_code` means in the context of that system and which values are considered
-        *   to represent errors.
         */
+      @deprecated("Replaced by `rpc.status_code`.", "")
       val rpcResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
           RpcExperimentalAttributes.RpcResponseStatusCode,

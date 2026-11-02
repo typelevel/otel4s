@@ -21,14 +21,22 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object ZosExperimentalAttributes {
 
-  /** The System Management Facility (SMF) Identifier uniquely identified a z/OS system within a SYSPLEX or mainframe
-    * environment and is used for system and performance analysis.
+  /** The System Management Facility (SMF) identifier that uniquely identifies a z/OS system within a sysplex or
+    * mainframe environment and is used for system and performance analysis.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry Mainframe semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-mainframe).",
+    ""
+  )
   val ZosSmfId: AttributeKey[String] =
     AttributeKey("zos.smf.id")
 
-  /** The name of the SYSPLEX to which the z/OS system belongs too.
+  /** The name of the sysplex to which the z/OS system belongs.
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry Mainframe semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-mainframe).",
+    ""
+  )
   val ZosSysplexName: AttributeKey[String] =
     AttributeKey("zos.sysplex.name")
 

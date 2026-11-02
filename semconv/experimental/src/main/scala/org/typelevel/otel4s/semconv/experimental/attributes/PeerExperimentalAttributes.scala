@@ -29,7 +29,7 @@ object PeerExperimentalAttributes {
     *   `peer.service="AuthTokenCache"`. <li>A gRPC service `rpc.service="io.opentelemetry.AuthService"` may be hosted
     *   in both a gateway, `peer.service="ExternalApiService"` and a backend, `peer.service="AuthService"`. </ul>
     */
-  @deprecated("Replaced by `service.peer.name`.", "")
+  @deprecated("Use `server.service.name` on the client side or `client.service.name` on the server side.", "")
   val PeerService: AttributeKey[String] =
     AttributeKey("peer.service")
 

@@ -27,6 +27,10 @@ object EnduserExperimentalAttributes {
     *   <p> Unique identifier of an end user in the system. <blockquote> [!Warning] This field contains sensitive (PII)
     *   information.</blockquote>
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry Client-Side semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-client-side).",
+    ""
+  )
   val EnduserId: AttributeKey[String] =
     AttributeKey("enduser.id")
 
@@ -37,6 +41,10 @@ object EnduserExperimentalAttributes {
     *   <p> Pseudonymous identifier of an end user. <blockquote> [!Warning] This field contains sensitive (linkable PII)
     *   information.</blockquote>
     */
+  @deprecated(
+    "Moved to the [OpenTelemetry Client-Side semantic conventions repository](https://github.com/open-telemetry/semantic-conventions-client-side).",
+    ""
+  )
   val EnduserPseudoId: AttributeKey[String] =
     AttributeKey("enduser.pseudo.id")
 

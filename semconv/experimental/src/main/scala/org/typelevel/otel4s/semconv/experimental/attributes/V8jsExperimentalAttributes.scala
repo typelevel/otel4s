@@ -30,7 +30,8 @@ object V8jsExperimentalAttributes {
     *
     * @note
     *   <p> Value can be retrieved from value `space_name` of <a
-    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>
+    *   href="https://nodejs.org/api/v8.html#v8getheapspacestatistics">`v8.getHeapSpaceStatistics()`</a>. The set of
+    *   reported spaces depends on the V8 version the runtime embeds.
     */
   val V8jsHeapSpaceName: AttributeKey[String] =
     AttributeKey("v8js.heap.space.name")
@@ -88,6 +89,42 @@ object V8jsExperimentalAttributes {
     /** Large object memory space.
       */
     case object LargeObjectSpace extends V8jsHeapSpaceNameValue("large_object_space")
+
+    /** Read-only memory space, holding immutable objects created at startup.
+      */
+    case object ReadOnlySpace extends V8jsHeapSpaceNameValue("read_only_space")
+
+    /** Memory space for objects shared across isolates (e.g. shared strings and structs).
+      */
+    case object SharedSpace extends V8jsHeapSpaceNameValue("shared_space")
+
+    /** Memory space for trusted objects kept outside the V8 sandbox (e.g. bytecode).
+      */
+    case object TrustedSpace extends V8jsHeapSpaceNameValue("trusted_space")
+
+    /** Shared variant of the trusted memory space.
+      */
+    case object SharedTrustedSpace extends V8jsHeapSpaceNameValue("shared_trusted_space")
+
+    /** Large object space for young-generation objects.
+      */
+    case object NewLargeObjectSpace extends V8jsHeapSpaceNameValue("new_large_object_space")
+
+    /** Large object space for code objects.
+      */
+    case object CodeLargeObjectSpace extends V8jsHeapSpaceNameValue("code_large_object_space")
+
+    /** Large object space for shared objects.
+      */
+    case object SharedLargeObjectSpace extends V8jsHeapSpaceNameValue("shared_large_object_space")
+
+    /** Large object space for shared trusted objects.
+      */
+    case object SharedTrustedLargeObjectSpace extends V8jsHeapSpaceNameValue("shared_trusted_large_object_space")
+
+    /** Large object space for trusted objects.
+      */
+    case object TrustedLargeObjectSpace extends V8jsHeapSpaceNameValue("trusted_large_object_space")
   }
 
   /** Values for [[V8jsResourceType]].

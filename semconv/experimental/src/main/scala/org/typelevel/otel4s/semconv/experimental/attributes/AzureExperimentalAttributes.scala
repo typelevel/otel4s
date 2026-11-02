@@ -61,6 +61,11 @@ object AzureExperimentalAttributes {
   val AzureCosmosdbResponseSubStatusCode: AttributeKey[Long] =
     AttributeKey("azure.cosmosdb.response.sub_status_code")
 
+  /** The UTC epoch seconds at which the message has been accepted and stored in the entity.
+    */
+  val AzureEventhubsMessageEnqueuedTime: AttributeKey[Long] =
+    AttributeKey("azure.eventhubs.message.enqueued_time")
+
   /** The name of the Azure <a
     * href="https://learn.microsoft.com/azure/azure-resource-manager/management/manage-resource-groups-portal">resource
     * group</a> the resource belongs to.
@@ -79,6 +84,23 @@ object AzureExperimentalAttributes {
     */
   val AzureServiceRequestId: AttributeKey[String] =
     AttributeKey("azure.service.request.id")
+
+  /** Describes the <a
+    * href="https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock">settlement
+    * type</a>.
+    */
+  val AzureServicebusDispositionStatus: AttributeKey[String] =
+    AttributeKey("azure.servicebus.disposition_status")
+
+  /** Number of deliveries that have been attempted for this message.
+    */
+  val AzureServicebusMessageDeliveryCount: AttributeKey[Long] =
+    AttributeKey("azure.servicebus.message.delivery_count")
+
+  /** The UTC epoch seconds at which the message has been accepted and stored in the entity.
+    */
+  val AzureServicebusMessageEnqueuedTime: AttributeKey[Long] =
+    AttributeKey("azure.servicebus.message.enqueued_time")
 
   /** Values for [[AzureCosmosdbConnectionMode]].
     */
@@ -122,6 +144,30 @@ object AzureExperimentalAttributes {
     /** Consistent Prefix
       */
     case object ConsistentPrefix extends AzureCosmosdbConsistencyLevelValue("ConsistentPrefix")
+  }
+
+  /** Values for [[AzureServicebusDispositionStatus]].
+    */
+  abstract class AzureServicebusDispositionStatusValue(val value: String)
+  object AzureServicebusDispositionStatusValue {
+    implicit val attributeFromAzureServicebusDispositionStatusValue
+        : Attribute.From[AzureServicebusDispositionStatusValue, String] = _.value
+
+    /** Message is completed
+      */
+    case object Complete extends AzureServicebusDispositionStatusValue("complete")
+
+    /** Message is abandoned
+      */
+    case object Abandon extends AzureServicebusDispositionStatusValue("abandon")
+
+    /** Message is sent to dead letter queue
+      */
+    case object DeadLetter extends AzureServicebusDispositionStatusValue("dead_letter")
+
+    /** Message is deferred
+      */
+    case object Defer extends AzureServicebusDispositionStatusValue("defer")
   }
 
 }

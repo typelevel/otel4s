@@ -26,12 +26,21 @@ object OpentracingExperimentalAttributes {
     * @note
     *   <p> The causal relationship between a child Span and a parent Span.
     */
+  @deprecated(
+    "OpenTracing compatibility requirements are [deprecated in OpenTelemetry Specification](https://opentelemetry.io/docs/specs/otel/compatibility/opentracing/)",
+    ""
+  )
   val OpentracingRefType: AttributeKey[String] =
     AttributeKey("opentracing.ref_type")
 
   /** Values for [[OpentracingRefType]].
     */
+  @deprecated(
+    "OpenTracing compatibility requirements are [deprecated in OpenTelemetry Specification](https://opentelemetry.io/docs/specs/otel/compatibility/opentracing/)",
+    ""
+  )
   abstract class OpentracingRefTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object OpentracingRefTypeValue {
     implicit val attributeFromOpentracingRefTypeValue: Attribute.From[OpentracingRefTypeValue, String] = _.value
 

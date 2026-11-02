@@ -21,7 +21,12 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object CpuExperimentalAttributes {
 
-  /** The logical CPU number [0..n-1]
+  /** The identifier of a logical execution target (CPU) as seen by the operating system, in the range [0..n-1].
+    *
+    * @note
+    *   <p> On systems with simultaneous multithreading (SMT) enabled — such as Intel Hyper-Threading or AMD SMT — this
+    *   value will usually differ from the physical core number, because each core presents multiple logical CPUs for
+    *   the system to use.
     */
   val CpuLogicalNumber: AttributeKey[Long] =
     AttributeKey("cpu.logical_number")

@@ -39,6 +39,13 @@ object JvmExperimentalMetrics {
     CpuCount,
     CpuRecentUtilization,
     CpuTime,
+    ExecutorQueueCapacity,
+    ExecutorQueueSize,
+    ExecutorTaskCompleted,
+    ExecutorTaskRejected,
+    ExecutorThreadCore,
+    ExecutorThreadCount,
+    ExecutorThreadLimit,
     FileDescriptorCount,
     FileDescriptorLimit,
     GcDuration,
@@ -514,6 +521,786 @@ object JvmExperimentalMetrics {
 
   }
 
+  /** The maximum number of tasks the executor queue can hold.
+    *
+    * @note
+    *   <p> Instrumentations SHOULD emit this metric only when the queue has a finite capacity that represents a
+    *   meaningful operational limit. This metric SHOULD NOT be emitted for unbounded or effectively unbounded queues.
+    */
+  object ExecutorQueueCapacity extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.queue.capacity"
+    val description: String = "The maximum number of tasks the executor queue can hold."
+    val unit: String = "{task}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of tasks currently queued for execution.
+    */
+  object ExecutorQueueSize extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.queue.size"
+    val description: String = "The number of tasks currently queued for execution."
+    val unit: String = "{task}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of tasks completed by the executor.
+    *
+    * @note
+    *   <p> A task SHOULD be counted as completed when the executor has finished processing it, regardless of whether it
+    *   returns normally, terminates with an exception, or is canceled. Cancellation during processing does not complete
+    *   the task until processing ends. A task that never begins processing on the executor SHOULD NOT be counted. A
+    *   task initially rejected but subsequently resubmitted to and processed by the executor SHOULD be counted when
+    *   processing ends.
+    */
+  object ExecutorTaskCompleted extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.task.completed"
+    val description: String = "The number of tasks completed by the executor."
+    val unit: String = "{task}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of task submissions rejected by the executor.
+    *
+    * @note
+    *   <p> A task submission SHOULD be counted as rejected when the executor invokes its rejection handler, regardless
+    *   of whether the handler subsequently executes the task in the caller (for example, `CallerRunsPolicy`) or
+    *   discards or replaces a queued task (for example, `DiscardOldestPolicy`). This metric counts rejected
+    *   submissions, not tasks ultimately discarded from the queue.
+    */
+  object ExecutorTaskRejected extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.task.rejected"
+    val description: String = "The number of task submissions rejected by the executor."
+    val unit: String = "{task}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Counter[F, A]] =
+      Meter[F]
+        .counter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableCounter] =
+      Meter[F]
+        .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of core threads configured for the executor.
+    */
+  object ExecutorThreadCore extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.thread.core"
+    val description: String = "The number of core threads configured for the executor."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The number of executor threads that are currently in the state described by the `jvm.executor.thread.state`
+    * attribute.
+    */
+  object ExecutorThreadCount extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.thread.count"
+    val description: String =
+      "The number of executor threads that are currently in the state described by the `jvm.executor.thread.state` attribute."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** State of an executor thread.
+        */
+      val jvmExecutorThreadState: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorThreadState,
+          List(
+            "active",
+            "idle",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorThreadState,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The maximum number of threads allowed for the executor.
+    *
+    * @note
+    *   <p> Instrumentations SHOULD emit this metric only when the maximum thread count is finite and represents a
+    *   meaningful operational limit. This metric SHOULD NOT be emitted for unbounded or effectively unbounded
+    *   executors. For example, an executor with a maximum thread count of `Integer.MAX_VALUE` is effectively unbounded.
+    */
+  object ExecutorThreadLimit extends MetricSpec.Unsealed {
+
+    val name: String = "jvm.executor.thread.limit"
+    val description: String = "The maximum number of threads allowed for the executor."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** Name of the executor.
+        *
+        * @note
+        *   <p> The executor name SHOULD be low-cardinality. If `jvm.executor.owner.name` is present, the combination of
+        *   `jvm.executor.owner.name` and `jvm.executor.name` SHOULD be unique within the instrumented application;
+        *   otherwise, `jvm.executor.name` SHOULD be unique when an executor-specific name is available. If the executor
+        *   implementation does not provide an explicit name, instrumentation SHOULD derive a name from available
+        *   implementation-specific metadata, such as a normalized worker thread name. If no executor-specific name or
+        *   metadata is available, instrumentation MAY use `unknown`. The `unknown` value does not identify an executor,
+        *   and metrics from multiple executors using this value MAY be aggregated. Users requiring per-executor metric
+        *   series SHOULD configure a distinct name through the executor's `ThreadFactory`. Instrumentations SHOULD
+        *   document how the name is derived and how users can configure it. Once metric series registration for an
+        *   executor has started, `jvm.executor.name` and `jvm.executor.owner.name` MUST remain stable for the lifetime
+        *   of that registration. Instrumentations SHOULD determine these attributes before the first worker is
+        *   registered. Instrumentations MUST NOT re-register cumulative metrics under a new attribute set or replay
+        *   prior cumulative values under new attributes.
+        */
+      val jvmExecutorName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorName,
+          List(
+            "pool-1-thread-*",
+            "ForkJoinPool.commonPool-worker-*",
+            "orders-vt-*",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** Name of the logical component that owns the executor.
+        *
+        * @note
+        *   <p> The executor owner name SHOULD be a low-cardinality identifier for the component that creates and
+        *   configures the executor. It is neither the executor implementation type nor an OpenTelemetry instrumentation
+        *   scope.
+        */
+      val jvmExecutorOwnerName: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorOwnerName,
+          List(
+            "tomcat",
+            "jetty",
+            "netty",
+          ),
+          Requirement.recommended,
+          Stability.development
+        )
+
+      /** The fully qualified class name of the executor implementation.
+        */
+      val jvmExecutorType: AttributeSpec[String] =
+        AttributeSpec(
+          JvmExperimentalAttributes.JvmExecutorType,
+          List(
+            "java.util.concurrent.ThreadPoolExecutor",
+            "java.util.concurrent.ForkJoinPool",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          jvmExecutorName,
+          jvmExecutorOwnerName,
+          jvmExecutorType,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Number of open file descriptors as reported by the JVM.
     */
   object FileDescriptorCount extends MetricSpec.Unsealed {
@@ -521,7 +1308,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.file_descriptor.count"
     val description: String = "Number of open file descriptors as reported by the JVM."
     val unit: String = "{file_descriptor}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -556,7 +1343,7 @@ object JvmExperimentalMetrics {
     val name: String = "jvm.file_descriptor.limit"
     val description: String = "Measure of max open file descriptors as reported by the JVM."
     val unit: String = "{file_descriptor}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =

@@ -43,9 +43,11 @@ object K8sExperimentalMetrics {
     ContainerMemoryLimit,
     ContainerMemoryLimitCurrent,
     ContainerMemoryLimitDesired,
+    ContainerMemoryLimitUtilization,
     ContainerMemoryRequest,
     ContainerMemoryRequestCurrent,
     ContainerMemoryRequestDesired,
+    ContainerMemoryRequestUtilization,
     ContainerReady,
     ContainerRestartCount,
     ContainerStatusReason,
@@ -111,6 +113,8 @@ object K8sExperimentalMetrics {
     NodeNetworkErrors,
     NodeNetworkIo,
     NodePagingFaults,
+    NodePidLimit,
+    NodePidUsage,
     NodePodAllocatable,
     NodeSystemContainerCpuTime,
     NodeSystemContainerCpuUsage,
@@ -122,13 +126,25 @@ object K8sExperimentalMetrics {
     PersistentvolumeclaimStatusPhase,
     PersistentvolumeclaimStorageCapacity,
     PersistentvolumeclaimStorageRequest,
+    PodCpuLimitCurrent,
+    PodCpuLimitDesired,
+    PodCpuLimitUtilization,
+    PodCpuRequestCurrent,
+    PodCpuRequestDesired,
+    PodCpuRequestUtilization,
     PodCpuTime,
     PodCpuUsage,
     PodFilesystemAvailable,
     PodFilesystemCapacity,
     PodFilesystemUsage,
     PodMemoryAvailable,
+    PodMemoryLimitCurrent,
+    PodMemoryLimitDesired,
+    PodMemoryLimitUtilization,
     PodMemoryPagingFaults,
+    PodMemoryRequestCurrent,
+    PodMemoryRequestDesired,
+    PodMemoryRequestUtilization,
     PodMemoryRss,
     PodMemoryUsage,
     PodMemoryWorkingSet,
@@ -176,6 +192,7 @@ object K8sExperimentalMetrics {
     ServiceLoadBalancerIngressCount,
     StatefulsetCurrentPods,
     StatefulsetDesiredPods,
+    StatefulsetPodAvailable,
     StatefulsetPodCurrent,
     StatefulsetPodDesired,
     StatefulsetPodReady,
@@ -478,8 +495,9 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> The current CPU request reflects the request applied to the running container, as reported by <a
     *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">ContainerStatus</a>.
-    *   The value range is [0.0,1.0]. A value of 1.0 means the container is using 100% of its actual CPU request. If the
-    *   CPU request is not set, this metric SHOULD NOT be emitted for that container.
+    *   A value of 1.0 means the container is using exactly its CPU request. Since a CPU request is a scheduling
+    *   reservation and not a hard cap, values above 1.0 are possible and indicate the container is using more CPU than
+    *   requested. If the CPU request is not set, this metric SHOULD NOT be emitted for that container.
     */
   object ContainerCpuRequestUtilization extends MetricSpec.Unsealed {
 
@@ -517,8 +535,9 @@ object K8sExperimentalMetrics {
   /** Maximum ephemeral storage resource limit set for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
-    *   details.
+    *   <p> See the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">Kubernetes
+    *   ResourceRequirements API</a> for details.
     */
   object ContainerEphemeralStorageLimit extends MetricSpec.Unsealed {
 
@@ -556,8 +575,9 @@ object K8sExperimentalMetrics {
   /** Ephemeral storage resource requested for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
-    *   details.
+    *   <p> See the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">Kubernetes
+    *   ResourceRequirements API</a> for details.
     */
   object ContainerEphemeralStorageRequest extends MetricSpec.Unsealed {
 
@@ -780,6 +800,49 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** The ratio of container memory working set to its current memory limit.
+    *
+    * @note
+    *   <p> The numerator is the container memory working set, as reported by `container.memory.working_set`. The
+    *   current memory limit reflects the actual resources applied to the container, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">ContainerStatus</a>.
+    *   A value of 1.0 means the container is using 100% of its actual memory limit. Values above 1.0 can occur
+    *   transiently, since memory usage can briefly exceed the limit. If the memory limit is not set, this metric SHOULD
+    *   NOT be emitted for that container.
+    */
+  object ContainerMemoryLimitUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.limit.utilization"
+    val description: String = "The ratio of container memory working set to its current memory limit."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Deprecated, use `k8s.container.memory.request.desired` and `k8s.container.memory.request.current` instead.
     */
   @deprecated("Replaced by `k8s.container.memory.request.desired`.", "")
@@ -898,6 +961,49 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableUpDownCounter] =
       Meter[F]
         .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of container memory working set to its current memory request.
+    *
+    * @note
+    *   <p> The numerator is the container memory working set, as reported by `container.memory.working_set`. The
+    *   current memory request reflects the request applied to the running container, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#containerstatus-v1-core">ContainerStatus</a>.
+    *   A value of 1.0 means the container is using exactly its memory request. Since a memory request is a scheduling
+    *   reservation and not a hard cap, values above 1.0 are possible and indicate the container is using more memory
+    *   than requested. If the memory request is not set, this metric SHOULD NOT be emitted for that container.
+    */
+  object ContainerMemoryRequestUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.container.memory.request.utilization"
+    val description: String = "The ratio of container memory working set to its current memory request."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -1125,8 +1231,9 @@ object K8sExperimentalMetrics {
   /** Maximum storage resource limit set for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
-    *   details.
+    *   <p> See the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">Kubernetes
+    *   ResourceRequirements API</a> for details.
     */
   object ContainerStorageLimit extends MetricSpec.Unsealed {
 
@@ -1164,8 +1271,9 @@ object K8sExperimentalMetrics {
   /** Storage resource requested for the container.
     *
     * @note
-    *   <p> See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core for
-    *   details.
+    *   <p> See the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#resourcerequirements-v1-core">Kubernetes
+    *   ResourceRequirements API</a> for details.
     */
   object ContainerStorageRequest extends MetricSpec.Unsealed {
 
@@ -3120,7 +3228,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.cpu.usage"
     val description: String = "Node's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -3187,9 +3295,9 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of the
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of the
     *   Kubelet's stats API.
     */
   object NodeFilesystemAvailable extends MetricSpec.Unsealed {
@@ -3197,7 +3305,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.filesystem.available"
     val description: String = "Node filesystem available bytes."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3229,8 +3337,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
-    *   of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
+    *   of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
     *   the Kubelet's stats API.
     */
   object NodeFilesystemCapacity extends MetricSpec.Unsealed {
@@ -3238,7 +3346,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.filesystem.capacity"
     val description: String = "Node filesystem capacity."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3270,8 +3378,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.Inodes</a> field of the
-    *   <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of the
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.Inodes</a> field of the
+    *   <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of the
     *   Kubelet's stats API.
     */
   object NodeFilesystemInodeCount extends MetricSpec.Unsealed {
@@ -3279,7 +3387,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.filesystem.inode.count"
     val description: String = "The total inodes in the node's root filesystem."
     val unit: String = "{inode}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3311,8 +3419,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.InodesFree</a> field of
-    *   the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.InodesFree</a> field of
+    *   the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
     *   the Kubelet's stats API.
     */
   object NodeFilesystemInodeFree extends MetricSpec.Unsealed {
@@ -3320,7 +3428,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.filesystem.inode.free"
     val description: String = "The free inodes in the node's root filesystem."
     val unit: String = "{inode}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3351,17 +3459,18 @@ object K8sExperimentalMetrics {
   /** Node filesystem usage.
     *
     * @note
-    *   <p> This may not equal capacity - available. <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
-    *   the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
-    *   the Kubelet's stats API.
+    *   <p> This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
+    *   the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Fs</a> of
+    *   the Kubelet's stats API. <p> Capacity and available are reported for the backing filesystem, which may be shared
+    *   with other workloads; therefore, usage may not equal `capacity - available`.
     */
   object NodeFilesystemUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.filesystem.usage"
     val description: String = "Node filesystem usage."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -3622,7 +3731,11 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> The amount of working set memory. This includes recently accessed memory, dirty memory, and kernel memory.
-    *   WorkingSetBytes is <= UsageBytes. This metric is derived from the <a
+    *   On Linux, the working set is calculated by excluding inactive file-backed memory from memory usage
+    *   (`inactive_file` on cgroup v2, `total_inactive_file` on cgroup v1), so active file-backed memory remains
+    *   included. On Linux, the kubelet uses the node working set when determining memory availability for the
+    *   `memory.available` eviction signal. `WorkingSetBytes` is less than or equal to `UsageBytes`. This metric is
+    *   derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
     *   field of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
@@ -3668,7 +3781,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.network.errors"
     val description: String = "Node network errors."
     val unit: String = "{error}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -3738,7 +3851,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.node.network.io"
     val description: String = "Network bytes for the Node."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -3804,20 +3917,23 @@ object K8sExperimentalMetrics {
   /** Node memory paging faults.
     *
     * @note
-    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
-    *   and <a
+    *   <p> Cumulative number of major and minor page faults. The <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
-    *   fields of the <a
+    *   field of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Memory</a> of the
-    *   Kubelet's stats API.
+    *   Kubelet's stats API maps directly to `system.paging.fault.type=major`. The <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   field reports the total number of page faults (equivalent to `pgfault` in the cgroup `memory.stat`), with minor
+    *   and major combined. The minor page faults MUST therefore be derived as
+    *   `MemoryStats.PageFaults - MemoryStats.MajorPageFaults`, so that summing the metric over
+    *   `system.paging.fault.type` yields the total number of page faults.
     */
   object NodePagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.paging.faults"
     val description: String = "Node memory paging faults."
     val unit: String = "{fault}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -3859,6 +3975,90 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total number of processes/threads allowed by the operating system on the node.
+    *
+    * @note
+    *   <p> Derived from the Kubelet Summary API (<a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#RlimitStats">RlimitStats.MaxPID</a>)
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Rlimit</a>,
+    *   representing the system-wide task limit (the lower of `kernel.pid_max` and `kernel.threads-max`).
+    */
+  object NodePidLimit extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.pid.limit"
+    val description: String = "Total number of processes/threads allowed by the operating system on the node."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total number of existing processes and threads on the node.
+    *
+    * @note
+    *   <p> Derived from the Kubelet Summary API (<a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#RlimitStats">RlimitStats.NumOfRunningProcesses</a>)
+    *   field of the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#NodeStats">NodeStats.Rlimit</a>, which
+    *   reads the total count of scheduling entities (threads/processes across all states) from `/proc/loadavg`.
+    */
+  object NodePidUsage extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.node.pid.usage"
+    val description: String = "Total number of existing processes and threads on the node."
+    val unit: String = "{thread}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -4077,14 +4277,18 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
-    *   operating system.
+    *   operating system. This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L42">NodeStats.StartTime</a>
+    *   field of Kubelet's stats API, which is set to the <a
+    *   href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/kubelet/server/stats/summary.go#L113">system
+    *   boot time</a>. This value resets when the node reboots.
     */
   object NodeUptime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.node.uptime"
     val description: String = "The time the Node has been running."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -4371,6 +4575,265 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Maximum CPU resource limit currently configured for a running Pod.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">K8s
+    *   PodStatus</a> (status.resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object PodCpuLimitCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.limit.current"
+    val description: String = "Maximum CPU resource limit currently configured for a running Pod."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Maximum CPU resource limit as defined by the Pod spec.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podspec-v1-core">K8s
+    *   PodSpec</a> (spec.resources). See <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/</a>
+    *   for more details on Pod level resources. Note that Kubernetes can default unset Pod level limits based on the
+    *   aggregated limits of the Pod's containers. Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>.
+    */
+  object PodCpuLimitDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.limit.desired"
+    val description: String = "Maximum CPU resource limit as defined by the Pod spec."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of Pod CPU usage to its current CPU limit.
+    *
+    * @note
+    *   <p> The current CPU limit reflects the actual resources applied at the Pod level, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">PodStatus</a>. The
+    *   value range is [0.0,1.0]. A value of 1.0 means the Pod is using 100% of its actual CPU limit. If the CPU limit
+    *   is not set, this metric SHOULD NOT be emitted for that Pod.
+    */
+  object PodCpuLimitUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.limit.utilization"
+    val description: String = "The ratio of Pod CPU usage to its current CPU limit."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** CPU resource requested currently configured for a running Pod.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">K8s
+    *   PodStatus</a> (status.resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object PodCpuRequestCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.request.current"
+    val description: String = "CPU resource requested currently configured for a running Pod."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** CPU resource requested as defined by the Pod spec.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podspec-v1-core">K8s
+    *   PodSpec</a> (spec.resources). See <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/</a>
+    *   for more details on Pod level resources. Note that Kubernetes can default unset Pod level requests based on the
+    *   aggregated requests of the Pod's containers. Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>.
+    */
+  object PodCpuRequestDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.request.desired"
+    val description: String = "CPU resource requested as defined by the Pod spec."
+    val unit: String = "{cpu}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of Pod CPU usage to its current CPU request.
+    *
+    * @note
+    *   <p> The current CPU request reflects the request applied at the Pod level, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">PodStatus</a>. A
+    *   value of 1.0 means the Pod is using exactly its CPU request. Since a CPU request is a scheduling reservation and
+    *   not a hard cap, values above 1.0 are possible and indicate the Pod is using more CPU than requested. If the CPU
+    *   request is not set, this metric SHOULD NOT be emitted for that Pod.
+    */
+  object PodCpuRequestUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.cpu.request.utilization"
+    val description: String = "The ratio of Pod CPU usage to its current CPU request."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Total CPU time consumed.
     *
     * @note
@@ -4421,7 +4884,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.cpu.usage"
     val description: String = "Pod's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -4453,9 +4916,9 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
     *   of the Kubelet's stats API.
     */
   object PodFilesystemAvailable extends MetricSpec.Unsealed {
@@ -4463,7 +4926,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.filesystem.available"
     val description: String = "Pod filesystem available bytes."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4495,9 +4958,9 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
     *   of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
     *   of the Kubelet's stats API.
     */
   object PodFilesystemCapacity extends MetricSpec.Unsealed {
@@ -4505,7 +4968,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.filesystem.capacity"
     val description: String = "Pod filesystem capacity."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4536,18 +4999,19 @@ object K8sExperimentalMetrics {
   /** Pod filesystem usage.
     *
     * @note
-    *   <p> This may not equal capacity - available. <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
+    *   <p> This metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
     *   the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
-    *   of the Kubelet's stats API.
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.EphemeralStorage</a>
+    *   of the Kubelet's stats API. <p> Capacity and available are reported for the backing filesystem, which may be
+    *   shared with other workloads; therefore, usage may not equal `capacity - available`.
     */
   object PodFilesystemUsage extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.filesystem.usage"
     val description: String = "Pod filesystem usage."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -4618,6 +5082,137 @@ object K8sExperimentalMetrics {
 
   }
 
+  /** Maximum memory resource limit currently configured for a running Pod.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">K8s
+    *   PodStatus</a> (status.resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object PodMemoryLimitCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.limit.current"
+    val description: String = "Maximum memory resource limit currently configured for a running Pod."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Maximum memory resource limit as defined by the Pod spec.
+    *
+    * @note
+    *   <p> This metric aligns with the limit in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podspec-v1-core">K8s
+    *   PodSpec</a> (spec.resources). See <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/</a>
+    *   for more details on Pod level resources. Note that Kubernetes can default unset Pod level limits based on the
+    *   aggregated limits of the Pod's containers. Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>.
+    */
+  object PodMemoryLimitDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.limit.desired"
+    val description: String = "Maximum memory resource limit as defined by the Pod spec."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of Pod memory working set to its current memory limit.
+    *
+    * @note
+    *   <p> The numerator is the Pod memory working set, as reported by `k8s.pod.memory.working_set`. The current memory
+    *   limit reflects the actual resources applied at the Pod level, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">PodStatus</a>. A
+    *   value of 1.0 means the Pod is using 100% of its actual memory limit. Values above 1.0 can occur transiently,
+    *   since memory usage can briefly exceed the limit. If the memory limit is not set, this metric SHOULD NOT be
+    *   emitted for that Pod.
+    */
+  object PodMemoryLimitUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.limit.utilization"
+    val description: String = "The ratio of Pod memory working set to its current memory limit."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
   /** Deprecated, use `k8s.pod.paging.faults` instead.
     *
     * @note
@@ -4677,6 +5272,137 @@ object K8sExperimentalMetrics {
     ): Resource[F, ObservableCounter] =
       Meter[F]
         .observableCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Memory resource request currently configured for a running Pod.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">K8s
+    *   PodStatus</a> (status.resources). Also see `Actual Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>
+    *   for more details.
+    */
+  object PodMemoryRequestCurrent extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.request.current"
+    val description: String = "Memory resource request currently configured for a running Pod."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Memory resource requested as defined by the Pod spec.
+    *
+    * @note
+    *   <p> This metric aligns with the request in the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#resourcerequirements-v1-core">`resources`</a>
+    *   field of <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podspec-v1-core">K8s
+    *   PodSpec</a> (spec.resources). See <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/assign-pod-level-resources/</a>
+    *   for more details on Pod level resources. Note that Kubernetes can default unset Pod level requests based on the
+    *   aggregated requests of the Pod's containers. Also see `Desired Resources` in <a
+    *   href="https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/">https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/</a>.
+    */
+  object PodMemoryRequestDesired extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.request.desired"
+    val description: String = "Memory resource requested as defined by the Pod spec."
+    val unit: String = "By"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** The ratio of Pod memory working set to its current memory request.
+    *
+    * @note
+    *   <p> The numerator is the Pod memory working set, as reported by `k8s.pod.memory.working_set`. The current memory
+    *   request reflects the request applied at the Pod level, as reported by <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#podstatus-v1-core">PodStatus</a>. A
+    *   value of 1.0 means the Pod is using exactly its memory request. Since a memory request is a scheduling
+    *   reservation and not a hard cap, values above 1.0 are possible and indicate the Pod is using more memory than
+    *   requested. If the memory request is not set, this metric SHOULD NOT be emitted for that Pod.
+    */
+  object PodMemoryRequestUtilization extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.pod.memory.request.utilization"
+    val description: String = "The ratio of Pod memory working set to its current memory request."
+    val unit: String = "1"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
+      Meter[F]
+        .gauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableGauge[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableGauge] =
+      Meter[F]
+        .observableGauge[A](name)
         .withDescription(description)
         .withUnit(unit)
         .createWithCallback(callback)
@@ -4773,7 +5499,10 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> The amount of working set memory. This includes recently accessed memory, dirty memory, and kernel memory.
-    *   WorkingSetBytes is <= UsageBytes. This metric is derived from the <a
+    *   On Linux, the working set is calculated by excluding inactive file-backed memory from memory usage
+    *   (`inactive_file` on cgroup v2, `total_inactive_file` on cgroup v1), so active file-backed memory remains
+    *   included. The kubelet uses the Pod working set when ranking Pods for eviction under memory pressure.
+    *   `WorkingSetBytes` is less than or equal to `UsageBytes`. This metric is derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
     *   field of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
@@ -4819,7 +5548,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.network.errors"
     val description: String = "Pod network errors."
     val unit: String = "{error}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -4889,7 +5618,7 @@ object K8sExperimentalMetrics {
     val name: String = "k8s.pod.network.io"
     val description: String = "Network bytes for the Pod."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -4955,20 +5684,23 @@ object K8sExperimentalMetrics {
   /** Pod memory paging faults.
     *
     * @note
-    *   <p> Cumulative number of major/minor page faults. This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
-    *   and <a
+    *   <p> Cumulative number of major and minor page faults. The <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
     *   field of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats.Memory</a> of the
-    *   Kubelet's stats API.
+    *   Kubelet's stats API maps directly to `system.paging.fault.type=major`. The <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
+    *   field reports the total number of page faults (equivalent to `pgfault` in the cgroup `memory.stat`), with minor
+    *   and major combined. The minor page faults MUST therefore be derived as
+    *   `MemoryStats.PageFaults - MemoryStats.MajorPageFaults`, so that summing the metric over
+    *   `system.paging.fault.type` yields the total number of page faults.
     */
   object PodPagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.paging.faults"
     val description: String = "Pod memory paging faults."
     val unit: String = "{fault}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -5145,14 +5877,18 @@ object K8sExperimentalMetrics {
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
-    *   operating system.
+    *   operating system. This metric is derived from the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L122">PodStats.StartTime</a>
+    *   field of Kubelet's stats API, where `StartTime` represents the pod sandbox creation time as <a
+    *   href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/kubelet/stats/cri_stats_provider.go#L299">noted
+    *   in the Kubelet source</a>. This value resets when the node restarts, as the pod sandbox is recreated.
     */
   object PodUptime extends MetricSpec.Unsealed {
 
     val name: String = "k8s.pod.uptime"
     val description: String = "The time the Pod has been running."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =
@@ -5184,8 +5920,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.AvailableBytes</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.AvailableBytes</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API.
     */
   object PodVolumeAvailable extends MetricSpec.Unsealed {
@@ -5259,8 +5995,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.CapacityBytes</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.CapacityBytes</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API.
     */
   object PodVolumeCapacity extends MetricSpec.Unsealed {
@@ -5334,8 +6070,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.Inodes</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.Inodes</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API.
     */
   object PodVolumeInodeCount extends MetricSpec.Unsealed {
@@ -5409,8 +6145,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.InodesFree</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.InodesFree</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API.
     */
   object PodVolumeInodeFree extends MetricSpec.Unsealed {
@@ -5484,8 +6220,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.InodesUsed</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.InodesUsed</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API. <p> This may not be equal to `inodes - free` because filesystem may share inodes
     *   with other filesystems.
     */
@@ -5560,8 +6296,8 @@ object K8sExperimentalMetrics {
     *
     * @note
     *   <p> This may not equal capacity - available. <p> This metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.UsedBytes</a>
-    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#VolumeStats">VolumeStats.UsedBytes</a>
+    *   field of the <a href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#PodStats">PodStats</a>
     *   of the Kubelet's stats API.
     */
   object PodVolumeUsage extends MetricSpec.Unsealed {
@@ -7206,6 +7942,47 @@ object K8sExperimentalMetrics {
 
     val name: String = "k8s.statefulset.desired_pods"
     val description: String = "Deprecated, use `k8s.statefulset.pod.desired` instead."
+    val unit: String = "{pod}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = Nil
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Total number of available replica pods (ready for at least minReadySeconds) targeted by this statefulset.
+    *
+    * @note
+    *   <p> This metric aligns with the `availableReplicas` field of the <a
+    *   href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#statefulsetstatus-v1-apps">K8s
+    *   StatefulSetStatus</a>.
+    */
+  object StatefulsetPodAvailable extends MetricSpec.Unsealed {
+
+    val name: String = "k8s.statefulset.pod.available"
+    val description: String =
+      "Total number of available replica pods (ready for at least minReadySeconds) targeted by this statefulset."
     val unit: String = "{pod}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil

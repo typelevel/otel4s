@@ -68,7 +68,14 @@ object FaasExperimentalAttributes {
   /** The invocation ID of the current function invocation.
     */
   val FaasInvocationId: AttributeKey[String] =
-    AttributeKey("faas.invocation_id")
+    AttributeKey("faas.invocation.id")
+
+  /** A string containing the function invocation time in the <a
+    * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> format expressed in <a
+    * href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
+    */
+  val FaasInvocationStartTime: AttributeKey[String] =
+    AttributeKey("faas.invocation.start_time")
 
   /** The name of the invoked function.
     *
@@ -124,6 +131,7 @@ object FaasExperimentalAttributes {
     * href="https://www.iso.org/iso-8601-date-and-time-format.html">ISO 8601</a> format expressed in <a
     * href="https://www.w3.org/TR/NOTE-datetime">UTC</a>.
     */
+  @deprecated("Replaced by `faas.invocation.start_time`.", "")
   val FaasTime: AttributeKey[String] =
     AttributeKey("faas.time")
 

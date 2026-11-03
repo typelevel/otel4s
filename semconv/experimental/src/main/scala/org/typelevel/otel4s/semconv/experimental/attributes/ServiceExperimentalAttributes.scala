@@ -31,6 +31,25 @@ object ServiceExperimentalAttributes {
   val ServiceCriticality: AttributeKey[String] =
     AttributeKey("service.criticality")
 
+  /** Identifier of the cost center associated with the service instance.
+    *
+    * @note
+    *   <p> The cost center identifier enables tracking and attribution of service resource costs to organizational
+    *   units, billing accounts, or teams. It is typically a string identifier such as a billing account ID, cost
+    *   allocation code, or internal accounting ID.
+    */
+  val ServiceInstanceCostCenterId: AttributeKey[String] =
+    AttributeKey("service.instance.cost_center.id")
+
+  /** Name of the cost center associated with the service instance.
+    *
+    * @note
+    *   <p> A human-readable name of the cost center, department, or organizational unit responsible for the service
+    *   instance costs.
+    */
+  val ServiceInstanceCostCenterName: AttributeKey[String] =
+    AttributeKey("service.instance.cost_center.name")
+
   /** The string ID of the service instance.
     *
     * @note
@@ -96,12 +115,14 @@ object ServiceExperimentalAttributes {
   /** Logical name of the service on the other side of the connection. SHOULD be equal to the actual <a
     * href="/docs/resource/README.md#service">`service.name`</a> resource attribute of the remote service if any.
     */
+  @deprecated("Use `server.service.name` on the client side or `client.service.name` on the server side.", "")
   val ServicePeerName: AttributeKey[String] =
     AttributeKey("service.peer.name")
 
   /** Logical namespace of the service on the other side of the connection. SHOULD be equal to the actual <a
     * href="/docs/resource/README.md#service">`service.namespace`</a> resource attribute of the remote service if any.
     */
+  @deprecated("Use `server.service.namespace` on the client side or `client.service.namespace` on the server side.", "")
   val ServicePeerNamespace: AttributeKey[String] =
     AttributeKey("service.peer.namespace")
 

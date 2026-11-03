@@ -109,38 +109,44 @@ object MessagingExperimentalAttributes {
   val MessagingEventhubsConsumerGroup: AttributeKey[String] =
     AttributeKey("messaging.eventhubs.consumer.group")
 
-  /** The UTC epoch seconds at which the message has been accepted and stored in the entity.
+  /** Deprecated, use `azure.eventhubs.message.enqueued_time` instead.
     */
+  @deprecated("Replaced by `azure.eventhubs.message.enqueued_time`.", "")
   val MessagingEventhubsMessageEnqueuedTime: AttributeKey[Long] =
     AttributeKey("messaging.eventhubs.message.enqueued_time")
 
-  /** The ack deadline in seconds set for the modify ack deadline request.
+  /** Deprecated, use `gcp.pubsub.message.ack_deadline` instead.
     */
+  @deprecated("Replaced by `gcp.pubsub.message.ack_deadline`.", "")
   val MessagingGcpPubsubMessageAckDeadline: AttributeKey[Long] =
     AttributeKey("messaging.gcp_pubsub.message.ack_deadline")
 
-  /** The ack ID for a given message.
+  /** Deprecated, use `gcp.pubsub.message.ack_id` instead.
     */
+  @deprecated("Replaced by `gcp.pubsub.message.ack_id`.", "")
   val MessagingGcpPubsubMessageAckId: AttributeKey[String] =
     AttributeKey("messaging.gcp_pubsub.message.ack_id")
 
-  /** The delivery attempt for a given message.
+  /** Deprecated, use `gcp.pubsub.message.delivery_attempt` instead.
     */
+  @deprecated("Replaced by `gcp.pubsub.message.delivery_attempt`.", "")
   val MessagingGcpPubsubMessageDeliveryAttempt: AttributeKey[Long] =
     AttributeKey("messaging.gcp_pubsub.message.delivery_attempt")
 
-  /** The ordering key for a given message. If the attribute is not present, the message does not have an ordering key.
+  /** Deprecated, use `gcp.pubsub.message.ordering_key` instead.
     */
+  @deprecated("Replaced by `gcp.pubsub.message.ordering_key`.", "")
   val MessagingGcpPubsubMessageOrderingKey: AttributeKey[String] =
     AttributeKey("messaging.gcp_pubsub.message.ordering_key")
 
-  /** The Kafka cluster ID, obtained from the broker metadata exposed through the Kafka client (or AdminClient) API.
+  /** Deprecated, use `kafka.cluster.id` instead.
     *
     * @note
     *   <p> The cluster ID is a unique identifier reported by the Kafka broker. It identifies the cluster independently
     *   of the individual brokers the client is configured to connect to, and remains stable even if broker hostnames,
     *   IP addresses, or ports change.
     */
+  @deprecated("Replaced by `kafka.cluster.id`.", "")
   val MessagingKafkaClusterId: AttributeKey[String] =
     AttributeKey("messaging.kafka.cluster.id")
 
@@ -156,30 +162,31 @@ object MessagingExperimentalAttributes {
   val MessagingKafkaDestinationPartition: AttributeKey[Long] =
     AttributeKey("messaging.kafka.destination.partition")
 
-  /** Message keys in Kafka are used for grouping alike messages to ensure they're processed on the same partition. They
-    * differ from `messaging.message.id` in that they're not unique. If the key is `null`, the attribute MUST NOT be
-    * set.
+  /** Deprecated, use `kafka.message.key` instead.
     *
     * @note
     *   <p> If the key type is not string, it's string representation has to be supplied for the attribute. If the key
     *   has no unambiguous, canonical string form, don't include its value.
     */
+  @deprecated("Replaced by `kafka.message.key`.", "")
   val MessagingKafkaMessageKey: AttributeKey[String] =
     AttributeKey("messaging.kafka.message.key")
 
-  /** Deprecated, use `messaging.kafka.offset` instead.
+  /** Deprecated, use `kafka.offset` instead.
     */
-  @deprecated("Replaced by `messaging.kafka.offset`.", "")
+  @deprecated("Replaced by `kafka.offset`.", "")
   val MessagingKafkaMessageOffset: AttributeKey[Long] =
     AttributeKey("messaging.kafka.message.offset")
 
-  /** A boolean that is true if the message is a tombstone.
+  /** Deprecated, use `kafka.message.tombstone` instead.
     */
+  @deprecated("Replaced by `kafka.message.tombstone`.", "")
   val MessagingKafkaMessageTombstone: AttributeKey[Boolean] =
     AttributeKey("messaging.kafka.message.tombstone")
 
-  /** The offset of a record in the corresponding Kafka partition.
+  /** Deprecated, use `kafka.offset` instead.
     */
+  @deprecated("Replaced by `kafka.offset`.", "")
   val MessagingKafkaOffset: AttributeKey[Long] =
     AttributeKey("messaging.kafka.offset")
 
@@ -231,13 +238,15 @@ object MessagingExperimentalAttributes {
   val MessagingOperationType: AttributeKey[String] =
     AttributeKey("messaging.operation.type")
 
-  /** RabbitMQ message routing key.
+  /** Deprecated, use `rabbitmq.destination.routing_key` instead.
     */
+  @deprecated("Replaced by `rabbitmq.destination.routing_key`.", "")
   val MessagingRabbitmqDestinationRoutingKey: AttributeKey[String] =
     AttributeKey("messaging.rabbitmq.destination.routing_key")
 
-  /** RabbitMQ message delivery tag
+  /** Deprecated, use `rabbitmq.message.delivery_tag` instead.
     */
+  @deprecated("Replaced by `rabbitmq.message.delivery_tag`.", "")
   val MessagingRabbitmqMessageDeliveryTag: AttributeKey[Long] =
     AttributeKey("messaging.rabbitmq.message.delivery_tag")
 
@@ -250,44 +259,51 @@ object MessagingExperimentalAttributes {
   val MessagingRocketmqClientGroup: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.client_group")
 
-  /** Model of message consumption. This only applies to consumer spans.
+  /** Deprecated, use `rocketmq.consumption_model` instead.
     */
+  @deprecated("Replaced by `rocketmq.consumption_model`.", "")
   val MessagingRocketmqConsumptionModel: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.consumption_model")
 
-  /** The delay time level for delay message, which determines the message delay time.
+  /** Deprecated, use `rocketmq.message.delay_time_level` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.delay_time_level`.", "")
   val MessagingRocketmqMessageDelayTimeLevel: AttributeKey[Long] =
     AttributeKey("messaging.rocketmq.message.delay_time_level")
 
-  /** The timestamp in milliseconds that the delay message is expected to be delivered to consumer.
+  /** Deprecated, use `rocketmq.message.delivery_timestamp` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.delivery_timestamp`.", "")
   val MessagingRocketmqMessageDeliveryTimestamp: AttributeKey[Long] =
     AttributeKey("messaging.rocketmq.message.delivery_timestamp")
 
-  /** It is essential for FIFO message. Messages that belong to the same message group are always processed one by one
-    * within the same consumer group.
+  /** Deprecated, use `rocketmq.message.group` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.group`.", "")
   val MessagingRocketmqMessageGroup: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.message.group")
 
-  /** Key(s) of message, another way to mark message besides message ID.
+  /** Deprecated, use `rocketmq.message.keys` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.keys`.", "")
   val MessagingRocketmqMessageKeys: AttributeKey[Seq[String]] =
     AttributeKey("messaging.rocketmq.message.keys")
 
-  /** The secondary classifier of message besides topic.
+  /** Deprecated, use `rocketmq.message.tag` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.tag`.", "")
   val MessagingRocketmqMessageTag: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.message.tag")
 
-  /** Type of message.
+  /** Deprecated, use `rocketmq.message.type` instead.
     */
+  @deprecated("Replaced by `rocketmq.message.type`.", "")
   val MessagingRocketmqMessageType: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.message.type")
 
-  /** Namespace of RocketMQ resources, resources in different namespaces are individual.
+  /** Deprecated, use `rocketmq.namespace` instead.
     */
+  @deprecated("Replaced by `rocketmq.namespace`.", "")
   val MessagingRocketmqNamespace: AttributeKey[String] =
     AttributeKey("messaging.rocketmq.namespace")
 
@@ -297,32 +313,47 @@ object MessagingExperimentalAttributes {
   val MessagingServicebusDestinationSubscriptionName: AttributeKey[String] =
     AttributeKey("messaging.servicebus.destination.subscription_name")
 
-  /** Describes the <a
-    * href="https://learn.microsoft.com/azure/service-bus-messaging/message-transfers-locks-settlement#peeklock">settlement
-    * type</a>.
+  /** Deprecated, use `azure.servicebus.disposition_status` instead.
     */
+  @deprecated("Replaced by `azure.servicebus.disposition_status`.", "")
   val MessagingServicebusDispositionStatus: AttributeKey[String] =
     AttributeKey("messaging.servicebus.disposition_status")
 
-  /** Number of deliveries that have been attempted for this message.
+  /** Deprecated, use `azure.servicebus.message.delivery_count` instead.
     */
+  @deprecated("Replaced by `azure.servicebus.message.delivery_count`.", "")
   val MessagingServicebusMessageDeliveryCount: AttributeKey[Long] =
     AttributeKey("messaging.servicebus.message.delivery_count")
 
-  /** The UTC epoch seconds at which the message has been accepted and stored in the entity.
+  /** Deprecated, use `azure.servicebus.message.enqueued_time` instead.
     */
+  @deprecated("Replaced by `azure.servicebus.message.enqueued_time`.", "")
   val MessagingServicebusMessageEnqueuedTime: AttributeKey[Long] =
     AttributeKey("messaging.servicebus.message.enqueued_time")
+
+  /** Deprecated, use `messaging.system.name` instead.
+    *
+    * @note
+    *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
+    *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
+    *   instrumentation's best knowledge. <p> When migrating to `messaging.system.name`, update the following values:
+    *   <ul> <li>`aws_sqs` to `aws.sqs` <li>`eventgrid` to `azure.eventgrid` <li>`eventhubs` to `azure.eventhubs`
+    *   <li>`servicebus` to `azure.servicebus` <li>`gcp_pubsub` to `gcp.pubsub` </ul> <p> All other values are
+    *   unchanged.
+    */
+  @deprecated("Replaced by `messaging.system.name`.", "")
+  val MessagingSystem: AttributeKey[String] =
+    AttributeKey("messaging.system")
 
   /** The messaging system as identified by the client instrumentation.
     *
     * @note
     *   <p> The actual messaging system may differ from the one known by the client. For example, when using Kafka
-    *   client libraries to communicate with Azure Event Hubs, the `messaging.system` is set to `kafka` based on the
-    *   instrumentation's best knowledge.
+    *   client libraries to communicate with Azure Event Hubs, the `messaging.system.name` is set to `kafka` based on
+    *   the instrumentation's best knowledge.
     */
-  val MessagingSystem: AttributeKey[String] =
-    AttributeKey("messaging.system")
+  val MessagingSystemName: AttributeKey[String] =
+    AttributeKey("messaging.system.name")
 
   /** Values for [[MessagingOperationType]].
     */
@@ -364,7 +395,9 @@ object MessagingExperimentalAttributes {
 
   /** Values for [[MessagingRocketmqConsumptionModel]].
     */
+  @deprecated("Replaced by `rocketmq.consumption_model`.", "")
   abstract class MessagingRocketmqConsumptionModelValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object MessagingRocketmqConsumptionModelValue {
     implicit val attributeFromMessagingRocketmqConsumptionModelValue
         : Attribute.From[MessagingRocketmqConsumptionModelValue, String] = _.value
@@ -380,7 +413,9 @@ object MessagingExperimentalAttributes {
 
   /** Values for [[MessagingRocketmqMessageType]].
     */
+  @deprecated("Replaced by `rocketmq.message.type`.", "")
   abstract class MessagingRocketmqMessageTypeValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object MessagingRocketmqMessageTypeValue {
     implicit val attributeFromMessagingRocketmqMessageTypeValue
         : Attribute.From[MessagingRocketmqMessageTypeValue, String] = _.value
@@ -404,7 +439,9 @@ object MessagingExperimentalAttributes {
 
   /** Values for [[MessagingServicebusDispositionStatus]].
     */
+  @deprecated("Replaced by `azure.servicebus.disposition_status`.", "")
   abstract class MessagingServicebusDispositionStatusValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object MessagingServicebusDispositionStatusValue {
     implicit val attributeFromMessagingServicebusDispositionStatusValue
         : Attribute.From[MessagingServicebusDispositionStatusValue, String] = _.value
@@ -428,7 +465,9 @@ object MessagingExperimentalAttributes {
 
   /** Values for [[MessagingSystem]].
     */
+  @deprecated("Replaced by `messaging.system.name`.", "")
   abstract class MessagingSystemValue(val value: String)
+  @annotation.nowarn("cat=deprecation")
   object MessagingSystemValue {
     implicit val attributeFromMessagingSystemValue: Attribute.From[MessagingSystemValue, String] = _.value
 
@@ -479,6 +518,61 @@ object MessagingExperimentalAttributes {
     /** Apache Pulsar
       */
     case object Pulsar extends MessagingSystemValue("pulsar")
+  }
+
+  /** Values for [[MessagingSystemName]].
+    */
+  abstract class MessagingSystemNameValue(val value: String)
+  object MessagingSystemNameValue {
+    implicit val attributeFromMessagingSystemNameValue: Attribute.From[MessagingSystemNameValue, String] = _.value
+
+    /** Apache ActiveMQ
+      */
+    case object Activemq extends MessagingSystemNameValue("activemq")
+
+    /** Amazon Simple Notification Service (SNS)
+      */
+    case object AwsSns extends MessagingSystemNameValue("aws.sns")
+
+    /** Amazon Simple Queue Service (SQS)
+      */
+    case object AwsSqs extends MessagingSystemNameValue("aws.sqs")
+
+    /** Azure Event Grid
+      */
+    case object AzureEventgrid extends MessagingSystemNameValue("azure.eventgrid")
+
+    /** Azure Event Hubs
+      */
+    case object AzureEventhubs extends MessagingSystemNameValue("azure.eventhubs")
+
+    /** Azure Service Bus
+      */
+    case object AzureServicebus extends MessagingSystemNameValue("azure.servicebus")
+
+    /** Google Cloud Pub/Sub
+      */
+    case object GcpPubsub extends MessagingSystemNameValue("gcp.pubsub")
+
+    /** Java Message Service
+      */
+    case object Jms extends MessagingSystemNameValue("jms")
+
+    /** Apache Kafka
+      */
+    case object Kafka extends MessagingSystemNameValue("kafka")
+
+    /** RabbitMQ
+      */
+    case object Rabbitmq extends MessagingSystemNameValue("rabbitmq")
+
+    /** Apache RocketMQ
+      */
+    case object Rocketmq extends MessagingSystemNameValue("rocketmq")
+
+    /** Apache Pulsar
+      */
+    case object Pulsar extends MessagingSystemNameValue("pulsar")
   }
 
 }

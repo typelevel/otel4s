@@ -33,10 +33,16 @@ object SystemExperimentalAttributes {
   val SystemCpuState: AttributeKey[String] =
     AttributeKey("system.cpu.state")
 
-  /** The device identifier
+  /** Deprecated, use `system.device.name` instead.
     */
+  @deprecated("Replaced by `system.device.name`.", "")
   val SystemDevice: AttributeKey[String] =
     AttributeKey("system.device")
+
+  /** The OS level identifier for a device, such as disk, partition or network interface.
+    */
+  val SystemDeviceName: AttributeKey[String] =
+    AttributeKey("system.device.name")
 
   /** The filesystem mode
     */
@@ -240,6 +246,10 @@ object SystemExperimentalAttributes {
     /** Actual used virtual memory in bytes.
       */
     case object Used extends SystemMemoryStateValue("used")
+
+    /** An estimate of how much memory is available for starting new applications, without causing swapping.
+      */
+    case object Available extends SystemMemoryStateValue("available")
 
     /** free.
       */

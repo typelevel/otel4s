@@ -21,27 +21,27 @@ package experimental.attributes
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/templates/registry/otel4s/attributes/SemanticAttributes.scala.j2
 object LogExperimentalAttributes {
 
-  /** The basename of the file.
+  /** The basename of the file to which the log record was emitted.
     */
   val LogFileName: AttributeKey[String] =
     AttributeKey("log.file.name")
 
-  /** The basename of the file, with symlinks resolved.
+  /** The basename of the file to which the log record was emitted, with symlinks resolved.
     */
   val LogFileNameResolved: AttributeKey[String] =
     AttributeKey("log.file.name_resolved")
 
-  /** The full path to the file.
+  /** The full path to the file to which the log record was emitted.
     */
   val LogFilePath: AttributeKey[String] =
     AttributeKey("log.file.path")
 
-  /** The full path to the file, with symlinks resolved.
+  /** The full path to the file to which the log record was emitted, with symlinks resolved.
     */
   val LogFilePathResolved: AttributeKey[String] =
     AttributeKey("log.file.path_resolved")
 
-  /** The stream associated with the log. See below for a list of well-known values.
+  /** The stream the log record was emitted to.
     */
   val LogIostream: AttributeKey[String] =
     AttributeKey("log.iostream")

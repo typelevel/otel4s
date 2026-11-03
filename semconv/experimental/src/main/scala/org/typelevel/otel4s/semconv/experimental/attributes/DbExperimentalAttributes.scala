@@ -63,11 +63,10 @@ object DbExperimentalAttributes {
   val DbCassandraTable: AttributeKey[String] =
     AttributeKey("db.cassandra.table")
 
-  /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-    * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make the
-    * name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`, formatted as
-    * `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name following different
-    * patterns SHOULD document it.
+  /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+    * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a port to
+    * an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is not
+    * available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
     */
   val DbClientConnectionPoolName: AttributeKey[String] =
     AttributeKey("db.client.connection.pool.name")
@@ -95,7 +94,8 @@ object DbExperimentalAttributes {
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
     *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database system
     *   supports query text with multiple collections in non-batch operations. <p> For batch operations, if the
-    *   individual operations are known to have the same collection name then that collection name SHOULD be used.
+    *   individual operations would all have the same `db.collection.name` when executed as non-batch operations, then
+    *   that collection name SHOULD be used.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbCollectionName` instead.",
@@ -273,9 +273,9 @@ object DbExperimentalAttributes {
     *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
     *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the operation
     *   name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch operations, if the
-    *   individual operations are known to have the same operation name then that operation name SHOULD be used
-    *   prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database system specific
-    *   term if more applicable.
+    *   individual operations would all have the same `db.operation.name` when executed as non-batch operations, then
+    *   that operation name SHOULD be used prepended by `BATCH `. Otherwise, `db.operation.name` SHOULD be `BATCH` or
+    *   some other database system specific term if more applicable.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbOperationName` instead.",
@@ -321,9 +321,9 @@ object DbExperimentalAttributes {
     *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
     *   support query parsing SHOULD generate a summary following <a
     *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section. <p>
-    *   For batch operations, if the individual operations are known to have the same query summary then that query
-    *   summary SHOULD be used prepended by `BATCH `, otherwise `db.query.summary` SHOULD be `BATCH` or some other
-    *   database system specific term if more applicable.
+    *   For batch operations, if the individual operations would all have the same `db.query.summary` when executed as
+    *   non-batch operations, then that query summary SHOULD be used prepended by `BATCH `. Otherwise,
+    *   `db.query.summary` SHOULD be `BATCH` or some other database system specific term if more applicable.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQuerySummary` instead.",
@@ -336,13 +336,13 @@ object DbExperimentalAttributes {
     *
     * @note
     *   <p> For sanitization see <a href="/docs/db/database-spans.md#sanitization-of-dbquerytext">Sanitization of
-    *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query text
-    *   then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated with
-    *   separator `; ` or some other database system specific separator if more applicable. Parameterized query text
-    *   SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by using a
-    *   parameterized query the user is giving a strong signal that any sensitive data will be passed as parameter
-    *   values, and the benefit to observability of capturing the static part of the query text by default outweighs the
-    *   risk.
+    *   `db.query.text`</a>. For batch operations, if the individual operations would all have the same `db.query.text`
+    *   when executed as non-batch operations, then that query text SHOULD be used. Otherwise, all of the individual
+    *   query texts SHOULD be concatenated with separator `; ` or some other database system specific separator if more
+    *   applicable. Parameterized query text SHOULD NOT be sanitized. Even though parameterized query text can
+    *   potentially have sensitive data, by using a parameterized query the user is giving a strong signal that any
+    *   sensitive data will be passed as parameter values, and the benefit to observability of capturing the static part
+    *   of the query text by default outweighs the risk.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbQueryText` instead.",
@@ -366,9 +366,11 @@ object DbExperimentalAttributes {
     *
     * @note
     *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
-    *   partial success, warning, or differentiate between various types of successful outcomes. Semantic conventions
-    *   for individual database systems SHOULD document what `db.response.status_code` means in the context of that
-    *   system.
+    *   partial success, warning, or differentiate between various types of successful outcomes. The value MAY use a
+    *   standardized string representation of a numeric status code, if one exists, instead of the numeric code. The
+    *   value MAY be a synthetic status provided by the client library rather than returned by the remote service.
+    *   Semantic conventions for individual database systems SHOULD document what `db.response.status_code` means in the
+    *   context of that system.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbResponseStatusCode` instead.",
@@ -393,8 +395,9 @@ object DbExperimentalAttributes {
     *
     * @note
     *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-    *   normalization. <p> For batch operations, if the individual operations are known to have the same stored
-    *   procedure name then that stored procedure name SHOULD be used.
+    *   normalization. <p> For batch operations, if the individual operations would all have the same
+    *   `db.stored_procedure.name` when executed as non-batch operations, then that stored procedure name SHOULD be
+    *   used.
     */
   @deprecated(
     "use `org.typelevel.otel4s.semconv.attributes.DbAttributes.DbStoredProcedureName` instead.",
@@ -955,7 +958,7 @@ object DbExperimentalAttributes {
       */
     case object Hsqldb extends DbSystemNameValue("hsqldb")
 
-    /** <a href="https://www.ibm.com/db2">IBM Db2</a>
+    /** <a href="https://www.ibm.com/products/db2">IBM Db2</a>
       */
     case object IbmDb2 extends DbSystemNameValue("ibm.db2")
 

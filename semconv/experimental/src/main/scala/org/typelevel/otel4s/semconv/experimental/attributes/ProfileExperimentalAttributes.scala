@@ -87,6 +87,10 @@ object ProfileExperimentalAttributes {
     /** <a href="https://en.wikipedia.org/wiki/LuaJIT">LuaJIT</a>
       */
     case object Luajit extends ProfileFrameTypeValue("luajit")
+
+    /** <a href="https://wikipedia.org/wiki/CUDA">CUDA</a>
+      */
+    case object Cuda extends ProfileFrameTypeValue("cuda")
   }
 
 }

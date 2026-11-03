@@ -102,7 +102,7 @@ object OtelExperimentalMetrics {
             "500",
             "java.net.UnknownHostException",
           ),
-          Requirement.recommended,
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 
@@ -400,7 +400,7 @@ object OtelExperimentalMetrics {
             "500",
             "java.net.UnknownHostException",
           ),
-          Requirement.recommended,
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 
@@ -762,20 +762,22 @@ object OtelExperimentalMetrics {
         *
         * @note
         *   <p> Usually it represents an error code, but may also represent partial success, warning, or differentiate
-        *   between various types of successful outcomes. Semantic conventions for individual RPC frameworks SHOULD
-        *   document what `rpc.response.status_code` means in the context of that system and which values are considered
-        *   to represent errors.
+        *   between various types of successful outcomes. The value MAY use a standardized string representation of a
+        *   numeric status code, if one exists, instead of the numeric code. The value MAY be a synthetic status
+        *   provided by the client library rather than returned by the remote service. Semantic conventions for
+        *   individual RPC frameworks SHOULD document what `rpc.status_code` means in the context of that system and
+        *   which values are considered to represent errors.
         */
-      val rpcResponseStatusCode: AttributeSpec[String] =
+      val rpcStatusCode: AttributeSpec[String] =
         AttributeSpec(
-          RpcExperimentalAttributes.RpcResponseStatusCode,
+          RpcAttributes.RpcStatusCode,
           List(
             "OK",
             "DEADLINE_EXCEEDED",
             "-32602",
           ),
           Requirement.recommended("when applicable"),
-          Stability.releaseCandidate
+          Stability.stable
         )
 
       /** Server domain name if available without reverse DNS lookup; otherwise, IP address or UNIX domain socket name.
@@ -820,7 +822,7 @@ object OtelExperimentalMetrics {
           httpResponseStatusCode,
           otelComponentName,
           otelComponentType,
-          rpcResponseStatusCode,
+          rpcStatusCode,
           serverAddress,
           serverPort,
         )
@@ -883,7 +885,7 @@ object OtelExperimentalMetrics {
             "500",
             "java.net.UnknownHostException",
           ),
-          Requirement.recommended,
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 
@@ -1205,12 +1207,21 @@ object OtelExperimentalMetrics {
 
   }
 
-  /** The number of logs submitted to enabled SDK Loggers.
+  /** The number of log records submitted to an enabled `Logger`.
+    *
+    * @note
+    *   <p> In OpenTelemetry SDKs a `Logger` is enabled by default, and can be disabled via configuration i.e.
+    *   `LoggerConfig.enabled` = `false` when supported; a disabled `Logger` is a No-op: emitting to it has no effect,
+    *   so its records are not counted. Every log record submitted to an enabled `Logger` is counted, even if it is
+    *   later filtered or dropped within the SDK (e.g. by minimum severity or trace-based rules, or by a processor or
+    *   the export pipeline), making this metric the top of the log delivery funnel. Records not submitted to the SDK
+    *   are not counted (e.g. a caller that skips calling `Emit()` based on an `Enabled()` check, or an upstream logging
+    *   library that filters first).
     */
   object SdkLogCreated extends MetricSpec.Unsealed {
 
     val name: String = "otel.sdk.log.created"
-    val description: String = "The number of logs submitted to enabled SDK Loggers."
+    val description: String = "The number of log records submitted to an enabled `Logger`."
     val unit: String = "{log_record}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = Nil
@@ -1398,7 +1409,7 @@ object OtelExperimentalMetrics {
             "queue_full",
             "already_shutdown",
           ),
-          Requirement.recommended,
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 
@@ -1708,7 +1719,7 @@ object OtelExperimentalMetrics {
             "queue_full",
             "already_shutdown",
           ),
-          Requirement.recommended,
+          Requirement.conditionallyRequired("if and only if an error has occurred."),
           Stability.stable
         )
 

@@ -33,6 +33,7 @@ object DbExperimentalMetrics {
     ClientConnectionCreateTime,
     ClientConnectionIdleMax,
     ClientConnectionIdleMin,
+    ClientConnectionLimit,
     ClientConnectionMax,
     ClientConnectionPendingRequests,
     ClientConnectionTimeouts,
@@ -66,11 +67,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -94,10 +94,91 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
           dbClientConnectionState,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -138,11 +219,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -154,9 +234,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -182,11 +343,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -198,9 +358,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -241,11 +482,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -257,9 +497,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -290,9 +611,9 @@ object DbExperimentalMetrics {
 
   /** The maximum number of open connections allowed.
     */
-  object ClientConnectionMax extends MetricSpec.Unsealed {
+  object ClientConnectionLimit extends MetricSpec.Unsealed {
 
-    val name: String = "db.client.connection.max"
+    val name: String = "db.client.connection.limit"
     val description: String = "The maximum number of open connections allowed."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
@@ -300,11 +621,150 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
+        */
+      val dbClientConnectionPoolName: AttributeSpec[String] =
+        AttributeSpec(
+          DbExperimentalAttributes.DbClientConnectionPoolName,
+          List(
+            "myDataSource",
+          ),
+          Requirement.required,
+          Stability.development
+        )
+
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
+      val specs: List[AttributeSpec[_]] =
+        List(
+          dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
+        )
+    }
+
+    def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
+      Meter[F]
+        .upDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .create
+
+    def createObserver[F[_]: Meter, A: MeasurementValue]: F[ObservableMeasurement[F, A]] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createObserver
+
+    def createWithCallback[F[_]: Meter, A: MeasurementValue](
+        callback: ObservableMeasurement[F, A] => F[Unit]
+    ): Resource[F, ObservableUpDownCounter] =
+      Meter[F]
+        .observableUpDownCounter[A](name)
+        .withDescription(description)
+        .withUnit(unit)
+        .createWithCallback(callback)
+
+  }
+
+  /** Deprecated, use `db.client.connection.limit` instead.
+    */
+  @deprecated("Replaced by `db.client.connection.limit`.", "")
+  object ClientConnectionMax extends MetricSpec.Unsealed {
+
+    val name: String = "db.client.connection.max"
+    val description: String = "Deprecated, use `db.client.connection.limit` instead."
+    val unit: String = "{connection}"
+    val stability: Stability = Stability.development
+    val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
+
+    object AttributeSpecs {
+
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -359,11 +819,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -375,9 +834,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -419,11 +959,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -435,9 +974,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -478,11 +1098,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -494,9 +1113,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -522,11 +1222,10 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** The name of the connection pool; unique within the instrumented application. In case the connection pool
-        * implementation doesn't provide a name, instrumentation SHOULD use a combination of parameters that would make
-        * the name unique, for example, combining attributes `server.address`, `server.port`, and `db.namespace`,
-        * formatted as `server.address:server.port/db.namespace`. Instrumentations that generate connection pool name
-        * following different patterns SHOULD document it.
+      /** The name of the connection pool. If the connection pool does not have a name, instrumentation SHOULD use
+        * `db.namespace`; otherwise `server.address`, with `server.port` appended using `:` if set. When appending a
+        * port to an IPv6 address, instrumentation MUST enclose the address in square brackets. If `server.address` is
+        * not available, instrumentation SHOULD use `db.system.name`; otherwise the connection pool library name.
         */
       val dbClientConnectionPoolName: AttributeSpec[String] =
         AttributeSpec(
@@ -538,9 +1237,90 @@ object DbExperimentalMetrics {
           Stability.development
         )
 
+      /** The name of the database, fully qualified within the server address and port.
+        *
+        * @note
+        *   <p> If a database system has multiple namespace components, they SHOULD be concatenated from the most
+        *   general to the most specific namespace component, using `|` as a separator between the components. Any
+        *   missing components (and their associated separators) SHOULD be omitted. Semantic conventions for individual
+        *   database systems SHOULD document what `db.namespace` means in the context of that system. It is RECOMMENDED
+        *   to capture the value as provided by the application without attempting to do any case normalization.
+        */
+      val dbNamespace: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbNamespace,
+          List(
+            "customers",
+            "test.users",
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database management system (DBMS) product as identified by the client instrumentation.
+        *
+        * @note
+        *   <p> The actual DBMS may differ from the one identified by the client. For example, when using PostgreSQL
+        *   client libraries to connect to a CockroachDB, the `db.system.name` is set to `postgresql` based on the
+        *   instrumentation's best knowledge.
+        */
+      val dbSystemName: AttributeSpec[String] =
+        AttributeSpec(
+          DbAttributes.DbSystemName,
+          List(
+          ),
+          Requirement.conditionallyRequired("If available."),
+          Stability.stable
+        )
+
+      /** The database address specified in the client configuration.
+        *
+        * @note
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
+        */
+      val serverAddress: AttributeSpec[String] =
+        AttributeSpec(
+          ServerAttributes.ServerAddress,
+          List(
+            "example.com",
+            "10.1.2.80",
+            "/tmp/my.sock",
+          ),
+          Requirement.recommended,
+          Stability.stable
+        )
+
+      /** Server port number.
+        *
+        * @note
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
+        */
+      val serverPort: AttributeSpec[Long] =
+        AttributeSpec(
+          ServerAttributes.ServerPort,
+          List(
+            80,
+            8080,
+            443,
+          ),
+          Requirement.conditionallyRequired(
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
+          ),
+          Stability.stable
+        )
+
       val specs: List[AttributeSpec[_]] =
         List(
           dbClientConnectionPoolName,
+          dbNamespace,
+          dbSystemName,
+          serverAddress,
+          serverPort,
         )
     }
 
@@ -711,13 +1491,13 @@ object DbExperimentalMetrics {
 
   }
 
-  /** Deprecated, use `db.client.connection.max` instead.
+  /** Deprecated, use `db.client.connection.limit` instead.
     */
-  @deprecated("Replaced by `db.client.connection.max`.", "")
+  @deprecated("Replaced by `db.client.connection.limit`.", "")
   object ClientConnectionsMax extends MetricSpec.Unsealed {
 
     val name: String = "db.client.connections.max"
-    val description: String = "Deprecated, use `db.client.connection.max` instead."
+    val description: String = "Deprecated, use `db.client.connection.limit` instead."
     val unit: String = "{connection}"
     val stability: Stability = Stability.development
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
@@ -1052,11 +1832,14 @@ object DbExperimentalMetrics {
 
     object AttributeSpecs {
 
-      /** Name of the database host.
+      /** The database address specified in the client configuration.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
-        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
@@ -1073,8 +1856,8 @@ object DbExperimentalMetrics {
       /** Server port number.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
-        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
@@ -1085,7 +1868,7 @@ object DbExperimentalMetrics {
             443,
           ),
           Requirement.conditionallyRequired(
-            "If using a port other than the default port for this DBMS and if `server.address` is set."
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
           ),
           Stability.stable
         )
@@ -1141,8 +1924,8 @@ object DbExperimentalMetrics {
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
         *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
-        *   the individual operations are known to have the same collection name then that collection name SHOULD be
-        *   used.
+        *   the individual operations would all have the same `db.collection.name` when executed as non-batch
+        *   operations, then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1219,9 +2002,9 @@ object DbExperimentalMetrics {
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
         *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
         *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
-        *   operations, if the individual operations are known to have the same operation name then that operation name
-        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
-        *   system specific term if more applicable.
+        *   operations, if the individual operations would all have the same `db.operation.name` when executed as
+        *   non-batch operations, then that operation name SHOULD be used prepended by `BATCH `. Otherwise,
+        *   `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1280,8 +2063,8 @@ object DbExperimentalMetrics {
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
         *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
-        *   the individual operations are known to have the same collection name then that collection name SHOULD be
-        *   used.
+        *   the individual operations would all have the same `db.collection.name` when executed as non-batch
+        *   operations, then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1323,9 +2106,9 @@ object DbExperimentalMetrics {
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
         *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
         *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
-        *   operations, if the individual operations are known to have the same operation name then that operation name
-        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
-        *   system specific term if more applicable.
+        *   operations, if the individual operations would all have the same `db.operation.name` when executed as
+        *   non-batch operations, then that operation name SHOULD be used prepended by `BATCH `. Otherwise,
+        *   `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1349,9 +2132,9 @@ object DbExperimentalMetrics {
         *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
         *   support query parsing SHOULD generate a summary following <a
         *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
-        *   <p> For batch operations, if the individual operations are known to have the same query summary then that
-        *   query summary SHOULD be used prepended by `BATCH `, otherwise `db.query.summary` SHOULD be `BATCH` or some
-        *   other database system specific term if more applicable.
+        *   <p> For batch operations, if the individual operations would all have the same `db.query.summary` when
+        *   executed as non-batch operations, then that query summary SHOULD be used prepended by `BATCH `. Otherwise,
+        *   `db.query.summary` SHOULD be `BATCH` or some other database system specific term if more applicable.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
@@ -1371,13 +2154,13 @@ object DbExperimentalMetrics {
         *
         * @note
         *   <p> For sanitization see <a href="/docs/db/database-spans.md#sanitization-of-dbquerytext">Sanitization of
-        *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
-        *   text then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated
-        *   with separator `; ` or some other database system specific separator if more applicable. Parameterized query
-        *   text SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by
-        *   using a parameterized query the user is giving a strong signal that any sensitive data will be passed as
-        *   parameter values, and the benefit to observability of capturing the static part of the query text by default
-        *   outweighs the risk.
+        *   `db.query.text`</a>. For batch operations, if the individual operations would all have the same
+        *   `db.query.text` when executed as non-batch operations, then that query text SHOULD be used. Otherwise, all
+        *   of the individual query texts SHOULD be concatenated with separator `; ` or some other database system
+        *   specific separator if more applicable. Parameterized query text SHOULD NOT be sanitized. Even though
+        *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
+        *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
+        *   observability of capturing the static part of the query text by default outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
@@ -1394,9 +2177,11 @@ object DbExperimentalMetrics {
         *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
-        *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
-        *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
-        *   context of that system.
+        *   partial success, warning, or differentiate between various types of successful outcomes. The value MAY use a
+        *   standardized string representation of a numeric status code, if one exists, instead of the numeric code. The
+        *   value MAY be a synthetic status provided by the client library rather than returned by the remote service.
+        *   Semantic conventions for individual database systems SHOULD document what `db.response.status_code` means in
+        *   the context of that system.
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
@@ -1415,8 +2200,9 @@ object DbExperimentalMetrics {
         *
         * @note
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
-        *   normalization. <p> For batch operations, if the individual operations are known to have the same stored
-        *   procedure name then that stored procedure name SHOULD be used.
+        *   normalization. <p> For batch operations, if the individual operations would all have the same
+        *   `db.stored_procedure.name` when executed as non-batch operations, then that stored procedure name SHOULD be
+        *   used.
         */
       val dbStoredProcedureName: AttributeSpec[String] =
         AttributeSpec(
@@ -1497,11 +2283,14 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host.
+      /** The database address specified in the client configuration.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
-        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
@@ -1518,8 +2307,8 @@ object DbExperimentalMetrics {
       /** Server port number.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
-        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
@@ -1530,7 +2319,7 @@ object DbExperimentalMetrics {
             443,
           ),
           Requirement.conditionallyRequired(
-            "If using a port other than the default port for this DBMS and if `server.address` is set."
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
           ),
           Stability.stable
         )
@@ -1581,8 +2370,8 @@ object DbExperimentalMetrics {
         *   <p> It is RECOMMENDED to capture the value as provided by the application without attempting to do any case
         *   normalization. <p> The collection name SHOULD NOT be extracted from `db.query.text`, when the database
         *   system supports query text with multiple collections in non-batch operations. <p> For batch operations, if
-        *   the individual operations are known to have the same collection name then that collection name SHOULD be
-        *   used.
+        *   the individual operations would all have the same `db.collection.name` when executed as non-batch
+        *   operations, then that collection name SHOULD be used.
         */
       val dbCollectionName: AttributeSpec[String] =
         AttributeSpec(
@@ -1624,9 +2413,9 @@ object DbExperimentalMetrics {
         *   normalization. <p> The operation name SHOULD NOT be extracted from `db.query.text`, when the database system
         *   supports query text with multiple operations in non-batch operations. <p> If spaces can occur in the
         *   operation name, multiple consecutive spaces SHOULD be normalized to a single space. <p> For batch
-        *   operations, if the individual operations are known to have the same operation name then that operation name
-        *   SHOULD be used prepended by `BATCH `, otherwise `db.operation.name` SHOULD be `BATCH` or some other database
-        *   system specific term if more applicable.
+        *   operations, if the individual operations would all have the same `db.operation.name` when executed as
+        *   non-batch operations, then that operation name SHOULD be used prepended by `BATCH `. Otherwise,
+        *   `db.operation.name` SHOULD be `BATCH` or some other database system specific term if more applicable.
         */
       val dbOperationName: AttributeSpec[String] =
         AttributeSpec(
@@ -1650,9 +2439,9 @@ object DbExperimentalMetrics {
         *   instrumentation through instrumentation hooks or other means. If it is not available, instrumentations that
         *   support query parsing SHOULD generate a summary following <a
         *   href="/docs/db/database-spans.md#generating-a-summary-of-the-query">Generating query summary</a> section.
-        *   <p> For batch operations, if the individual operations are known to have the same query summary then that
-        *   query summary SHOULD be used prepended by `BATCH `, otherwise `db.query.summary` SHOULD be `BATCH` or some
-        *   other database system specific term if more applicable.
+        *   <p> For batch operations, if the individual operations would all have the same `db.query.summary` when
+        *   executed as non-batch operations, then that query summary SHOULD be used prepended by `BATCH `. Otherwise,
+        *   `db.query.summary` SHOULD be `BATCH` or some other database system specific term if more applicable.
         */
       val dbQuerySummary: AttributeSpec[String] =
         AttributeSpec(
@@ -1672,13 +2461,13 @@ object DbExperimentalMetrics {
         *
         * @note
         *   <p> For sanitization see <a href="/docs/db/database-spans.md#sanitization-of-dbquerytext">Sanitization of
-        *   `db.query.text`</a>. For batch operations, if the individual operations are known to have the same query
-        *   text then that query text SHOULD be used, otherwise all of the individual query texts SHOULD be concatenated
-        *   with separator `; ` or some other database system specific separator if more applicable. Parameterized query
-        *   text SHOULD NOT be sanitized. Even though parameterized query text can potentially have sensitive data, by
-        *   using a parameterized query the user is giving a strong signal that any sensitive data will be passed as
-        *   parameter values, and the benefit to observability of capturing the static part of the query text by default
-        *   outweighs the risk.
+        *   `db.query.text`</a>. For batch operations, if the individual operations would all have the same
+        *   `db.query.text` when executed as non-batch operations, then that query text SHOULD be used. Otherwise, all
+        *   of the individual query texts SHOULD be concatenated with separator `; ` or some other database system
+        *   specific separator if more applicable. Parameterized query text SHOULD NOT be sanitized. Even though
+        *   parameterized query text can potentially have sensitive data, by using a parameterized query the user is
+        *   giving a strong signal that any sensitive data will be passed as parameter values, and the benefit to
+        *   observability of capturing the static part of the query text by default outweighs the risk.
         */
       val dbQueryText: AttributeSpec[String] =
         AttributeSpec(
@@ -1695,9 +2484,11 @@ object DbExperimentalMetrics {
         *
         * @note
         *   <p> The status code returned by the database. Usually it represents an error code, but may also represent
-        *   partial success, warning, or differentiate between various types of successful outcomes. Semantic
-        *   conventions for individual database systems SHOULD document what `db.response.status_code` means in the
-        *   context of that system.
+        *   partial success, warning, or differentiate between various types of successful outcomes. The value MAY use a
+        *   standardized string representation of a numeric status code, if one exists, instead of the numeric code. The
+        *   value MAY be a synthetic status provided by the client library rather than returned by the remote service.
+        *   Semantic conventions for individual database systems SHOULD document what `db.response.status_code` means in
+        *   the context of that system.
         */
       val dbResponseStatusCode: AttributeSpec[String] =
         AttributeSpec(
@@ -1781,11 +2572,14 @@ object DbExperimentalMetrics {
           Stability.stable
         )
 
-      /** Name of the database host.
+      /** The database address specified in the client configuration.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.address`
-        *   SHOULD represent the server address behind any intermediaries, for example proxies, if it's available.
+        *   <p> Instrumentation SHOULD set `server.address` to the database address specified in the client
+        *   configuration. It SHOULD NOT derive the value from the server selected for an operation. <blockquote>
+        *   [!WARNING] <p> `server.address` MUST NOT contain credentials or other sensitive information.</blockquote>
+        *   <p> See <a href="/docs/db/database-spans.md#database-server-address">Database server address</a> for
+        *   guidance and examples.
         */
       val serverAddress: AttributeSpec[String] =
         AttributeSpec(
@@ -1802,8 +2596,8 @@ object DbExperimentalMetrics {
       /** Server port number.
         *
         * @note
-        *   <p> When observed from the client side, and when communicating through an intermediary, `server.port` SHOULD
-        *   represent the server port behind any intermediaries, for example proxies, if it's available.
+        *   <p> `server.port` SHOULD reflect the database port specified in the client configuration. It SHOULD NOT be
+        *   derived from the server selected for an operation.
         */
       val serverPort: AttributeSpec[Long] =
         AttributeSpec(
@@ -1814,7 +2608,7 @@ object DbExperimentalMetrics {
             443,
           ),
           Requirement.conditionallyRequired(
-            "If using a port other than the default port for this DBMS and if `server.address` is set."
+            "If `server.address` is set and the client is configured with a single database server endpoint that uses a non-default port."
           ),
           Stability.stable
         )

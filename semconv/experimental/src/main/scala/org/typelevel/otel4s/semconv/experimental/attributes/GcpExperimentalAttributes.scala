@@ -195,6 +195,26 @@ object GcpExperimentalAttributes {
   val GcpGceInstanceGroupManagerZone: AttributeKey[String] =
     AttributeKey("gcp.gce.instance_group_manager.zone")
 
+  /** The ack deadline in seconds set for the modify ack deadline request.
+    */
+  val GcpPubsubMessageAckDeadline: AttributeKey[Long] =
+    AttributeKey("gcp.pubsub.message.ack_deadline")
+
+  /** The ack ID for a given message.
+    */
+  val GcpPubsubMessageAckId: AttributeKey[String] =
+    AttributeKey("gcp.pubsub.message.ack_id")
+
+  /** The delivery attempt for a given message.
+    */
+  val GcpPubsubMessageDeliveryAttempt: AttributeKey[Long] =
+    AttributeKey("gcp.pubsub.message.delivery_attempt")
+
+  /** The ordering key for a given message. If the attribute is not present, the message does not have an ordering key.
+    */
+  val GcpPubsubMessageOrderingKey: AttributeKey[String] =
+    AttributeKey("gcp.pubsub.message.ordering_key")
+
   /** Values for [[GcpApphubServiceCriticalityType]].
     */
   abstract class GcpApphubServiceCriticalityTypeValue(val value: String)

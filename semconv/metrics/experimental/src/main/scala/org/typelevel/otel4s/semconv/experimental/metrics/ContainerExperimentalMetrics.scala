@@ -134,7 +134,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.cpu.usage"
     val description: String = "Container's CPU usage, measured in CPUs. Range from 0 to the number of allocatable CPUs."
     val unit: String = "{cpu}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -216,22 +216,24 @@ object ContainerExperimentalMetrics {
           Stability.releaseCandidate
         )
 
-      /** The device identifier
+      /** The OS level identifier for a device, such as disk, partition or network interface.
         */
-      val systemDevice: AttributeSpec[String] =
+      val systemDeviceName: AttributeSpec[String] =
         AttributeSpec(
-          SystemExperimentalAttributes.SystemDevice,
+          SystemExperimentalAttributes.SystemDeviceName,
           List(
-            "(identifier)",
+            "/dev/sda",
+            "eth0",
+            "\network-drive",
           ),
           Requirement.recommended,
-          Stability.development
+          Stability.releaseCandidate
         )
 
       val specs: List[AttributeSpec[_]] =
         List(
           diskIoDirection,
-          systemDevice,
+          systemDeviceName,
         )
     }
 
@@ -263,10 +265,10 @@ object ContainerExperimentalMetrics {
   /** Container filesystem available bytes.
     *
     * @note
-    *   <p> In K8s, this metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
+    *   <p> Available filesystem space for the container's `rootfs`. In K8s, this metric is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.AvailableBytes</a>
     *   field of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
     *   of the Kubelet's stats API.
     */
   object FilesystemAvailable extends MetricSpec.Unsealed {
@@ -274,7 +276,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.filesystem.available"
     val description: String = "Container filesystem available bytes."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -305,10 +307,13 @@ object ContainerExperimentalMetrics {
   /** Container filesystem capacity.
     *
     * @note
-    *   <p> In K8s, this metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
+    *   <p> Total filesystem capacity for the container's `rootfs`. In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_fs_limit_bytes` metric for the container's `rootfs` device. In K8s, this metric
+    *   is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.CapacityBytes</a> field
     *   of the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
     *   of the Kubelet's stats API.
     */
   object FilesystemCapacity extends MetricSpec.Unsealed {
@@ -316,7 +321,7 @@ object ContainerExperimentalMetrics {
     val name: String = "container.filesystem.capacity"
     val description: String = "Container filesystem capacity."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -347,18 +352,22 @@ object ContainerExperimentalMetrics {
   /** Container filesystem usage.
     *
     * @note
-    *   <p> This may not equal capacity - available. <p> In K8s, this metric is derived from the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
+    *   <p> Filesystem space used by the container's `rootfs`. In general, this metric can be derived from <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
+    *   and specifically the `container_fs_usage_bytes` metric for the container's `rootfs` device. In K8s, this metric
+    *   is derived from the <a
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#FsStats">FsStats.UsedBytes</a> field of
     *   the <a
-    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.33.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
-    *   of the Kubelet's stats API.
+    *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Rootfs</a>
+    *   of the Kubelet's stats API. Capacity and available are reported for the backing filesystem, which may be shared
+    *   with other workloads; therefore, usage may not equal `capacity - available`.
     */
   object FilesystemUsage extends MetricSpec.Unsealed {
 
     val name: String = "container.filesystem.usage"
     val description: String = "Container filesystem usage."
     val unit: String = "By"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[UpDownCounter[F, A]] =
@@ -595,7 +604,10 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> In general, this metric can be derived from <a
     *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
-    *   and specifically the `container_memory_working_set_bytes` metric. In K8s, this metric is derived from the <a
+    *   and specifically the `container_memory_working_set_bytes` metric. When derived from cAdvisor on Linux, the
+    *   working set is calculated by excluding inactive file-backed memory from memory usage (`inactive_file` on cgroup
+    *   v2, `total_inactive_file` on cgroup v1), so active file-backed memory remains included. In K8s, this metric is
+    *   derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.WorkingSetBytes</a>
     *   field of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
@@ -711,23 +723,27 @@ object ContainerExperimentalMetrics {
     *
     * @note
     *   <p> In general, this metric can be derived from <a
-    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>
-    *   and specifically the `container_memory_failures_total{failure_type=pgfault, scope=container}` and
-    *   `container_memory_failures_total{failure_type=pgmajfault, scope=container}`metric. In K8s, this metric is
-    *   derived from the <a
+    *   href="https://github.com/google/cadvisor/blob/v0.53.0/docs/storage/prometheus.md#prometheus-container-metrics">cadvisor</a>.
+    *   The `container_memory_failures_total{failure_type=pgfault, scope=container}` counter reports the total page
+    *   faults (minor + major), while `container_memory_failures_total{failure_type=pgmajfault, scope=container}`
+    *   reports only major faults. The minor page faults MUST be derived as the difference between the two. In K8s, this
+    *   metric is derived from the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.PageFaults</a>
     *   and <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#MemoryStats">MemoryStats.MajorPageFaults</a>
-    *   field of the <a
+    *   fields of the <a
     *   href="https://pkg.go.dev/k8s.io/kubelet@v0.34.0/pkg/apis/stats/v1alpha1#ContainerStats">ContainerStats.Memory</a>
-    *   of the Kubelet's stats API.
+    *   of the Kubelet's stats API. `MemoryStats.PageFaults` reports the total number of page faults (equivalent to
+    *   `pgfault` in the cgroup `memory.stat`), with minor and major combined. The minor page faults MUST therefore be
+    *   derived as `MemoryStats.PageFaults - MemoryStats.MajorPageFaults`, so that summing the metric over
+    *   `system.paging.fault.type` yields the total number of page faults.
     */
   object PagingFaults extends MetricSpec.Unsealed {
 
     val name: String = "container.paging.faults"
     val description: String = "Container memory paging faults."
     val unit: String = "{fault}"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = AttributeSpecs.specs
 
     object AttributeSpecs {
@@ -780,14 +796,21 @@ object ContainerExperimentalMetrics {
     * @note
     *   <p> Instrumentations SHOULD use a gauge with type `double` and measure uptime in seconds as a floating point
     *   number with the highest precision available. The actual accuracy would depend on the instrumentation and
-    *   operating system.
+    *   operating system. In K8s environments, this metric can be derived from Kubelet's stats API and specifically from
+    *   the <a
+    *   href="https://github.com/kubernetes/kubelet/blob/v0.35.2/pkg/apis/stats/v1alpha1/types.go#L161">ContainerStats.StartTime</a>
+    *   field, where `StartTime` represents the container creation time as <a
+    *   href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/kubelet/stats/cri_stats_provider.go#L776">noted
+    *   in the Kubelet source</a>. This value resets on every container restart and aligns with <a
+    *   href="https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#ContainerStateRunning">ContainerStateRunning.startedAt</a>
+    *   from the K8s API.
     */
   object Uptime extends MetricSpec.Unsealed {
 
     val name: String = "container.uptime"
     val description: String = "The time the container has been running."
     val unit: String = "s"
-    val stability: Stability = Stability.development
+    val stability: Stability = Stability.releaseCandidate
     val attributeSpecs: List[AttributeSpec[_]] = Nil
 
     def create[F[_]: Meter, A: MeasurementValue]: F[Gauge[F, A]] =

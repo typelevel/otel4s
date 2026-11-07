@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Typelevel Laika + Helium Theme" />
+  <title>Preserve context for deferred work</title>
+  
+  <meta name="author" content="Ross A. Baker"/>
+  
+  
+  <meta name="description" content="docs"/>
+  
+  
+  
+  <link rel="icon" sizes="32x32" type="image/png" href="https://typelevel.org/img/favicon.png"/>
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Mono:500">
+  
+  <link rel="stylesheet" type="text/css" href="../helium/site/icofont.min.css" />
+    <link rel="stylesheet" type="text/css" href="../helium/site/laika-helium.css" />
+    <link rel="stylesheet" type="text/css" href="../site.css" />
+  <script src="../helium/site/laika-helium.js"></script>
+  
+  
+  <script> /* for avoiding page load transitions */ </script>
+</head>
+
+  <body>
+
+    <header id="top-bar" class="light-default dark-default">
+
+  <div class="row">
+    <a id="nav-icon">
+      <i class="icofont-laika navigationMenu" title="Navigation">&#xefa2;</i>
+    </a>
+    
+    
+  </div>
+
+  <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+
+  <div class="row links">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.1.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>  
+
+</header>
+    
+    <nav id="sidebar">
+
+  <div class="row">
+    
+    <a class="icon-link svg-link" href="https://www.javadoc.io/doc/org.typelevel/otel4s-docs_2.13/1.1.0/org/typelevel/otel4s/index.html"><span class="api" title="API"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M75,47.5c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm-50,-0c13.246,-0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,-0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm2.705,16.735l7.239,0l0.622,-4.904l-21.833,0l-0,4.904l7.589,0l0,22.067l6.383,0l-0,-22.067Zm58.076,7.265c-0,-8.757 -3.698,-14.166 -10.781,-14.166c-7.083,-0 -10.781,5.604 -10.781,14.166c0,8.757 3.698,14.166 10.781,14.166c7.083,0 10.781,-5.604 10.781,-14.166Zm-6.539,0c0,6.538 -1.128,9.496 -4.242,9.496c-2.997,0 -4.242,-2.88 -4.242,-9.496c-0,-6.616 1.206,-9.496 4.242,-9.496c3.036,-0 4.242,2.88 4.242,9.496Zm-29.242,-67c13.246,0 24,10.754 24,24c0,13.246 -10.754,24 -24,24c-13.246,0 -24,-10.754 -24,-24c0,-13.246 10.754,-24 24,-24Zm0.512,9.834c-7.122,-0 -12.609,5.098 -12.609,14.127c-0,9.263 5.215,14.205 12.532,14.205c4.164,0 7.083,-1.634 9.068,-3.658l-2.88,-3.697c-1.518,1.206 -3.153,2.413 -5.838,2.413c-3.697,-0 -6.266,-2.763 -6.266,-9.263c-0,-6.616 2.724,-9.379 6.149,-9.379c2.102,-0 3.892,0.778 5.371,1.984l3.113,-3.775c-2.257,-1.868 -4.748,-2.957 -8.64,-2.957Z"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link svg-link" href="https://github.com/typelevel/otel4s"><span class="github" title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g class="svg-shape">
+    <path d="M49.995,1c-27.609,-0 -49.995,22.386 -49.995,50.002c-0,22.09 14.325,40.83 34.194,47.444c2.501,0.458 3.413,-1.086 3.413,-2.412c0,-1.185 -0.043,-4.331 -0.067,-8.503c-13.908,3.021 -16.843,-6.704 -16.843,-6.704c-2.274,-5.773 -5.552,-7.311 -5.552,-7.311c-4.54,-3.103 0.344,-3.042 0.344,-3.042c5.018,0.356 7.658,5.154 7.658,5.154c4.46,7.64 11.704,5.433 14.552,4.156c0.454,-3.232 1.744,-5.436 3.174,-6.685c-11.102,-1.262 -22.775,-5.553 -22.775,-24.713c-0,-5.457 1.949,-9.92 5.147,-13.416c-0.516,-1.265 -2.231,-6.348 0.488,-13.233c0,0 4.199,-1.344 13.751,5.126c3.988,-1.108 8.266,-1.663 12.518,-1.682c4.245,0.019 8.523,0.574 12.517,1.682c9.546,-6.47 13.736,-5.126 13.736,-5.126c2.728,6.885 1.013,11.968 0.497,13.233c3.204,3.496 5.141,7.959 5.141,13.416c0,19.209 -11.691,23.436 -22.83,24.673c1.795,1.544 3.394,4.595 3.394,9.26c0,6.682 -0.061,12.076 -0.061,13.715c0,1.338 0.899,2.894 3.438,2.406c19.853,-6.627 34.166,-25.354 34.166,-47.438c-0,-27.616 -22.389,-50.002 -50.005,-50.002"/>
+  </g>
+</svg></span></a>
+    
+    <a class="icon-link glyph-link" href="https://discord.gg/XF3CXcMzqD"><i class="icofont-laika chat" title="Chat">&#xeed5;</i></a>
+    
+    <a class="icon-link svg-link" href="https://fosstodon.org/@typelevel"><span class="mastodon" title="Mastodon"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g class="svg-shape">
+    <path d="M11.19 12.195c2.016-.24 3.77-1.475 3.99-2.603.348-1.778.32-4.339.32-4.339 0-3.47-2.286-4.488-2.286-4.488C12.062.238 10.083.017 8.027 0h-.05C5.92.017 3.942.238 2.79.765c0 0-2.285 1.017-2.285 4.488l-.002.662c-.004.64-.007 1.35.011 2.091.083 3.394.626 6.74 3.78 7.57 1.454.383 2.703.463 3.709.408 1.823-.1 2.847-.647 2.847-.647l-.06-1.317s-1.303.41-2.767.36c-1.45-.05-2.98-.156-3.215-1.928a3.614 3.614 0 0 1-.033-.496s1.424.346 3.228.428c1.103.05 2.137-.064 3.188-.189zm1.613-2.47H11.13v-4.08c0-.859-.364-1.295-1.091-1.295-.804 0-1.207.517-1.207 1.541v2.233H7.168V5.89c0-1.024-.403-1.541-1.207-1.541-.727 0-1.091.436-1.091 1.296v4.079H3.197V5.522c0-.859.22-1.541.66-2.046.456-.505 1.052-.764 1.793-.764.856 0 1.504.328 1.933.983L8 4.39l.417-.695c.429-.655 1.077-.983 1.934-.983.74 0 1.336.259 1.791.764.442.505.661 1.187.661 2.046v4.203z"/>
+  </g>
+</svg></span></a>
+    
+  </div>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="../">otel4s</a></li>
+    <li class="level1 nav-leaf"><a href="../ecosystem.html">Ecosystem</a></li>
+    <li class="level1 nav-header">How-to | JVM setup</li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/">JVM setup</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-global-opentelemetry-instance.html">Use the global OpenTelemetry instance</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/keep-otel4s-context-in-sync-with-opentelemetry-java.html">Keep otel4s context in sync with OpenTelemetry Java</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-jvm-setup/use-the-otel4s-java-agent.html">Use the otel4s Java agent</a></li>
+    <li class="level1 nav-header">How-to | Tracing</li>
+    <li class="level2 nav-leaf"><a href="index.html">Tracing</a></li>
+    <li class="level2 nav-leaf"><a href="create-spans-around-effectful-code.html">Create spans around effectful code</a></li>
+    <li class="level2 nav-leaf"><a href="provide-a-no-op-tracer.html">Provide a no-op tracer</a></li>
+    <li class="level2 nav-leaf"><a href="trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+    <li class="level2 active nav-leaf"><a href="#">Preserve context for deferred work</a></li>
+    <li class="level2 nav-leaf"><a href="work-with-baggage.html">Work with baggage</a></li>
+    <li class="level2 nav-leaf"><a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a></li>
+    <li class="level2 nav-leaf"><a href="use-otel4s-with-java-instrumented-libraries.html">Use otel4s with Java-instrumented libraries</a></li>
+    <li class="level2 nav-leaf"><a href="use-otel4s-with-pekko-http-instrumentation.html">Use otel4s with Pekko HTTP instrumentation</a></li>
+    <li class="level2 nav-leaf"><a href="use-unmanaged-spans-when-a-span-must-end-outside-its-scope.html">Use unmanaged spans when a span must end outside its scope</a></li>
+    <li class="level1 nav-header">How-to | Metrics</li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/">Metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/record-application-metrics.html">Record application metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/provide-a-no-op-meter.html">Provide a no-op meter</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/customize-histogram-buckets.html">Customize histogram buckets</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-cats-effect-runtime-metrics.html">Register Cats Effect runtime metrics</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-metrics/register-jvm-runtime-metrics.html">Register JVM runtime metrics</a></li>
+    <li class="level1 nav-header">How-to | Semantic conventions</li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/">Semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/use-semantic-attributes.html">Use semantic attributes</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-semantic-conventions/create-metrics-from-semantic-metric-specs.html">Create metrics from semantic metric specs</a></li>
+    <li class="level1 nav-header">How-to | Logs</li>
+    <li class="level2 nav-leaf"><a href="../how-to-logs/">Logs</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-logs/bridge-scribe-logs-into-opentelemetry.html">Bridge Scribe logs into OpenTelemetry</a></li>
+    <li class="level1 nav-header">How-to | Testkit</li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-emitted-by-your-code.html">Test metrics emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-metrics-against-semantic-conventions.html">Test metrics against semantic conventions</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-traces-emitted-by-your-code.html">Test traces emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/test-logs-emitted-by-your-code.html">Test logs emitted by your code</a></li>
+    <li class="level2 nav-leaf"><a href="../how-to-testkit/use-iolocal-context-storage-with-the-testkit.html">Use IOLocalContextStorage with the testkit</a></li>
+    <li class="level1 nav-header">Explanations</li>
+    <li class="level2 nav-leaf"><a href="../explanations/modules-and-module-families.html">Modules and module families</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/semantic-conventions-and-stability.html">Semantic conventions and stability</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/oteljava-jvm-backend.html">The JVM backend</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/tracing-resource-and-fs2-stream-scopes.html">Tracing Resource and fs2.Stream scopes</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/histogram-bucket-customization-with-views.html">Histogram bucket customization with views</a></li>
+    <li class="level2 nav-leaf"><a href="../explanations/how-otel4s-context-works-with-the-otel4s-java-agent.html">How otel4s context works with the otel4s Java agent</a></li>
+    <li class="level1 nav-header">Instrumentation</li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/context.html">Context API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics.html">Metrics API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/metrics-cats-effect-io-runtime.html">Cats Effect IO runtime metrics reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing.html">Tracing API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/tracing-cross-service-propagation.html">Cross-service trace propagation</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/logs.html">Logs API reference</a></li>
+    <li class="level2 nav-leaf"><a href="../instrumentation/semantic-conventions.html">Semantic conventions reference</a></li>
+    <li class="level1 nav-header">OtelJava</li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit.html">Testkit</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-metrics.html">Metrics testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-traces.html">Traces testkit reference</a></li>
+    <li class="level2 nav-leaf"><a href="../oteljava/testkit-logs.html">Logs testkit reference</a></li>
+    <li class="level1 nav-header">SDK</li>
+    <li class="level2 nav-leaf"><a href="../sdk/overview.html">Overview</a></li>
+    <li class="level1 nav-header">Examples</li>
+    <li class="level2 nav-leaf"><a href="../examples/jaeger-docker/">Jaeger - collecting traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/honeycomb/">Honeycomb - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/dash0/">Dash0 - metrics and traces</a></li>
+    <li class="level2 nav-leaf"><a href="../examples/grafana/">Grafana - All-in-one</a></li>
+  </ul>
+
+</nav>
+
+    <div id="container">
+
+      
+<nav id="page-nav">
+  <p class="header"><a href="#">Preserve context for deferred work</a></p>
+
+  <ul class="nav-list">
+    <li class="level1 nav-leaf"><a href="#prerequisites">Prerequisites</a></li>
+    <li class="level1 nav-leaf"><a href="#get-the-context-manager">Get the context manager</a></li>
+    <li class="level1 nav-leaf"><a href="#share-context-storage-between-modules">Share context storage between modules</a></li>
+    <li class="level1 nav-leaf"><a href="#capture-a-scope-before-deferring-an-effect">Capture a scope before deferring an effect</a></li>
+    <li class="level1 nav-leaf"><a href="#preserve-context-for-resource-and-stream">Preserve context for <code>Resource</code> and <code>Stream</code></a></li>
+    <li class="level1 nav-leaf"><a href="#choose-the-right-kind-of-capture">Choose the right kind of capture</a></li>
+    <li class="level1 nav-leaf"><a href="#related-material">Related material</a></li>
+  </ul>
+
+  <p class="footer"></p>
+</nav>
+
+
+      <main class="content">
+
+        <h1 id="preserve-context-for-deferred-work" class="title">Preserve context for deferred work</h1>
+        <p>Use <code>ContextManager</code> when an effect, <code>Resource</code>, or <code>Stream</code> is prepared in one otel4s context and evaluated later.
+        The captured context includes the active span, baggage, and any other values stored by the telemetry backend.</p>
+        
+        <h2 id="prerequisites" class="section"><a class="anchor-link left" href="#prerequisites"><i class="icofont-laika link">&#xef71;</i></a>Prerequisites</h2>
+        <p>This guide assumes that you already have an <code>Otel4s</code> instance. For a complete JVM setup, see
+        <a href="../how-to-jvm-setup/set-up-otel4s-in-a-jvm-application.html">Set up otel4s in a JVM application</a>.</p>
+        
+        <h2 id="get-the-context-manager" class="section"><a class="anchor-link left" href="#get-the-context-manager"><i class="icofont-laika link">&#xef71;</i></a>Get the context manager</h2>
+        <p><code>Otel4s</code> exposes the context manager used by its telemetry components. Pass that value to code that needs to preserve
+        context:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">ContextManager</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="type-name">OtelJava</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">deferredWork</span><span>(</span><span class="identifier">contextManager</span><span>: </span><span class="type-name">ContextManager</span><span>[</span><span class="type-name">IO</span><span>]): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="identifier">contextManager</span><span>.</span><span class="identifier">current</span><span>.</span><span class="identifier">map</span><span>(</span><span class="identifier">_</span><span> =&gt; ())
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">program</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">OtelJava</span><span>.</span><span class="identifier">autoConfigured</span><span>[</span><span class="type-name">IO</span><span>]().</span><span class="identifier">use</span><span> { </span><span class="identifier">otel4s</span><span> =&gt;
+    </span><span class="identifier">deferredWork</span><span>(</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">contextManager</span><span>)
+  }</span></code></pre>
+        <p>Code that only needs to capture or restore context can accept <code>ContextManager[F]</code>.</p>
+        <p>OtelJava also provides <code>contextManager</code> on <code>Traces</code>, <code>TracesTestkit</code>, <code>MetricsTestkit</code>, and <code>LogsTestkit</code>.
+        Standalone runtime <code>Metrics</code> and <code>Logs</code> use a constant root context and have no manager.</p>
+        
+        <h2 id="share-context-storage-between-modules" class="section"><a class="anchor-link left" href="#share-context-storage-between-modules"><i class="icofont-laika link">&#xef71;</i></a>Share context storage between modules</h2>
+        <p>The default <code>LocalProvider</code> allocates a new <code>IOLocal</code> each time its <code>.local</code> effect runs.
+        Modules built with separate locals do not share context, even if they use the same provider.</p>
+        <p>To share context, allocate one local and pass <code>LocalProvider.fromLocal(local)</code> to each module.
+        For example, these tracing and metrics testkits share a local:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">Context</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">context</span><span>.</span><span class="type-name">LocalContextProvider</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">metrics</span><span>.</span><span class="type-name">MetricsTestkit</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">org</span><span>.</span><span class="identifier">typelevel</span><span>.</span><span class="identifier">otel4s</span><span>.</span><span class="identifier">oteljava</span><span>.</span><span class="identifier">testkit</span><span>.</span><span class="identifier">trace</span><span>.</span><span class="type-name">TracesTestkit</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">sharedTestkits</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Unit</span><span>] =
+  </span><span class="type-name">LocalProvider</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Context</span><span>].</span><span class="identifier">local</span><span>.</span><span class="identifier">flatMap</span><span> { </span><span class="identifier">local</span><span> =&gt;
+    </span><span class="keyword">implicit</span><span> </span><span class="keyword">val</span><span> </span><span class="identifier">shared</span><span>: </span><span class="type-name">LocalContextProvider</span><span>[</span><span class="type-name">IO</span><span>] = </span><span class="type-name">LocalProvider</span><span>.</span><span class="identifier">fromLocal</span><span>(</span><span class="identifier">local</span><span>)
+
+    (</span><span class="type-name">TracesTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>](), </span><span class="type-name">MetricsTestkit</span><span>.</span><span class="identifier">inMemory</span><span>[</span><span class="type-name">IO</span><span>]()).</span><span class="identifier">tupled</span><span>.</span><span class="identifier">use</span><span> { </span><span class="keyword">case</span><span> (</span><span class="identifier">traces</span><span>, </span><span class="identifier">metrics</span><span>) =&gt;
+      </span><span class="keyword">for</span><span> {
+        </span><span class="identifier">tracer</span><span> &lt;- </span><span class="identifier">traces</span><span>.</span><span class="identifier">tracerProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;example&quot;</span><span>)
+        </span><span class="identifier">meter</span><span> &lt;- </span><span class="identifier">metrics</span><span>.</span><span class="identifier">meterProvider</span><span>.</span><span class="identifier">get</span><span>(</span><span class="string-literal">&quot;example&quot;</span><span>)
+        </span><span class="identifier">histogram</span><span> &lt;- </span><span class="identifier">meter</span><span>.</span><span class="identifier">histogram</span><span>[</span><span class="type-name">Double</span><span>](</span><span class="string-literal">&quot;duration&quot;</span><span>).</span><span class="identifier">create</span><span>
+        </span><span class="identifier">_</span><span> &lt;- </span><span class="identifier">tracer</span><span>.</span><span class="identifier">span</span><span>(</span><span class="string-literal">&quot;request&quot;</span><span>).</span><span class="identifier">surround</span><span>(</span><span class="identifier">histogram</span><span>.</span><span class="identifier">record</span><span>(</span><span class="number-literal">0.1</span><span>))
+      } </span><span class="keyword">yield</span><span> ()
+    }
+  }</span></code></pre>
+        <p>You can also pass this provider to <code>Traces</code> and <code>LogsTestkit</code>.
+        <code>OtelJava</code> and <code>OtelJavaTestkit</code> already share one local across their components.</p>
+        
+        <h2 id="capture-a-scope-before-deferring-an-effect" class="section"><a class="anchor-link left" href="#capture-a-scope-before-deferring-an-effect"><i class="icofont-laika link">&#xef71;</i></a>Capture a scope before deferring an effect</h2>
+        <p>Run <code>captureScope</code> in the context you want to preserve. It returns an <code>F ~&gt; F</code> that restores that context around
+        effects run later:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">def</span><span> </span><span class="declaration-name">prepare</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">contextManager</span><span>: </span><span class="type-name">ContextManager</span><span>[</span><span class="type-name">IO</span><span>])(
+    </span><span class="identifier">effect</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>]
+): </span><span class="type-name">IO</span><span>[</span><span class="type-name">IO</span><span>[</span><span class="type-name">A</span><span>]] =
+  </span><span class="identifier">contextManager</span><span>.</span><span class="identifier">captureScope</span><span>.</span><span class="identifier">map</span><span> { </span><span class="identifier">restore</span><span> =&gt;
+    </span><span class="identifier">restore</span><span>(</span><span class="identifier">effect</span><span>)
+  }</span></code></pre>
+        <p>Run the outer <code>IO</code> before passing the returned effect to a queue, callback, or scheduler.</p>
+        <p>You can reuse the returned scope. It replaces the current context while an effect runs, then restores the caller&#39;s
+        context on success, failure, or cancellation.</p>
+        
+        <h2 id="preserve-context-for-resource-and-stream" class="section"><a class="anchor-link left" href="#preserve-context-for-resource-and-stream"><i class="icofont-laika link">&#xef71;</i></a>Preserve context for <code>Resource</code> and <code>Stream</code></h2>
+        <p>Apply the captured scope with <code>Resource#mapK</code> or <code>Stream#translate</code>:</p>
+        <pre><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">Resource</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Stream</span><span>
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">prepareResource</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">contextManager</span><span>: </span><span class="type-name">ContextManager</span><span>[</span><span class="type-name">IO</span><span>])(
+    </span><span class="identifier">resource</span><span>: </span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">A</span><span>]
+): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Resource</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">A</span><span>]] =
+  </span><span class="identifier">contextManager</span><span>.</span><span class="identifier">captureScope</span><span>.</span><span class="identifier">map</span><span> { </span><span class="identifier">restore</span><span> =&gt;
+    </span><span class="identifier">resource</span><span>.</span><span class="identifier">mapK</span><span>(</span><span class="identifier">restore</span><span>)
+  }
+
+</span><span class="keyword">def</span><span> </span><span class="declaration-name">prepareStream</span><span>[</span><span class="type-name">A</span><span>](</span><span class="identifier">contextManager</span><span>: </span><span class="type-name">ContextManager</span><span>[</span><span class="type-name">IO</span><span>])(
+    </span><span class="identifier">stream</span><span>: </span><span class="type-name">Stream</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">A</span><span>]
+): </span><span class="type-name">IO</span><span>[</span><span class="type-name">Stream</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">A</span><span>]] =
+  </span><span class="identifier">contextManager</span><span>.</span><span class="identifier">captureScope</span><span>.</span><span class="identifier">map</span><span> { </span><span class="identifier">restore</span><span> =&gt;
+    </span><span class="identifier">stream</span><span>.</span><span class="identifier">translate</span><span>(</span><span class="identifier">restore</span><span>)
+  }</span></code></pre>
+        <p>Run the outer <code>IO</code> in the context you want to capture.</p>
+        <p><code>Resource.mapK</code> applies the scope to acquisition and release, including release after failure or cancellation.
+        The <code>use</code> callback runs in the caller&#39;s context. Apply the captured scope to that callback if it needs the captured
+        context too.</p>
+        <p><code>Stream.translate</code> applies the scope to the stream&#39;s effects and finalizers. The caller&#39;s context is restored afterward.
+        Multiple fibers can use the same captured scope concurrently.</p>
+        
+        <h2 id="choose-the-right-kind-of-capture" class="section"><a class="anchor-link left" href="#choose-the-right-kind-of-capture"><i class="icofont-laika link">&#xef71;</i></a>Choose the right kind of capture</h2>
+        <p>Use <code>ContextManager.captureScope</code> to preserve the span, baggage, and custom context values together.</p>
+        <p>Capturing context does not keep a span open. The code that owns the span must end it.
+        If deferred work needs a new span, start it when the work runs. The captured span can be its parent.</p>
+        <p>Use <code>Tracer.childScope(spanContext)</code> to change the parent while keeping the baggage and custom values current when
+        the effect runs. See
+        <a href="../explanations/choosing-parent-spans-and-tracing-scopes.html">Choosing parent spans and tracing scopes</a>.</p>
+        <p>To pass context to another process or service, inject it into a carrier. See
+        <a href="propagate-trace-context-across-service-boundaries.html">Propagate trace context across service boundaries</a>.</p>
+        
+        <h2 id="related-material" class="section"><a class="anchor-link left" href="#related-material"><i class="icofont-laika link">&#xef71;</i></a>Related material</h2>
+        <ul>
+          <li><a href="../instrumentation/context.html">Context API reference</a></li>
+          <li><a href="../explanations/how-otel4s-context-propagation-works.html">How otel4s context propagation works</a></li>
+          <li><a href="trace-resource-and-fs2-stream-code.html">Trace Resource and fs2.Stream code</a></li>
+          <li><a href="work-with-baggage.html">Work with baggage</a></li>
+        </ul>
+
+        
+<hr class="footer-rule"/>
+<footer>
+  otel4s is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+</footer>
+
+
+      </main>
+
+    </div>
+
+  </body>
+
+</html>

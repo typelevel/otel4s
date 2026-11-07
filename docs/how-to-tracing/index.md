@@ -9,6 +9,7 @@ that depend on OpenTelemetry context.
 - [Provide a no-op tracer](provide-a-no-op-tracer.md)
 - [Use unmanaged spans when a span must end outside its scope](use-unmanaged-spans-when-a-span-must-end-outside-its-scope.md)
 - [Trace Resource and fs2.Stream code](trace-resource-and-fs2-stream-code.md)
+- [Preserve context for deferred work](preserve-context-for-deferred-work.md)
 - [Work with baggage](work-with-baggage.md)
 - [Propagate trace context across service boundaries](propagate-trace-context-across-service-boundaries.md)
 - [Use otel4s with Java-instrumented libraries](use-otel4s-with-java-instrumented-libraries.md)

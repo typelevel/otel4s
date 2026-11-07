@@ -21,6 +21,23 @@ import munit._
 
 class TracesTestkitSuite extends CatsEffectSuite {
 
+  test("contextManager captures the tracing testkit's active span") {
+    TracesTestkit.inMemory[IO]().use { testkit =>
+      for {
+        tracer <- testkit.tracerProvider.get("context-manager")
+        _ <- tracer.span("captured").use { captured =>
+          for {
+            restore <- testkit.contextManager.captureScope
+            _ <- tracer.span("consumer").use { consumer =>
+              restore(tracer.currentSpanContext).assertEquals(Some(captured.context)) *>
+                tracer.currentSpanContext.assertEquals(Some(consumer.context))
+            }
+          } yield ()
+        }
+      } yield ()
+    }
+  }
+
   test("collect traces in-memory") {
     TracesTestkit.inMemory[IO]().use { testkit =>
       for {

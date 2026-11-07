@@ -112,6 +112,7 @@ endpoint and verify the exported span.
 
 ## API reference
 
+- [Context API](instrumentation/context.md)
 - [Tracing API](instrumentation/tracing.md)
 - [Metrics API](instrumentation/metrics.md)
 - [Logs API](instrumentation/logs.md)

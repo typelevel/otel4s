@@ -12,6 +12,7 @@
 | [fs2-queues-otel4s][fs2-queues-otel4s]                 | [fs2-queues][fs2-queues] integration with otel4s providing traces and metrics for messaging systems.                   |
 | [fs2-grpc][fs2-grpc]                                   | The [fs2-grpc-otel4s-trace][fs2-grpc-otel4s-trace] module provides server and client tracing capability.               |
 | [fs2-kafka-otel4s][fs2-kafka-otel4s]                   | The [fs2-kafka-otel4s][fs2-kafka-otel4s] project provides consumer and producer traces for [fs2-kafka][fs2-kafka].     |
+| [fs2-rabbit-otel4s][fs2-rabbit-otel4s]                 | The [fs2-rabbit-otel4s][fs2-rabbit-otel4s] module provides consumer and publisher traces for [fs2-rabbit][fs2-rabbit]. |
 
 [otel4s-experimental]: https://github.com/typelevel/otel4s-experimental
 [otel4s-opentelemetry-java]: https://github.com/iRevive/otel4s-opentelemetry-java 
@@ -31,3 +32,5 @@
 [fs2-grpc-otel4s-trace]: https://github.com/typelevel/fs2-grpc#opentelemetry-tracing-with-otel4s
 [fs2-kafka]: https://github.com/typelevel/fs2-kafka
 [fs2-kafka-otel4s]: https://github.com/iRevive/fs2-kafka-otel4s
+[fs2-rabbit]: https://fs2-rabbit.profunktor.dev
+[fs2-rabbit-otel4s]: https://fs2-rabbit.profunktor.dev/otel4s.html

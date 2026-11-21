@@ -1,6 +1,6 @@
 import com.typesafe.tools.mima.core._
 
-ThisBuild / tlBaseVersion := "1.1"
+ThisBuild / tlBaseVersion := "1.2"
 
 ThisBuild / organization := "org.typelevel"
 ThisBuild / organizationName := "Typelevel"
@@ -69,21 +69,21 @@ ThisBuild / mergifyPrRules ++= Seq(
 val CatsVersion = "2.13.0"
 val CatsEffectVersion = "3.7.1"
 val CatsMtlVersion = "1.7.0"
-val FS2Version = "3.14.0"
+val FS2Version = "3.16.0"
 val MUnitVersion = "1.3.6"
 val MUnitScalaCheckVersion = "1.3.1"
 val MUnitCatsEffectVersion = "2.2.1"
 val MUnitDisciplineVersion = "2.0.0"
 val MUnitScalaCheckEffectVersion = "2.1.0"
-val OpenTelemetryVersion = "1.67.0"
+val OpenTelemetryVersion = "1.68.0"
 val OpenTelemetryAlphaVersion = s"$OpenTelemetryVersion-alpha"
-val OpenTelemetryInstrumentationVersion = "2.33.1"
+val OpenTelemetryInstrumentationVersion = "2.34.0"
 val OpenTelemetryInstrumentationAlphaVersion = s"$OpenTelemetryInstrumentationVersion-alpha"
 val OpenTelemetrySemConvVersion = "1.45.0"
 val OpenTelemetrySemConvAlphaVersion = s"$OpenTelemetrySemConvVersion-alpha"
 val Otel4sAgentVersion = "2.22.0"
 val PekkoStreamVersion = "2.0.0"
-val PekkoHttpVersion = "1.4.2"
+val PekkoHttpVersion = "2.0.0"
 val PlatformVersion = "1.0.3"
 val ScodecVersion = "1.2.5"
 val VaultVersion = "3.7.0"
@@ -161,6 +161,7 @@ lazy val `core-common` = crossProject(JVMPlatform, JSPlatform, NativePlatform)
       "org.typelevel" %%% "vault" % VaultVersion % Test,
       "org.typelevel" %%% "cats-laws" % CatsVersion % Test,
       "org.typelevel" %%% "cats-mtl-laws" % CatsMtlVersion % Test,
+      "co.fs2" %%% "fs2-core" % FS2Version % Test,
       "org.typelevel" %%% "cats-effect-testkit" % CatsEffectVersion % Test,
       "org.typelevel" %%% "discipline-munit" % MUnitDisciplineVersion % Test,
       "lgbt.princess" %%% "platform" % PlatformVersion % Test

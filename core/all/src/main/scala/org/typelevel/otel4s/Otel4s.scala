@@ -18,6 +18,7 @@ package org.typelevel.otel4s
 
 import cats.mtl.Local
 import org.typelevel.otel4s.baggage.BaggageManager
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.logs.LoggerProvider
 import org.typelevel.otel4s.metrics.MeterProvider
@@ -30,6 +31,9 @@ sealed trait Otel4s[F[_]] {
 
   /** The [[cats.mtl.Local `Local`]] context. */
   implicit def localContext: Local[F, Ctx]
+
+  /** A utility for capturing and restoring the complete current context. */
+  def contextManager: ContextManager.Aux[F, Ctx]
 
   /** The registered propagators. */
   def propagators: ContextPropagators[Ctx]

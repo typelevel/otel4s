@@ -22,10 +22,11 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder
 import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.metrics.MeterProvider
-import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.metrics.MeterProviderImpl
 
@@ -38,6 +39,9 @@ import scala.jdk.CollectionConverters._
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-metrics-emitted-by-your-code.html Test metrics emitted by your code]]
   */
 sealed trait MetricsTestkit[F[_]] {
+
+  /** The manager for the current OpenTelemetry context. */
+  def contextManager: ContextManager.Aux[F, Context]
 
   /** The [[org.typelevel.otel4s.metrics.MeterProvider MeterProvider]].
     */
@@ -85,7 +89,7 @@ object MetricsTestkit {
   ): Resource[F, MetricsTestkit[F]] =
     customize(builder[F]).build
 
-  private[oteljava] def create[F[_]: Async: AskContext](
+  private[oteljava] def create[F[_]: Async: LocalContext](
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
   ): Resource[F, MetricsTestkit[F]] = {
     for {
@@ -94,7 +98,7 @@ object MetricsTestkit {
     } yield metricsTestkit
   }
 
-  private def create[F[_]: Async: AskContext](
+  private def create[F[_]: Async: LocalContext](
       inMemoryMetricReader: InMemoryMetricReader,
       customize: SdkMeterProviderBuilder => SdkMeterProviderBuilder
   ): Resource[F, MetricsTestkit[F]] = {
@@ -111,12 +115,14 @@ object MetricsTestkit {
       provider <- Resource.fromAutoCloseable(createMetricProvider(inMemoryMetricReader))
     } yield new Impl(
       new MeterProviderImpl(provider),
+      ContextManager.fromLocal,
       inMemoryMetricReader
     )
   }
 
   private final class Impl[F[_]: Async](
       val meterProvider: MeterProvider[F],
+      val contextManager: ContextManager.Aux[F, Context],
       metricReader: InMemoryMetricReader
   ) extends MetricsTestkit[F] {
 

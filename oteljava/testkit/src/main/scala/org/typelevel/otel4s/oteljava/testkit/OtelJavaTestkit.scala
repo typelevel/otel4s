@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder
 import io.opentelemetry.sdk.trace.data.SpanData
 import org.typelevel.otel4s.baggage.BaggageManager
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.logs.LoggerProvider
@@ -62,6 +63,8 @@ sealed abstract class OtelJavaTestkit[F[_]] private (implicit
     with TracesTestkit.Unsealed[F] {
 
   type Ctx = Context
+
+  val contextManager: ContextManager.Aux[F, Context] = ContextManager.fromLocal
 
   val baggageManager: BaggageManager[F] = BaggageManagerImpl.fromLocal
 

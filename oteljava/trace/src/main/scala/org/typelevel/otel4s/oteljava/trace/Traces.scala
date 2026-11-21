@@ -22,6 +22,7 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import io.opentelemetry.api.{OpenTelemetry => JOpenTelemetry}
 import io.opentelemetry.api.GlobalOpenTelemetry
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.oteljava.context.Context
@@ -40,6 +41,9 @@ sealed trait Traces[F[_]] {
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
   def tracerProvider: TracerProvider[F]
+
+  /** The manager for the current OpenTelemetry context. */
+  def contextManager: ContextManager.Aux[F, Context]
 
   /** The propagators used by the [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -90,6 +94,8 @@ object Traces {
       val propagators: ContextPropagators[Context],
       val localContext: LocalContext[F]
   ) extends Traces[F] {
+    val contextManager: ContextManager.Aux[F, Context] = ContextManager.fromLocal(localContext)
+
     override def toString: String = s"Traces{tracerProvider=$tracerProvider, propagators=$propagators}"
   }
 }

@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.`export`.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.`export`.SpanExporter
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.context.propagation.ContextPropagators
 import org.typelevel.otel4s.oteljava.context.Context
@@ -48,6 +49,9 @@ import scala.jdk.CollectionConverters._
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-traces-emitted-by-your-code.html Test traces emitted by your code]]
   */
 sealed trait TracesTestkit[F[_]] {
+
+  /** The manager for the current OpenTelemetry context. */
+  def contextManager: ContextManager.Aux[F, Context]
 
   /** The [[org.typelevel.otel4s.trace.TracerProvider TracerProvider]].
     */
@@ -166,6 +170,8 @@ object TracesTestkit {
       processor: SpanProcessor,
       exporter: InMemorySpanExporter
   ) extends TracesTestkit[F] {
+
+    val contextManager: ContextManager.Aux[F, Context] = ContextManager.fromLocal(localContext)
 
     def finishedSpans: F[List[SpanData]] =
       for {

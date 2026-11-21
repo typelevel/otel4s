@@ -26,10 +26,11 @@ import io.opentelemetry.sdk.logs.data.LogRecordData
 import io.opentelemetry.sdk.logs.`export`.LogRecordExporter
 import io.opentelemetry.sdk.logs.`export`.SimpleLogRecordProcessor
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter
+import org.typelevel.otel4s.context.ContextManager
 import org.typelevel.otel4s.context.LocalProvider
 import org.typelevel.otel4s.logs.LoggerProvider
-import org.typelevel.otel4s.oteljava.context.AskContext
 import org.typelevel.otel4s.oteljava.context.Context
+import org.typelevel.otel4s.oteljava.context.LocalContext
 import org.typelevel.otel4s.oteljava.context.LocalContextProvider
 import org.typelevel.otel4s.oteljava.logs.LoggerProviderImpl
 import org.typelevel.otel4s.oteljava.testkit.Conversions
@@ -43,6 +44,9 @@ import scala.jdk.CollectionConverters._
   *   [[https://typelevel.org/otel4s/how-to-testkit/test-logs-emitted-by-your-code.html Test logs emitted by your code]]
   */
 sealed trait LogsTestkit[F[_]] {
+
+  /** The manager for the current OpenTelemetry context. */
+  def contextManager: ContextManager.Aux[F, Context]
 
   /** The [[org.typelevel.otel4s.logs.LoggerProvider LoggerProvider]].
     */
@@ -95,7 +99,7 @@ object LogsTestkit {
   ): Resource[F, LogsTestkit[F]] =
     customize(builder[F]).build
 
-  private def create[F[_]: Async: AskContext](
+  private def create[F[_]: Async: LocalContext](
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
   ): Resource[F, LogsTestkit[F]] =
     for {
@@ -103,7 +107,7 @@ object LogsTestkit {
       logsTestkit <- create[F](inMemoryLogRecordExporter, customize)
     } yield logsTestkit
 
-  private def create[F[_]: Async: AskContext](
+  private def create[F[_]: Async: LocalContext](
       inMemoryLogRecordExporter: InMemoryLogRecordExporter,
       customize: SdkLoggerProviderBuilder => SdkLoggerProviderBuilder
   ): Resource[F, LogsTestkit[F]] = {
@@ -122,11 +126,12 @@ object LogsTestkit {
     for {
       processor <- Resource.fromAutoCloseable(createProcessor(inMemoryLogRecordExporter))
       provider <- Resource.fromAutoCloseable(createLoggerProvider(processor))
-    } yield new Impl(new LoggerProviderImpl(provider), processor, inMemoryLogRecordExporter)
+    } yield new Impl(new LoggerProviderImpl(provider), ContextManager.fromLocal, processor, inMemoryLogRecordExporter)
   }
 
   private final class Impl[F[_]: Async](
       val loggerProvider: LoggerProvider[F, Context],
+      val contextManager: ContextManager.Aux[F, Context],
       processor: LogRecordProcessor,
       exporter: InMemoryLogRecordExporter
   ) extends LogsTestkit[F] {
